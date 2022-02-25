@@ -13,3 +13,7 @@ Made for Python 3.9.7
 - `trainer_suite.py` combines slur detection with automatic log downloading
 - `candy_stalker.py` automatically gets soemone's round say logs, works only on /tg/station13, as it uses Scrubby and public logs
 - `slur_detector.py` scans some text and determines if any specified slurs are present
+
+## Downloading
+
+For compiled versions, see [this](https://github.com/RigglePrime/admin-tools/releases) link
