@@ -13,7 +13,7 @@ choice = input("""Welcome to trainer suite! What would you like to do?
 if choice == "1":
     interactive()
 elif choice == "2":
-    SlurDetector.from_file(input("Which file?")).print_results()
+    SlurDetector.from_file(input("Which file? ")).print_results()
 elif choice == "3":
     ckey, number_of_rounds, output_path, only_played = interactive()
     print()
