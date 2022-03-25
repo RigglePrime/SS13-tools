@@ -12,7 +12,7 @@ if not os.path.exists(SLURS_FILE):
     raise FileNotFoundError("Slurs file does not exist. Creating it for you. Please add some words to it.")
 
 SLURS = []
-with open(SLURS_FILE, "r") as f: 
+with open(SLURS_FILE, "r", encoding = "utf-8") as f: 
     for line in f.readlines():
         if line.strip() and not line.startswith('#'):
             SLURS.append(line.split('#', 1)[0].strip())
@@ -75,7 +75,7 @@ class SlurDetector:
 
     @staticmethod
     def from_file(target_file: str):
-        with open(target_file, "r") as f:
+        with open(target_file, "r", encoding = "utf-8") as f:
             return SlurDetector(f.readlines())
 
 def main():
