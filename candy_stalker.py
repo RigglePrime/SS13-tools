@@ -142,7 +142,7 @@ async def default_async(ckey: str, number_of_rounds: int, output_path: str, only
     print("Done! Good luck with getting them candidated!")
 
 def default(ckey: str, number_of_rounds: int, output_path: str, only_played: bool):
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(default_async(ckey=ckey, number_of_rounds=number_of_rounds, output_path=output_path, only_played=only_played))
     finally:
