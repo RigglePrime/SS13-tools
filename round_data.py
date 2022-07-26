@@ -1,10 +1,10 @@
 # Enable type hinting for static methods
 from __future__ import annotations
+import json
 from typing import Optional, Annotated, Any
 from dataclasses import dataclass
 
-from requests import Response
-
+from aiohttp import ClientResponse
 @dataclass
 class RoundData:
     roundID: int
@@ -22,6 +22,10 @@ class RoundData:
     server: str
     
 
+    # @staticmethod
+    # def from_scrubby_response(r: ClientResponse) -> list[RoundData]:
+    #     return r.json(object_hook = lambda d: RoundData(**d))
+
     @staticmethod
-    def from_scrubby_response(r: Response) -> list[RoundData]:
-        return r.json(object_hook = lambda d: RoundData(**d))
+    async def from_scrubby_response_async(r: ClientResponse) -> list[RoundData]:
+        return json.loads(await r.text(), object_hook=lambda d: RoundData(**d))
