@@ -142,7 +142,7 @@ async def default_async(ckey: str, number_of_rounds: int, output_path: str, only
                 pbar.display()
             for line in get_lines_with_ckey(ckey, logs):
                 f.write(format_line_bytes(line, round))
-        
+
     print("Done! Good luck with getting them candidated!")
 
 def default(ckey: str, number_of_rounds: int, output_path: str, only_played: bool):
