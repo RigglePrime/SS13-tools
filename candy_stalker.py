@@ -2,18 +2,17 @@
 
 import sys
 from typing import Optional, Iterable, Union, Generator
-from threading import Thread
-from queue import Queue
 
 from round_data import RoundData
 
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession
 import asyncio
 from dateutil.parser import isoparse
 from tqdm.asyncio import tqdm
 
 SCRUBBY_API_URL = "https://scrubby.melonmesa.com/ckey/{ckey}/receipts"
 GAME_TXT_URL = "https://tgstation13.org/parsed-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/game.txt"
+DEFAULT_NUMBER_OF_ROUNDS = 150
 
 # Maybe add async support in the future some day?
 async def get_rounds(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[RoundData]:
@@ -116,17 +115,16 @@ def interactive() -> tuple[str, int, str, bool]:
     """Run interactive mode. Returns the choices and runs default behaviour
     
     Returns this tuple: `(ckey, number_of_rounds, output_path, only_played)`"""
-    if True:
-        ckey = input("CKEY: ").strip()
-        number_of_rounds = input("How many rounds? [30] ")
+    ckey = input("CKEY: ").strip()
+    while True:
+        number_of_rounds = input("How many rounds? [%d] " % DEFAULT_NUMBER_OF_ROUNDS)
         try:
-            if not number_of_rounds: number_of_rounds = "30"
-            number_of_rounds = int(number_of_rounds)
-        except:
+            number_of_rounds = int(number_of_rounds) if number_of_rounds.isdigit() else DEFAULT_NUMBER_OF_ROUNDS
+            break
+        except ValueError:
             print("Rounds should be an int")
-            exit(1)
-        only_played = input("Do you want to get only rounds in which they played? [y/N] ")
-        output_path = input(f"Where should I write the file? [{ckey}.txt] ")
+    only_played = input("Do you want to get only rounds in which they played? [y/N] ")
+    output_path = input(f"Where should I write the file? [{ckey}.txt] ")
     only_played = True if only_played.lower() == 'y' or 'yes' or 'true' or '1' else False
     if not output_path: output_path = f"{ckey}.txt"
     default(ckey, number_of_rounds, output_path, only_played)
