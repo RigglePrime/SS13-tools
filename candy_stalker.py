@@ -2,11 +2,12 @@
 
 import sys
 from typing import Optional, Iterable, Union, Generator
-from multiprocessing import Pool
+from threading import Thread
+from queue import Queue
 
 from round_data import RoundData
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientResponse
 import asyncio
 from dateutil.parser import isoparse
 from tqdm.asyncio import tqdm
@@ -48,16 +49,25 @@ async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = F
     
     On 404, the list will be None instead"""
     async with ClientSession() as session:
-        for round in rounds:
-            round.timestamp = isoparse(round.timestamp)
-            # Edge case warning: if we go beyond the year 2017 or so, the logs path changes. I don't expect anyone to go that far so I won't be doing anything about it
-            r = await session.get(GAME_TXT_URL.format(
-                server = round.server.lower().replace('bagil','basil'),
-                year = str(round.timestamp.year),
-                month = f"{round.timestamp.month:02d}",
-                day = f"{round.timestamp.day:02d}",
-                round_id = round.roundID
-            ))
+        i = 0
+        results = Queue(8)
+        def fill_queue():
+            for round in rounds:
+                round.timestamp = isoparse(round.timestamp)
+                # Edge case warning: if we go beyond the year 2017 or so, the logs path changes. I don't expect anyone to go that far so I won't be doing anything about it
+                results.put((session.get(GAME_TXT_URL.format(
+                    server = round.server.lower().replace('bagil','basil'),
+                    year = str(round.timestamp.year),
+                    month = f"{round.timestamp.month:02d}",
+                    day = f"{round.timestamp.day:02d}",
+                    round_id = round.roundID
+                )), round))
+
+        t = Thread(target=fill_queue, daemon=True)
+        t.start()
+        while (i := i+1) < len(rounds):
+            r, round = results.get()
+            r: ClientResponse = await r
             if r.status == 404:
                 yield round, None
             else:
@@ -65,6 +75,8 @@ async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = F
                     yield round, (await r.read()).split(b"\r\n")
                 else:
                     yield round, (await r.text()).split("\r\n")
+        if t.is_alive():
+            print("Warning! Thread not exited in get_say_logs_async!")
 
 def get_lines_with_ckey(ckey: Union[str, bytes], lines: Iterable[Union[str, bytes]]):
     """Filters lines without the specified ckey out. Make sure that `ckey` and members of `lines` are of the same type"""
