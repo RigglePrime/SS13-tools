@@ -65,7 +65,7 @@ async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = F
 
         t = Thread(target=fill_queue, daemon=True)
         t.start()
-        while (i := i+1) < len(rounds):
+        while (i := i+1) <= len(rounds):
             r, round = results.get()
             r: ClientResponse = await r
             if r.status == 404:
