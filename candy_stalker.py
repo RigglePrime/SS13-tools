@@ -9,6 +9,7 @@ from aiohttp import ClientSession
 import asyncio
 from dateutil.parser import isoparse
 from tqdm.asyncio import tqdm
+from colorama import Fore, Style, init as colorama_init
 
 SCRUBBY_API_URL = "https://scrubby.melonmesa.com/ckey/{ckey}/receipts"
 GAME_TXT_URL = "https://tgstation13.org/parsed-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/game.txt"
@@ -104,8 +105,8 @@ def main():
             only_played = sys.argv[4]
         default(ckey, number_of_rounds, output_path, only_played)
     elif len(sys.argv) != 1:
-        print("Unknown number of command line arguments")
-        print("USAGE: candy-stalker.py <ckey> [number_of_rounds=30] [output_path={ckey}.txt] [only_played=false]")
+        print(f"{Fore.YELLOW}Unknown number of command line arguments{Fore.RESET}")
+        print(f"{Fore.GREEN}USAGE{Fore.RESET}: candy-stalker.py <ckey> [number_of_rounds=30] [output_path={ckey}.txt] [only_played=false]")
         print("<> are required, [] are optional, = means a default value. If you provide an optional, you have to also provide all optionals before it")
         exit(1)
     else:
@@ -122,8 +123,8 @@ def interactive() -> tuple[str, int, str, bool]:
             number_of_rounds = int(number_of_rounds) if number_of_rounds.isdigit() else DEFAULT_NUMBER_OF_ROUNDS
             break
         except ValueError:
-            print("Rounds should be an int")
-    only_played = input("Do you want to get only rounds in which they played? [y/N] ")
+            print(f"{Fore.RED}Rounds should be an int{Fore.RESET}")
+    only_played = input(f"Do you want to get only rounds in which they played? [y/{Style.BRIGHT}N{Style.RESET_ALL}] ")
     output_path = input(f"Where should I write the file? [{ckey}.txt] ")
     only_played = True if only_played.lower() == 'y' or 'yes' or 'true' or '1' else False
     if not output_path: output_path = f"{ckey}.txt"
@@ -132,7 +133,7 @@ def interactive() -> tuple[str, int, str, bool]:
 
 async def default_async(ckey: str, number_of_rounds: int, output_path: str, only_played: bool):
     """Default behaviour of the application, downloads the file to `output_path`."""
-    print(f"Fetching rounds {ckey} has participated in. This might take a second, especially if the number of rounds is large")
+    print(f"Fetching rounds {Style.BRIGHT}{ckey}{Style.RESET_ALL} has participated in. This might take a second, especially if the number of rounds is large")
     rounds = await get_rounds(ckey=ckey, number_of_rounds=number_of_rounds, only_played=only_played)
     print("Got rounds. Parsing...")
 
@@ -147,12 +148,12 @@ async def default_async(ckey: str, number_of_rounds: int, output_path: str, only
             pbar.set_description(f"Getting ID {round.roundID} on {round.server}")
             if not logs: 
                 pbar.clear()
-                print(f"WARNING: Could not find round {round.roundID} on {round.server}")
+                print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not find round {round.roundID} on {round.server}")
                 pbar.display()
                 continue
             if round.roundStartSuicide:
                 pbar.clear()
-                print(f"WARNING: round start suicide in round {round.roundID} on {round.server}")
+                print(f"{Fore.MAGENTA}WARNING:{Fore.RESET} round start suicide in round {round.roundID} on {round.server}")
                 pbar.display()
             for line in get_lines_with_ckey(ckey, logs):
                 f.write(format_line_bytes(line, round))
@@ -172,4 +173,5 @@ def default(ckey: str, number_of_rounds: int, output_path: str, only_played: boo
         loop.close()
 
 if __name__ == "__main__":
+    colorama_init()
     main()
