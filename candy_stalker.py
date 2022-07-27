@@ -2,13 +2,10 @@
 
 import sys
 from typing import Optional, Iterable, Union, Generator
-from threading import Thread
-from queue import Queue
-from unicodedata import digit
 
 from round_data import RoundData
 
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession
 import asyncio
 from dateutil.parser import isoparse
 from tqdm.asyncio import tqdm
