@@ -42,7 +42,7 @@ async def get_rounds(ckey: str, number_of_rounds: int, only_played: bool = False
             r = await session.post(SCRUBBY_API_URL.format(ckey=ckey), json=data)
 
 ## Why do it this convoluted way? It's easier to write code around it this way. I think.
-async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = False) -> Generator[tuple[RoundData, Optional[list[Union[bytes, str]]]], None, None]:
+async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = False, workers:int = 8) -> Generator[tuple[RoundData, Optional[list[Union[bytes, str]]]], None, None]:
     """This is a generator that yields a tuple of the `RoundData` and list of round logs, for all rounds in `rounds`
     
     if `output_bytes` is true, the function will instead yield `bytes` instead of `str`
@@ -50,7 +50,7 @@ async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = F
     On 404, the list will be None instead"""
     async with ClientSession() as session:
         i = 0
-        results = Queue(8)
+        results = Queue(workers)
         def fill_queue():
             for round in rounds:
                 round.timestamp = isoparse(round.timestamp)
