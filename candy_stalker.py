@@ -27,7 +27,7 @@ async def get_rounds(ckey: str, number_of_rounds: int, only_played: bool = False
     async with ClientSession() as session:
         r = await session.post(SCRUBBY_API_URL.format(ckey=ckey), json=data)
         if not r.ok: raise Exception("Scrubby errored with code " + str(r.status))
-        if r.content == b"[]": raise Exception("CKEY could not be found")
+        if await r.read() == b"[]": raise Exception("CKEY could not be found")
         if not only_played:
             return await RoundData.from_scrubby_response_async(r)
 
