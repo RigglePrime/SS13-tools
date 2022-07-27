@@ -19,12 +19,13 @@ colour = choice([Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLUE_EX, Fore.LIGHT
                 Fore.LIGHTGREEN_EX, Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX,
                 Fore.LIGHTYELLOW_EX, Fore.MAGENTA, Fore.RED, Fore.WHITE, Fore.YELLOW])
 
-choice = input(f"""Welcome to {colour}trainer suite{Fore.RESET}! What would you like to do?
+print(f"""Welcome to {colour}trainer suite{Fore.RESET}! What would you like to do?
 
 {Fore.GREEN}1.{Fore.RESET} Download someone's say history
 {Fore.GREEN}2.{Fore.RESET} Run slur detection
 {Fore.GREEN}3.{Fore.RESET} All of the above
-""")
+""", end='')
+choice = input() # Colorama and input don't mix well :/
 
 try:
     if choice == "1":
