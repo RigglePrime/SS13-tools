@@ -10,16 +10,18 @@ choice = input("""Welcome to trainer suite! What would you like to do?
 3. All of the above
 """)
 
-if choice == "1":
-    interactive()
-elif choice == "2":
-    SlurDetector.from_file(input("Which file? ")).print_results()
-elif choice == "3":
-    ckey, number_of_rounds, output_path, only_played = interactive()
-    print()
-    slurs = SlurDetector.from_file(output_path)
-    slurs.print_results()
-else:
-    print("Invalid choice")
+try:
+    if choice == "1":
+        interactive()
+    elif choice == "2":
+        SlurDetector.from_file(input("Which file? ")).print_results()
+    elif choice == "3":
+        ckey, number_of_rounds, output_path, only_played = interactive()
+        print()
+        slurs = SlurDetector.from_file(output_path)
+        slurs.print_results()
+    else:
+        print("Invalid choice")
 
-input("Press return to exit...")
+finally:
+    input("Press return to exit...")
