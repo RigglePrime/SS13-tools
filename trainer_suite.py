@@ -12,7 +12,8 @@ try:
 except FileNotFoundError as e:
     # Bit of a hack but it does the job
     print(traceback.format_exc().replace("FileNotFoundError:", f"{Fore.RED}FileNotFoundError:") + Fore.RESET)
-    input(f"{Style.DIM}Press return to exit...{Style.RESET_ALL}")
+    print(f"{Style.DIM}Press return to exit...{Style.RESET_ALL}", end='')
+    input()
     exit(1)
 
 colour = choice([Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX,
@@ -44,4 +45,5 @@ except KeyboardInterrupt:
 except:
     traceback.print_exc()
 
-input(f"\n{Style.DIM}Press return to exit...{Style.RESET_ALL}")
+print(f"\n{Style.DIM}Press return to exit...{Style.RESET_ALL}", end='')
+input()
