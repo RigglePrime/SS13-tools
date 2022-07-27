@@ -4,6 +4,7 @@ import sys
 from typing import Optional, Iterable, Union, Generator
 from threading import Thread
 from queue import Queue
+from unicodedata import digit
 
 from round_data import RoundData
 
@@ -14,6 +15,7 @@ from tqdm.asyncio import tqdm
 
 SCRUBBY_API_URL = "https://scrubby.melonmesa.com/ckey/{ckey}/receipts"
 GAME_TXT_URL = "https://tgstation13.org/parsed-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/game.txt"
+DEFAULT_NUMBER_OF_ROUNDS = 150
 
 # Maybe add async support in the future some day?
 async def get_rounds(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[RoundData]:
@@ -118,11 +120,10 @@ def interactive() -> tuple[str, int, str, bool]:
     Returns this tuple: `(ckey, number_of_rounds, output_path, only_played)`"""
     if True:
         ckey = input("CKEY: ").strip()
-        number_of_rounds = input("How many rounds? [30] ")
+        number_of_rounds = input("How many rounds? [%d] " % DEFAULT_NUMBER_OF_ROUNDS)
         try:
-            if not number_of_rounds: number_of_rounds = "30"
-            number_of_rounds = int(number_of_rounds)
-        except:
+            number_of_rounds = int(number_of_rounds) if number_of_rounds.isdigit() else DEFAULT_NUMBER_OF_ROUNDS
+        except ValueError:
             print("Rounds should be an int")
             exit(1)
         only_played = input("Do you want to get only rounds in which they played? [y/N] ")
