@@ -132,10 +132,14 @@ async def default_async(ckey: str, number_of_rounds: int, output_path: str, only
 
             pbar.set_description(f"Getting ID {round.roundID} on {round.server}")
             if not logs: 
+                pbar.clear()
                 print(f"WARNING: Could not find round {round.roundID} on {round.server}")
+                pbar.display()
                 continue
-            if round.roundStartSuicide: 
-                print(f"WARNING: round start suicide in round {round['roundID']} on {round['server']}")
+            if round.roundStartSuicide:
+                pbar.clear()
+                print(f"WARNING: round start suicide in round {round.roundID} on {round.server}")
+                pbar.display()
             for line in get_lines_with_ckey(ckey, logs):
                 f.write(format_line_bytes(line, round))
         
