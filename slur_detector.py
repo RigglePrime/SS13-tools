@@ -4,6 +4,8 @@ import sys
 import os
 from typing import Annotated, Iterable
 
+from colorama import Fore, init as colorama_init
+
 SLURS_FILE = "slurs"
 
 if not os.path.exists(SLURS_FILE):
@@ -11,17 +13,20 @@ if not os.path.exists(SLURS_FILE):
         f.write("### Slurs file\n### One slur per line, # to ignore the line\n### The program will also skip empty lines\n\n")
     raise FileNotFoundError("Slurs file does not exist. Creating it for you. Please add some words to it.")
 
-SLURS = []
+SLURS = [] # Should not be modified after filling up once
 with open(SLURS_FILE, "r", encoding = "utf-8") as f: 
     for line in f.readlines():
         if line.strip() and not line.startswith('#'):
             SLURS.append(line.split('#', 1)[0].strip())
 
+if not SLURS:
+    print(f"{Fore.YELLOW}WARNING:{Fore.RESET} No slur entries detected! Please open the slurs file and add some.")
+
 class SlurDetector:
     """Opens the file and scans for slurs. Results stored in tally"""
 
     tally: Annotated[dict[str, int], "A dictionary with strings (slurs) as keys, and their tally as key (int)"]
-    slur_lines: Annotated[list[str], "Stores all detected lines, unmodified"]
+    slur_lines: Annotated[list[tuple[str, str]], "Stores all unmodified detected lines with the slur's position"]
 
     def __init__(self, text: Iterable[str]) -> None:
         self.reset_tally()
@@ -42,7 +47,7 @@ class SlurDetector:
         """Processes one line and detects possible slurs"""
         for slur in SLURS:
             if self.detect_word(slur, text):
-                self.slur_lines.append(text.strip())
+                self.slur_lines.append((text.strip(), slur))
                 self.tally[slur] += 1
 
     @staticmethod
@@ -60,7 +65,7 @@ class SlurDetector:
             if value:
                 none = False
                 print(f"{key}\t{value}")
-        if none: print("None!")
+        if none: print(f"{Fore.GREEN}None!{Fore.RESET}")
 
     def print_results(self):
         """Prints the results to the console"""
@@ -69,9 +74,9 @@ class SlurDetector:
 
     def print_slur_lines(self):
         """Prints all of the lines which have slurs in them"""
-        print("Lines with detected slurs:")
-        for slur_line in self.slur_lines:
-            print(slur_line)
+        print(f"{Fore.YELLOW}Lines with detected slurs:{Fore.RESET}")
+        for slur_line, slur in self.slur_lines:
+            print(slur_line.replace(slur, f"{Fore.RED}{slur}{Fore.RESET}"))
 
     @staticmethod
     def from_file(target_file: str):
@@ -87,4 +92,5 @@ def main():
     slursearch.print_results()
 
 if __name__ == "__main__":
+    colorama_init()
     main()
