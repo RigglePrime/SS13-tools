@@ -1,7 +1,13 @@
 #!/env/python3
 
+import traceback
 from candy_stalker import interactive
-from slur_detector import SlurDetector
+try:
+    from slur_detector import SlurDetector
+except FileNotFoundError:
+    traceback.print_exc()
+    input("Press return to exit...")
+    exit(1)
 
 choice = input("""Welcome to trainer suite! What would you like to do?
 
@@ -22,6 +28,7 @@ try:
         slurs.print_results()
     else:
         print("Invalid choice")
-
+except:
+    traceback.print_exc()
 finally:
     input("Press return to exit...")
