@@ -1,3 +1,4 @@
 aiohttp
 python-dateutil
 tqdm
+colorama
