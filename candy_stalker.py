@@ -124,7 +124,7 @@ def interactive() -> tuple[str, int, str, bool]:
             break
         except ValueError:
             print(f"{Fore.RED}Rounds should be an int{Fore.RESET}")
-    print(f"Do you want to get only rounds in which they played? [y/{Style.BRIGHT}N{Style.RESET_ALL}] ")
+    print(f"Do you want to get only rounds in which they played? [y/{Style.BRIGHT}N{Style.RESET_ALL}] ", end="")
     only_played = input() # Input and colorama don't mix
     output_path = input(f"Where should I write the file? [{ckey}.txt] ")
     only_played = True if only_played.lower() == 'y' or 'yes' or 'true' or '1' else False
