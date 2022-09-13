@@ -106,7 +106,7 @@ def main():
         default(ckey, number_of_rounds, output_path, only_played)
     elif len(sys.argv) != 1:
         print(f"{Fore.YELLOW}Unknown number of command line arguments{Fore.RESET}")
-        print(f"{Fore.GREEN}USAGE{Fore.RESET}: candy-stalker.py <ckey> [number_of_rounds=30] [output_path={ckey}.txt] [only_played=false]")
+        print(f"{Fore.GREEN}USAGE{Fore.RESET}: candy-stalker.py <ckey> [number_of_rounds={DEFAULT_NUMBER_OF_ROUNDS}] [output_path={ckey}.txt] [only_played=false]")
         print("<> are required, [] are optional, = means a default value. If you provide an optional, you have to also provide all optionals before it")
         exit(1)
     else:
