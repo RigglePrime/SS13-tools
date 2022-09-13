@@ -44,9 +44,9 @@ async def get_rounds(ckey: str, number_of_rounds: int, only_played: bool = False
 ## Why do it this convoluted way? It's easier to write code around it this way. I think.
 async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = False) -> Generator[tuple[RoundData, Optional[list[Union[bytes, str]]]], None, None]:
     """This is a generator that yields a tuple of the `RoundData` and list of round logs, for all rounds in `rounds`
-    
+
     if `output_bytes` is true, the function will instead yield `bytes` instead of `str`
-    
+
     On 404, the list will be None instead"""
     async with ClientSession() as session:
         tasks = []
@@ -75,10 +75,7 @@ async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = F
             if not response:
                 yield round, None
             else:
-                if output_bytes:
-                    yield round, response.split(b"\r\n")
-                else:
-                    yield round, response.split("\r\n")
+                yield round, response.split(b"\r\n")
 
         await asyncio.gather(*tasks)
 
@@ -140,7 +137,7 @@ async def default_async(ckey: str, number_of_rounds: int, output_path: str, only
 
     with open(output_path, 'wb') as f:
         ckey = ckey.encode("utf-8")
-        pbar = tqdm(get_say_logs_async(rounds, output_bytes = True), total = number_of_rounds)
+        pbar = tqdm(get_say_logs_async(rounds), total = number_of_rounds)
         async for round, logs in pbar:
             # Type hints
             round: RoundData
