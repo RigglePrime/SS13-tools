@@ -26,6 +26,7 @@ print(f"""Welcome to {colour}trainer suite{Fore.RESET}! What would you like to d
 {Fore.GREEN}2.{Fore.RESET} Run slur detection
 {Fore.GREEN}3.{Fore.RESET} All of the above
 {Fore.GREEN}4.{Fore.RESET} Run slur search on a range of rounds
+{Fore.GREEN}5.{Fore.RESET} Search the CentCom ban database for multiple ckeys at once
 """, end='')
 choice = input() # Colorama and input don't mix well :/
 
@@ -41,6 +42,9 @@ try:
         slurs.print_results()
     elif choice == "4":
         print("Not yet implemented")
+    elif choice == "5":
+        import centcom_query
+        centcom_query.main()
     else:
         print("Invalid choice")
 except KeyboardInterrupt:

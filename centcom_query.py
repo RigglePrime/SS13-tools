@@ -35,20 +35,24 @@ class BanData:
     banAttributes: Optional[list[str]] = None
     active: bool = False
 
-try:
-    print("Paste ckeys to search for, one per line (press CTRL + C to stop)\n")
-    while True:
-        ckey = input()
-        r = req.get("https://centcom.melonmesa.com/ban/search/" + url_escape(ckey))
-        ban_data: list[BanData] = r.json(object_hook = lambda d: BanData(**d))
+def main():
+    try:
+        print("Paste ckeys to search for, one per line (press CTRL + C to stop)\n")
+        while True:
+            ckey = input()
+            r = req.get("https://centcom.melonmesa.com/ban/search/" + url_escape(ckey))
+            ban_data: list[BanData] = r.json(object_hook = lambda d: BanData(**d))
 
-        print(f"{ckey}:\n")
-        if len(ban_data) == 0:
-            print("No data")
-        for ban in ban_data:
-            print(ban.bannedOn)
-            print(ban.bannedBy)
-            print(ban.reason)
-        print("=========================\n")
-except KeyboardInterrupt:
-    print("Bye!")
+            print(f"{ckey}:\n")
+            if len(ban_data) == 0:
+                print("No data")
+            for ban in ban_data:
+                print(ban.bannedOn)
+                print(ban.bannedBy)
+                print(ban.reason)
+            print("=========================\n")
+    except KeyboardInterrupt:
+        print("Bye!")
+
+if __name__ == "__main__":
+    main()
