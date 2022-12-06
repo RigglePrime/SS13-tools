@@ -1,5 +1,6 @@
 #!/env/python3
 
+from datetime import datetime
 import sys
 from typing import Optional, Iterable, Union, Generator
 
@@ -12,8 +13,9 @@ from tqdm.asyncio import tqdm
 from colorama import Fore, Style, init as colorama_init
 
 SCRUBBY_API_URL = "https://scrubby.melonmesa.com/ckey/{ckey}/receipts"
-GAME_TXT_URL = "https://tgstation13.org/parsed-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/game.txt"
-GAME_TXT_ADMIN_URL = "https://tgstation13.org/raw-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/game.txt"
+SCRUBBY_ROUND_SOURCE_URL = "https://scrubby.melonmesa.com/round/{round_id}/source"
+GAME_TXT_URL = "https://tgstation13.org/parsed-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/{file_name}"
+GAME_TXT_ADMIN_URL = "https://tgstation13.org/raw-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/{file_name}"
 DEFAULT_NUMBER_OF_ROUNDS = 150
 DEFAULT_OUTPUT_PATH = "{ckey}.txt"
 DEFAULT_ONLY_PLAYED = False
@@ -46,7 +48,9 @@ async def get_rounds(ckey: str, number_of_rounds: int, only_played: bool = False
 
 # Why do it this convoluted way? It's easier to write code around it this way. I think.
 # output_bytes is here because removing it is considered a breaking change and I'd have to increment the major version number
-async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = False, tgforums_cookie: str = "", user_agent: str = "CandyStalker") -> Generator[tuple[RoundData, Optional[list[Union[bytes, str]]]], None, None]:
+async def get_logs_async(rounds: Iterable[RoundData], files: list[str] = ["game.log"], \
+        output_bytes: bool = False, tgforums_cookie: str = "", user_agent: str = "Riggle's admin tools") \
+            -> Generator[tuple[RoundData, Optional[list[Union[bytes, str]]]], None, None]:
     """This is a generator that yields a tuple of the `RoundData` and list of round logs, for all rounds in `rounds`
 
     if `output_bytes` is true, the function will instead yield `bytes` instead of `str`
@@ -58,17 +62,21 @@ async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = F
 
         async def fetch(round: RoundData):
             round.timestamp = isoparse(round.timestamp)
-            # Edge case warning: if we go beyond the year 2017 or so, the logs path changes. I don't expect anyone to go that far so I won't be doing anything about it
-            async with session.get(url_to_use.format(
-                server = round.server.lower().replace('bagil','basil'),
-                year = str(round.timestamp.year),
-                month = f"{round.timestamp.month:02d}",
-                day = f"{round.timestamp.day:02d}",
-                round_id = round.roundID
-            )) as r:
-                if not r.ok:
-                    return round, None
-                return round, await r.read()
+            responses = []
+            for file in files:
+                # Edge case warning: if we go beyond the year 2017 or so, the logs path changes.
+                # I don't expect anyone to go that far so I won't be doing anything about it
+                async with session.get(url_to_use.format(
+                    server = round.server.lower().replace('bagil','basil'),
+                    year = str(round.timestamp.year),
+                    month = f"{round.timestamp.month:02d}",
+                    day = f"{round.timestamp.day:02d}",
+                    round_id = round.roundID,
+                    file_name = file)) as r:
+                    if not r.ok:
+                        continue
+                    responses.append(await r.read())
+                return round, b'\r\n'.join(responses)
 
         if tgforums_cookie and user_agent:
             url_to_use = GAME_TXT_ADMIN_URL
@@ -82,13 +90,50 @@ async def get_say_logs_async(rounds: Iterable[RoundData], output_bytes: bool = F
 
         for task in tasks:
             round, response = await task
-            response: str
+            response: bytes
             if not response:
                 yield round, None
             else:
                 yield round, response.split(b"\r\n")
 
         await asyncio.gather(*tasks)
+
+async def get_round_range(start_round: int, end_round: int, output_path: str = "rounds.log", files: list[str] = ["game.log"],\
+    tgforums_cookie: str = "", user_agent: str = "Riggle's admin tools"):
+    """Gets a range of rounds from the servers and writes them to a file"""
+    round_ids = range(start_round, end_round + 1)
+    
+    rounds = []
+    async with ClientSession(cookies={"tgforums_sid": tgforums_cookie}, headers={"User-Agent": user_agent}) as session:
+        tasks = [asyncio.ensure_future(fetch_one(round_id)) for round_id in round_ids]
+        async def fetch_one(round_id):
+            async with session.get(SCRUBBY_ROUND_SOURCE_URL.format(round_id=round_id), allow_redirects=False) as r:
+                if not r.ok:
+                    print(f"Round ID {round_id} returned {r.status}, skipping")
+                    return None
+                assert r.status == 302
+                # At this point I can't be bothered to refactor anything, sorry
+                # You will have to bear with me and my bad code
+                loc = r.headers['Location']
+                # The numbers here are just lengths of the strings. Find returns the start of the argument str
+                # and we need to jump to the end of it
+                timestamp = datetime.strptime(loc[loc.find("logs/")+5:loc.find("/round")], "%y/%d/%m")
+                server_name = loc[loc.find("parsed-logs/")+12:loc.find("/data/logs")]
+                return RoundData(round_id, timestamp=timestamp, server=server_name)
+
+        for task in tasks:
+            value = await task
+            if value:
+                rounds.append(value)
+        await asyncio.gather(*tasks)
+
+    with open(output_path, 'wb') as f:
+        pbar = tqdm(get_logs_async(rounds, files=files, tgforums_cookie=tgforums_cookie, user_agent=user_agent))
+        async for round, logs in pbar:
+            round: RoundData
+            pbar.set_description(f"Getting ID {round.roundID} on {round.server}")
+            for line in logs:
+                f.write(format_line_bytes(line, round))
 
 def get_lines_with_ckey(ckey: Union[str, bytes], lines: Iterable[Union[str, bytes]]):
     """Filters lines without the specified ckey out. Make sure that `ckey` and members of `lines` are of the same type"""
@@ -153,7 +198,7 @@ async def default_async(ckey: str, number_of_rounds: int, output_path: str, only
 
     with open(output_path, 'wb') as f:
         ckey = ckey.encode("utf-8")
-        pbar = tqdm(get_say_logs_async(rounds), total = number_of_rounds)
+        pbar = tqdm(get_logs_async(rounds))
         async for round, logs in pbar:
             # Type hints
             round: RoundData

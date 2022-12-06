@@ -25,6 +25,7 @@ print(f"""Welcome to {colour}trainer suite{Fore.RESET}! What would you like to d
 {Fore.GREEN}1.{Fore.RESET} Download someone's say history
 {Fore.GREEN}2.{Fore.RESET} Run slur detection
 {Fore.GREEN}3.{Fore.RESET} All of the above
+{Fore.GREEN}4.{Fore.RESET} Run slur search on a range of rounds
 """, end='')
 choice = input() # Colorama and input don't mix well :/
 
@@ -38,6 +39,8 @@ try:
         print()
         slurs = SlurDetector.from_file(output_path)
         slurs.print_results()
+    elif choice == "4":
+        print("Not yet implemented")
     else:
         print("Invalid choice")
 except KeyboardInterrupt:
