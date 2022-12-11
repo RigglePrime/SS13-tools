@@ -1,4 +1,5 @@
 from .SlurFile import SLURS
+from .word_detection import detect_word
 
 from colorama import Fore
 from typing import Annotated, Iterable
@@ -28,16 +29,9 @@ class SlurDetector:
     def process_line(self, text: str) -> None:
         """Processes one line and detects possible slurs"""
         for slur in SLURS:
-            if self.detect_word(slur, text):
+            if detect_word(slur, text):
                 self.slur_lines.append((text.strip(), slur))
                 self.tally[slur] += 1
-
-    @staticmethod
-    def detect_word(word: str, text: str) -> bool:
-        """Detects if the specified word is in the text"""
-        # TODO: improve functionality
-        # TODO: add Snowflake stemmer maybe?
-        return True if word in text else False
 
     def print_tally(self):
         """Prints the slurs according to the tally"""
