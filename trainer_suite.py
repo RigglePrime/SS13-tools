@@ -43,7 +43,7 @@ try:
     elif choice == "4":
         print("Not yet implemented")
     elif choice == "5":
-        from CentCom import __main__  # noqa: F401
+        from centcom import __main__  # noqa: F401
     else:
         print("Invalid choice")
 except KeyboardInterrupt:
