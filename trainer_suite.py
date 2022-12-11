@@ -8,7 +8,7 @@ from colorama import Fore, Style, init as colorama_init
 colorama_init()
 
 try:
-    from slur_detector import SlurDetector
+    from slur_detector.slur_detector import SlurDetector
 except FileNotFoundError:
     # Bit of a hack but it does the job
     print(traceback.format_exc().replace("FileNotFoundError:", f"{Fore.RED}FileNotFoundError:") + Fore.RESET)
