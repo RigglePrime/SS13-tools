@@ -9,7 +9,7 @@ colorama_init()
 
 try:
     from slur_detector import SlurDetector
-except FileNotFoundError as e:
+except FileNotFoundError:
     # Bit of a hack but it does the job
     print(traceback.format_exc().replace("FileNotFoundError:", f"{Fore.RED}FileNotFoundError:") + Fore.RESET)
     print(f"{Style.DIM}Press return to exit...{Style.RESET_ALL}", end='')
@@ -28,7 +28,7 @@ print(f"""Welcome to {colour}trainer suite{Fore.RESET}! What would you like to d
 {Fore.GREEN}4.{Fore.RESET} Run slur search on a range of rounds
 {Fore.GREEN}5.{Fore.RESET} Search the CentCom ban database for multiple ckeys at once
 """, end='')
-choice = input() # Colorama and input don't mix well :/
+choice = input()  # Colorama and input don't mix well :/
 
 try:
     if choice == "1":
@@ -43,13 +43,12 @@ try:
     elif choice == "4":
         print("Not yet implemented")
     elif choice == "5":
-        import centcom_query
-        centcom_query.main()
+        from CentCom import __main__  # noqa: F401
     else:
         print("Invalid choice")
 except KeyboardInterrupt:
     exit(0)
-except:
+except Exception:
     traceback.print_exc()
 
 print(f"\n{Style.DIM}Press return to exit...{Style.RESET_ALL}", end='')
