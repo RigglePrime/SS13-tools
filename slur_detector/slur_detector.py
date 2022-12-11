@@ -59,3 +59,7 @@ class SlurDetector:
     def from_file(target_file: str):
         with open(target_file, "r", encoding="utf-8") as f:
             return SlurDetector(f.readlines())
+
+
+# Cleanup
+del Annotated, Iterable
