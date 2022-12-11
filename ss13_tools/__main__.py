@@ -4,8 +4,8 @@ import traceback
 from random import choice
 from candy_stalker import interactive
 
-from colorama import Fore, Style, init as colorama_init
-colorama_init()
+from colorama import Fore, Style
+
 
 try:
     from slur_detector import SlurDetector
@@ -20,7 +20,7 @@ colour = choice([Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLUE_EX, Fore.LIGHT
                 Fore.LIGHTGREEN_EX, Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX,
                 Fore.LIGHTYELLOW_EX, Fore.MAGENTA, Fore.RED, Fore.WHITE, Fore.YELLOW])
 
-print(f"""Welcome to {colour}trainer suite{Fore.RESET}! What would you like to do?
+print(f"""Welcome to {colour}ss13-tools{Fore.RESET}! What would you like to do?
 
 {Fore.GREEN}1.{Fore.RESET} Download someone's say history
 {Fore.GREEN}2.{Fore.RESET} Run slur detection
@@ -34,7 +34,7 @@ try:
     if choice == "1":
         interactive()
     elif choice == "2":
-        SlurDetector.from_file(input("Which file? ")).print_results()
+        from .slur_detector import __main__
     elif choice == "3":
         ckey, number_of_rounds, output_path, only_played = interactive()
         print()
@@ -43,7 +43,7 @@ try:
     elif choice == "4":
         print("Not yet implemented")
     elif choice == "5":
-        from centcom import __main__  # noqa: F401
+        from .centcom import __main__  # noqa: F401
     else:
         print("Invalid choice")
 except KeyboardInterrupt:
