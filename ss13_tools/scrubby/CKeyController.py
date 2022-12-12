@@ -8,7 +8,7 @@ from ..constants import USER_AGENT
 
 
 async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[RoundData]:
-    """Calls the scrubby API and retrieves the specified number of rounds  """
+    """Calls the scrubby API and retrieves the specified number of rounds"""
     data = {
         "ckey": ckey,
         "startingRound": 999999,  # that's how scrubby does it, sue Bobbah, not me
