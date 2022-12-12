@@ -19,3 +19,6 @@ pylint = "^2.15.8"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.'FORMAT']
+max-line-length=127
