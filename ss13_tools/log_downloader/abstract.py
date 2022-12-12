@@ -1,3 +1,5 @@
+"""Abstract implementation of a log downloader"""
+
 import asyncio
 from abc import ABC, abstractmethod
 from typing import Generator, Iterable, Annotated, Union
@@ -22,20 +24,20 @@ class LogDownloader(ABC):
     rounds: Annotated[list[RoundData], "The list of rounds to download"] = []
 
     @abstractmethod
-    def get_rounds(self):
-        pass
+    def get_rounds(self) -> list[RoundData]:
+        """Gets the specified rounds we want to download"""
 
     @abstractmethod
     def get_log_links(self, round_data: RoundData) -> Iterable[str]:
-        pass
+        """Gets the links of logs we want to download"""
 
     @abstractmethod
     def filter_lines(self, logs):
-        pass
+        """Filters lines from a log file, returning only the ones we want"""
 
     @abstractmethod
     def interactive(self) -> None:
-        pass
+        """Interactively set variables"""
 
     async def get_logs_async(self, rounds: Iterable[RoundData])\
             -> Generator[tuple[RoundData, Union[list[bytes], None]], None, None]:
@@ -49,62 +51,65 @@ class LogDownloader(ABC):
             tasks = []
             # url_to_use = GAME_TXT_URL
 
-            async def fetch(round: RoundData):
-                round.timestamp = isoparse(round.timestamp)
+            async def fetch(round_data: RoundData):
+                round_data.timestamp = isoparse(round_data.timestamp)
                 responses = []
-                for link in self.get_log_links(round):
+                for link in self.get_log_links(round_data):
                     # Edge case warning: if we go beyond the year 2017 or so, the logs path changes.
                     # I don't expect anyone to go that far so I won't be doing anything about it
                     async with session.get(link) as r:
                         if not r.ok:
                             continue
                         responses.append(await r.read())
-                    return round, b'\r\n'.join(responses)
+                    return round_data, b'\r\n'.join(responses)
 
             # if self.tgforums_cookie and self.user_agent:
             #     url_to_use = GAME_TXT_ADMIN_URL
-            #     round, response = await fetch(rounds[0])
+            #     round_data, response = await fetch(rounds[0])
             #     if not response:
             #         print(f"{Fore.RED}ERROR: The cookie and user agent were set but invalid,",
             #               f"reverting to normal logs.{Fore.RESET}")
             #         url_to_use = GAME_TXT_URL
 
-            for round in rounds:
-                tasks.append(asyncio.ensure_future(fetch(round=round)))
+            for round_data in rounds:
+                tasks.append(asyncio.ensure_future(fetch(round_data=round_data)))
 
             for task in tasks:
-                round, response = await task
+                round_data, response = await task
                 response: bytes
                 if not response:
-                    yield round, None
+                    yield round_data, None
                 else:
-                    yield round, response.split(b"\r\n")
+                    yield round_data, response.split(b"\r\n")
 
             await asyncio.gather(*tasks)
 
     @staticmethod
-    def format_line_bytes(line: bytes, round: RoundData) -> list[str]:
+    def format_line_bytes(line: bytes, round_data: RoundData) -> list[str]:
         """Takes the raw line and formats it to `{server_name} {round_id} | {unmodified line}`"""
-        return round.server.encode("utf-8") + b" " + str(round.roundID).encode("utf-8") + b" | " + line + b"\n"
+        return round_data.server.encode("utf-8") + b" " + str(round_data.roundID).encode("utf-8") + b" | " + line + b"\n"
 
     async def process_and_write(self, output_path: str = None):
+        """In progress"""
         output_path = output_path or self.output_path
-        with open(output_path, 'wb') as f:
+        with open(output_path, 'wb') as file:
             pbar = tqdm(self.get_logs_async(self.rounds))
-            async for round, logs in pbar:
+            async for round_data, logs in pbar:
                 # Type hints
-                round: RoundData
+                round_data: RoundData
                 logs: list[bytes]
 
-                pbar.set_description(f"Getting ID {round.roundID} on {round.server}")
+                pbar.set_description(f"Getting ID {round_data.roundID} on {round_data.server}")
                 if not logs:
                     pbar.clear()
-                    print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not find round {round.roundID} on {round.server}")
+                    print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not find round " +
+                          f"{round_data.roundID} on {round_data.server}")
                     pbar.display()
                     continue
-                if round.roundStartSuicide:
+                if round_data.roundStartSuicide:
                     pbar.clear()
-                    print(f"{Fore.MAGENTA}WARNING:{Fore.RESET} round start suicide in round {round.roundID} on {round.server}")
+                    print(f"{Fore.MAGENTA}WARNING:{Fore.RESET} round start suicide " +
+                          f"in round {round_data.roundID} on {round_data.server}")
                     pbar.display()
                 for line in self.filter_lines(logs):
-                    f.write(self.format_line_bytes(line, round))
+                    file.write(self.format_line_bytes(line, round_data))

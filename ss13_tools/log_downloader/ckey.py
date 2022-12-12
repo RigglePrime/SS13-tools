@@ -1,13 +1,14 @@
-from .abstract import LogDownloader
-from .constants import DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_OUTPUT_PATH
-from byond import canonicalize
-
 from typing import Annotated, Optional
 
 from colorama import Fore, Style
 
+from .abstract import LogDownloader
+from .constants import DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_OUTPUT_PATH
+from ..byond import canonicalize
+
 
 class CkeyLogDownloader(LogDownloader):
+    """Downloads logs in which a ckey was present"""
     ckey: Annotated[Optional[str], "Canonical form of user's key, can be None"]
     only_played: Annotated[bool, "If ckey is set dictates if the log downloader only counts player rounds"]\
         = DEFAULT_ONLY_PLAYED
@@ -26,7 +27,7 @@ class CkeyLogDownloader(LogDownloader):
         Sets the correct variables automatically.`"""
         self.ckey = input("CKEY: ").strip()
         while True:
-            number_of_rounds = input("How many rounds? [%d] " % DEFAULT_NUMBER_OF_ROUNDS)
+            number_of_rounds = input(f"How many rounds? [{DEFAULT_NUMBER_OF_ROUNDS}] ")
             try:
                 if not number_of_rounds.strip():
                     break
