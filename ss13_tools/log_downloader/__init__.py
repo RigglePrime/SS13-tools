@@ -1,12 +1,12 @@
+import sys
+import asyncio
+
+from colorama import init as colorama_init
+
 from .__version__ import __version__
 from .ckey import CkeyLogDownloader
 from .round import RoundLogDownloader
-from scrubby import RoundData
-
-import sys
-
-from colorama import init as colorama_init
-import asyncio
+from ..scrubby import RoundData
 
 colorama_init()
 
