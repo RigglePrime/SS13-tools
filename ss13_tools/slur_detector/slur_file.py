@@ -1,11 +1,11 @@
-from .constants import SLURS_FILE
-
 import os
 
 from colorama import Fore
 
+from .constants import SLURS_FILE
+
 if not os.path.exists(SLURS_FILE):
-    with open(SLURS_FILE, "w") as f:
+    with open(SLURS_FILE, "w", encoding='utf-8') as f:
         f.write("### Slurs file\n### One slur per line, # to ignore the line\n### The program will also skip empty lines\n\n")
     raise FileNotFoundError("Slurs file does not exist. Creating it for you. Please add some words to it.")
 

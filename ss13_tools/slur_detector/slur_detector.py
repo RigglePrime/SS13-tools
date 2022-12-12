@@ -3,7 +3,7 @@ from typing import Annotated, Iterable
 
 from colorama import Fore
 
-from .SlurFile import SLURS
+from .slur_file import SLURS
 from .word_detection import detect_word
 
 
