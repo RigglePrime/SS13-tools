@@ -1,6 +1,6 @@
 from .abstract_downloader import LogDownloader
 from .constants import DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_OUTPUT_PATH
-from byond_tools import canonicalize
+from byond import canonicalize
 
 from typing import Annotated, Optional
 

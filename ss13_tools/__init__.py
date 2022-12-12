@@ -9,6 +9,6 @@ version = __version__
 __all__ = [
     'slur_detector',
     'centcom',
-    'byond_tools',
+    'byond',
     'log_downloader'
 ]

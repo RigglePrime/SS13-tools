@@ -1,6 +1,6 @@
 from .ban_types import BanData
 from .constants import CENTCOM_API_URL
-from byond_tools import canonicalize
+from byond import canonicalize
 
 import requests as req
 
