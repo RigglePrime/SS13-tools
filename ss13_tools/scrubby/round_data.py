@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # Enable type hinting for static methods
 from __future__ import annotations
 import json
@@ -25,4 +26,5 @@ class RoundData:
 
     @staticmethod
     async def from_scrubby_response_async(r: ClientResponse) -> list[RoundData]:
+        """Converts a Scrubby JSON response directly to a Python RoundData object"""
         return json.loads(await r.text(), object_hook=lambda d: RoundData(**d))

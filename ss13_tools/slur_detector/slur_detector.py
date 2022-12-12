@@ -1,8 +1,10 @@
-from .SlurFile import SLURS
-from .word_detection import detect_word
+from __future__ import annotations
+from typing import Annotated, Iterable
 
 from colorama import Fore
-from typing import Annotated, Iterable
+
+from .SlurFile import SLURS
+from .word_detection import detect_word
 
 
 class SlurDetector:
@@ -16,6 +18,7 @@ class SlurDetector:
         self.scan_text(text)
 
     def reset_tally(self):
+        """Resets the tally to 0"""
         self.tally = {}
         for slur in SLURS:
             self.tally[slur] = 0
@@ -56,10 +59,7 @@ class SlurDetector:
             print(slur_line.replace(slur, f"{Fore.RED}{slur}{Fore.RESET}"))
 
     @staticmethod
-    def from_file(target_file: str):
-        with open(target_file, "r", encoding="utf-8") as f:
-            return SlurDetector(f.readlines())
-
-
-# Cleanup
-del Annotated, Iterable
+    def from_file(target_file: str) -> SlurDetector:
+        """Opens the path and scans the contents with a new SlurDetector"""
+        with open(target_file, "r", encoding="utf-8") as file:
+            return SlurDetector(file.readlines())
