@@ -1,6 +1,6 @@
 from .__version__ import __version__
-from .ckey_log_downloader import CkeyLogDownloader
-from .round_log_downloader import RoundLogDownloader
+from .ckey import CkeyLogDownloader
+from .round import RoundLogDownloader
 from scrubby import RoundData
 
 import sys

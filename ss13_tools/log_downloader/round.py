@@ -1,4 +1,4 @@
-from .abstract_downloader import LogDownloader
+from .abstract import LogDownloader
 
 
 class RoundLogDownloader(LogDownloader):
