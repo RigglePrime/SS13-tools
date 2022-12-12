@@ -1,15 +1,15 @@
-from .constants import DEFAULT_OUTPUT_PATH
-from ..constants import USER_AGENT
-from scrubby import RoundData
-
-from abc import ABC, abstractclassmethod
+import asyncio
+from abc import ABC, abstractmethod
 from typing import Generator, Iterable, Annotated, Union
 
 from aiohttp import ClientSession
-import asyncio
 from colorama import Fore
 from dateutil.parser import isoparse
 from tqdm.asyncio import tqdm
+
+from .constants import DEFAULT_OUTPUT_PATH
+from ..constants import USER_AGENT
+from ..scrubby import RoundData
 
 
 class LogDownloader(ABC):
@@ -21,19 +21,19 @@ class LogDownloader(ABC):
     output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_OUTPUT_PATH
     rounds: Annotated[list[RoundData], "The list of rounds to download"] = []
 
-    @abstractclassmethod
+    @abstractmethod
     def get_rounds(self):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def get_log_links(self, round_data: RoundData) -> Iterable[str]:
         pass
 
-    @abstractclassmethod
-    def filter_lines(self):
+    @abstractmethod
+    def filter_lines(self, logs):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def interactive(self) -> None:
         pass
 
@@ -82,6 +82,7 @@ class LogDownloader(ABC):
 
             await asyncio.gather(*tasks)
 
+    @staticmethod
     def format_line_bytes(line: bytes, round: RoundData) -> list[str]:
         """Takes the raw line and formats it to `{server_name} {round_id} | {unmodified line}`"""
         return round.server.encode("utf-8") + b" " + str(round.roundID).encode("utf-8") + b" | " + line + b"\n"
