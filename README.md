@@ -1,18 +1,12 @@
-# Admin tools
+# SS13 tools
 
-A set of tools made for the administration of the /tg/ SS13 codebase. Hopefully more tools to come.
+A set of tools to help with automating tasks for the /tg/ branch of SS13.
 
-Made for Python 3.9.7
+Made for Python 3.9
 
-## For all admins
+## Contents
 
-- `centcom_query` for querying the global ban database
-
-## For admin trainers
-
-- `trainer_suite.py` combines slur detection with automatic log downloading
-- `candy_stalker.py` automatically gets soemone's round say logs, works only on /tg/station13, as it uses Scrubby and public logs
-- `slur_detector.py` scans some text and determines if any specified slurs are present
+TODO
 
 ## Downloading
 
