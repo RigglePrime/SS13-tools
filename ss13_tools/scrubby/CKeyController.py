@@ -1,8 +1,10 @@
+"""Wrapper for the CKeyController on Scrubby"""
+# pylint: disable=invalid-name
+from aiohttp import ClientSession
+
 from .round_data import RoundData
 from .constants import PLAYER_ROUNDS_URL
 from ..constants import USER_AGENT
-
-from aiohttp import ClientSession
 
 
 async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[RoundData]:
@@ -28,9 +30,9 @@ async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = Fals
             rounds = await RoundData.from_scrubby_response_async(r)
             if not rounds:
                 return played_in
-            for round in rounds:
-                if round.playedInRound:
-                    played_in.append(round)
+            for round_data in rounds:
+                if round_data.playedInRound:
+                    played_in.append(round_data)
                 if len(played_in) == number_of_rounds:
                     return played_in
             data["startingRound"] = rounds[-1].roundID
