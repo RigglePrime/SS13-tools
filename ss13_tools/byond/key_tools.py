@@ -22,6 +22,6 @@ def user_exists(key: str) -> bool:
     # and hoping it doesn't break one day.
     if not resp.ok:
         raise req.ConnectionError(f"Got {resp.status_code} instead of 200")
-    if "not found" not in resp.text and "Favorite Games" in resp.text:
+    if "not found" not in resp.text and '<span>Joined: <span class="info_text">' in resp.text:
         return True
     return False
