@@ -1,5 +1,6 @@
-from .key_tools import canonicalize
+from .key_tools import canonicalize, user_exists
 
 __all__ = [
-    'canonicalize'
+    'canonicalize',
+    'user_exists'
 ]
