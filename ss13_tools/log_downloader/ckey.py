@@ -1,10 +1,11 @@
-from typing import Annotated, Optional
+from typing import Annotated, Iterable, Optional
 
 from colorama import Fore, Style
 
 from .abstract import LogDownloader
-from .constants import DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_OUTPUT_PATH
+from .constants import DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_CKEY_OUTPUT_PATH
 from ..byond import canonicalize
+from .. import scrubby
 
 
 class CkeyLogDownloader(LogDownloader):
@@ -13,7 +14,7 @@ class CkeyLogDownloader(LogDownloader):
     only_played: Annotated[bool, "If ckey is set dictates if the log downloader only counts player rounds"]\
         = DEFAULT_ONLY_PLAYED
     number_of_rounds: Annotated[int, "The number of rounds to download"] = DEFAULT_NUMBER_OF_ROUNDS
-    output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_OUTPUT_PATH.format(ckey="output")
+    output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_CKEY_OUTPUT_PATH.format(ckey="output")
 
     def __init__(self, key: str = None, only_played: bool = DEFAULT_ONLY_PLAYED,
                  number_of_rounds: int = DEFAULT_NUMBER_OF_ROUNDS, output_path: str = None) -> None:
@@ -22,22 +23,33 @@ class CkeyLogDownloader(LogDownloader):
         self.number_of_rounds = number_of_rounds
         self.output_path = output_path.format(ckey=self.ckey or "output")
 
-    def interactive(self) -> None:
-        """Run interactive mode. Returns the choices and runs default behaviour
-        Sets the correct variables automatically.`"""
-        self.ckey = input("CKEY: ").strip()
+    async def update_round_list(self) -> None:
+        self.rounds = await scrubby.GetReceipts(self.ckey, self.number_of_rounds, self.only_played)
+
+    def filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
+        for log in logs:
+            if self.ckey.lower() in log.lower():
+                yield log
+
+    @staticmethod
+    def interactive() -> LogDownloader:
+        ckey = input("CKEY: ").strip()
         while True:
             number_of_rounds = input(f"How many rounds? [{DEFAULT_NUMBER_OF_ROUNDS}] ")
             try:
                 if not number_of_rounds.strip():
                     break
-                self.number_of_rounds = int(number_of_rounds) if number_of_rounds.isdigit() else int(number_of_rounds, 16)
+                number_of_rounds = int(number_of_rounds) if number_of_rounds.isdigit() else int(number_of_rounds, 16)
                 break
             except ValueError:
                 print(f"{Fore.RED}Rounds should be an int in base 10 or 16{Fore.RESET}")
         print(f"Do you want to get only rounds in which they played? [y/{Style.BRIGHT}N{Style.RESET_ALL}] ", end="")
         only_played = input()  # Input and colorama don't mix
         if only_played:
-            self.only_played = True if only_played.lower() == 'y' or 'yes' or 'true' or '1' else False
-        output_path = input(f"Where should I write the file? [{DEFAULT_OUTPUT_PATH}] ")
-        self.output_path = output_path or DEFAULT_OUTPUT_PATH.format(ckey=self.ckey)
+            only_played = only_played.lower() in ['y', 'yes', 'true', '1']
+        output_path = input(f"Where should I write the file? [{DEFAULT_CKEY_OUTPUT_PATH}] ")
+        output_path = output_path or DEFAULT_CKEY_OUTPUT_PATH.format(ckey=ckey)
+        downloader = CkeyLogDownloader(key=ckey, only_played=only_played,
+                                       number_of_rounds=number_of_rounds, output_path=output_path)
+        # self.authenticate_interactive()
+        return downloader
