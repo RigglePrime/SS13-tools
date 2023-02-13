@@ -37,16 +37,17 @@ choice = input()  # Colorama and input don't mix well :/
 try:
     if choice == "1":
         downloader = CkeyLogDownloader.interactive()
+        asyncio.run(downloader.process_and_write())
     elif choice == "2":
         from .slur_detector import __main__
     elif choice == "3":
         downloader = CkeyLogDownloader.interactive()
+        asyncio.run(downloader.process_and_write())
         print()  # Newline
         slurs = SlurDetector.from_file(downloader.output_path)
         slurs.print_results()
     elif choice == "4":
         downloader = RoundLogDownloader.interactive()
-        downloader.interactive()
         asyncio.run(downloader.process_and_write())
     elif choice == "5":
         downloader = RoundLogDownloader.interactive()
