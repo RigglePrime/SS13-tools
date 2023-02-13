@@ -74,10 +74,10 @@ class LogDownloader(ABC):
                 async for link in self.get_log_links():
                     # Edge case warning: if we go beyond the year 2017 or so, the logs path changes.
                     # I don't expect anyone to go that far so I won't be doing anything about it
-                    async with session.get(link) as r:
-                        if not r.ok:
+                    async with session.get(link) as rsp:
+                        if not rsp.ok:
                             continue
-                        responses.append(await r.read())
+                        responses.append(await rsp.read())
                     return round_data, b'\r\n'.join(responses)
 
             for round_data in rounds:

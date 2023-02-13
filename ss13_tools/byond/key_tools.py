@@ -36,10 +36,10 @@ async def user_exists_many(keys: list[str]) -> Generator[bool, None, None]:
     tasks = []
     async with ClientSession(headers={"User-Agent": USER_AGENT}) as session:
         async def fetch_one(ckey: str):
-            async with session.get(BYOND_MEMBERS_URL.format(ckey=ckey)) as r:
-                if not r.ok:
-                    print(f"Request to {BYOND_MEMBERS_URL} returned status {r.status} instead of ok", file=sys.stderr)
-                return await r.read()
+            async with session.get(BYOND_MEMBERS_URL.format(ckey=ckey)) as rsp:
+                if not rsp.ok:
+                    print(f"Request to {BYOND_MEMBERS_URL} returned status {rsp.status} instead of ok", file=sys.stderr)
+                return await rsp.read()
         for key in keys:
             ckey = canonicalize(key)
             # canonicalize should make it url safe but just in case let's also use quote

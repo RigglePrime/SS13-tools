@@ -7,6 +7,10 @@ from .constants import PLAYER_ROUNDS_URL
 from ..constants import USER_AGENT
 
 
+class ScrubbyException(Exception):
+    """Wuh oh, scrubby died"""
+
+
 async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[RoundData]:
     """Calls the scrubby API and retrieves the specified number of rounds"""
     data = {
@@ -19,9 +23,9 @@ async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = Fals
     async with ClientSession(headers={"User-Agent": USER_AGENT}) as session:
         r = await session.post(PLAYER_ROUNDS_URL.format(ckey=ckey), json=data)
         if not r.ok:
-            raise Exception("Scrubby errored with code " + str(r.status))
+            raise ScrubbyException("Scrubby errored with code " + str(r.status))
         if await r.read() == b"[]":
-            raise Exception("CKEY could not be found")
+            raise ScrubbyException("CKEY could not be found")
         if not only_played:
             return await RoundData.from_scrubby_response_async(r)
 
