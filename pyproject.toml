@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "SS13-tools"
-version = "0.1.0"
+version = "0.7.0"
 description = "Python toolchain for SS13"
 authors = ["RigglePrime <27156122+RigglePrime@users.noreply.github.com>", "tattle <66640614+dragomagol@users.noreply.github.com>"]
 
