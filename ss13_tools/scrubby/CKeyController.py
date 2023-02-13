@@ -21,17 +21,17 @@ async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = Fals
     # ckey is specified twice, but it seems like the url ckey does not matter at all
     # https://github.com/bobbahbrown/ScrubbyWebPublic/blob/d71ad368e156f56524bf7ec323685ca29af35baa/Controllers/CKeyController.cs#L78
     async with ClientSession(headers={"User-Agent": USER_AGENT}) as session:
-        r = await session.post(PLAYER_ROUNDS_URL.format(ckey=ckey), json=data)
-        if not r.ok:
-            raise ScrubbyException("Scrubby errored with code " + str(r.status))
-        if await r.read() == b"[]":
+        resp = await session.post(PLAYER_ROUNDS_URL.format(ckey=ckey), json=data)
+        if not resp.ok:
+            raise ScrubbyException("Scrubby errored with code " + str(resp.status))
+        if await resp.read() == b"[]":
             raise ScrubbyException("CKEY could not be found")
         if not only_played:
-            return await RoundData.from_scrubby_response_async(r)
+            return await RoundData.from_scrubby_response_async(resp)
 
         played_in = []
         while True:
-            rounds = await RoundData.from_scrubby_response_async(r)
+            rounds = await RoundData.from_scrubby_response_async(resp)
             if not rounds:
                 return played_in
             for round_data in rounds:
@@ -40,4 +40,4 @@ async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = Fals
                 if len(played_in) == number_of_rounds:
                     return played_in
             data["startingRound"] = rounds[-1].roundID
-            r = await session.post(PLAYER_ROUNDS_URL.format(ckey=ckey), json=data)
+            resp = await session.post(PLAYER_ROUNDS_URL.format(ckey=ckey), json=data)
