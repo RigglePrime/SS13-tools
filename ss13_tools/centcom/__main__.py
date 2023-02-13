@@ -14,7 +14,7 @@ try:
             print(ban.sourceName, ban.sourceRoleplayLevel)
             print(f"Banned on {ban.bannedOn} by {ban.bannedBy}")
             print("With reason:", ban.reason)
-            print("Expires: ", ban.expires or "never", "and is", "active" if ban.active else "not active")
+            print("Expires:", ban.expires or "never", "and is", "active" if ban.active else "not active")
         print("=========================\n")
 except KeyboardInterrupt:
     print("Bye!")
