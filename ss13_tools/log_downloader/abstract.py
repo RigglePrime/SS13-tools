@@ -1,5 +1,5 @@
 """Abstract implementation of a log downloader"""
-
+from __future__ import annotations
 import asyncio
 from abc import ABC, abstractmethod
 from typing import Generator, Iterable, Annotated, Union
@@ -9,7 +9,7 @@ from colorama import Fore
 from dateutil.parser import isoparse
 from tqdm.asyncio import tqdm
 
-from .constants import DEFAULT_OUTPUT_PATH
+from .constants import DEFAULT_OUTPUT_PATH, GAME_TXT_URL, GAME_TXT_ADMIN_URL
 from ..constants import USER_AGENT
 from ..scrubby import RoundData
 
@@ -23,20 +23,38 @@ class LogDownloader(ABC):
     output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_OUTPUT_PATH
     rounds: Annotated[list[RoundData], "The list of rounds to download"] = []
 
-    @abstractmethod
-    def get_rounds(self) -> list[RoundData]:
-        """Gets the specified rounds we want to download"""
+    def authenticate(self) -> bool:
+        """Tries to authenticate against the TG forums"""
+
+    def authenticate_interactive(self) -> bool:
+        """Tries to authenticate against the TG forums interactively"""
+        if input("Would you like to log in? ").lower() not in ['y', 'yes', 'true', '1']:
+            return False
+        return self.authenticate()
 
     @abstractmethod
-    def get_log_links(self, round_data: RoundData) -> Iterable[str]:
+    async def update_round_list(self) -> None:  # Not the best way of doing it but I can't be bothered right now
+        """Generates a list of rounds and saves it to self.rounds"""
+
+    async def get_log_links(self) -> Iterable[str]:
         """Gets the links of logs we want to download"""
+        url = GAME_TXT_ADMIN_URL if self.tgforums_cookie else GAME_TXT_URL
+        for rnd in self.rounds:
+            yield url.format(
+                server=rnd.server.lower().replace('bagil', 'basil'),
+                year=str(rnd.timestamp.year),
+                month=f"{rnd.timestamp.month:02d}",
+                day=f"{rnd.timestamp.day:02d}",
+                round_id=rnd.roundID
+            )
 
     @abstractmethod
-    def filter_lines(self, logs):
+    def filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
         """Filters lines from a log file, returning only the ones we want"""
 
+    @staticmethod
     @abstractmethod
-    def interactive(self) -> None:
+    def interactive() -> LogDownloader:
         """Interactively set variables"""
 
     async def get_logs_async(self, rounds: Iterable[RoundData])\
@@ -49,12 +67,11 @@ class LogDownloader(ABC):
         async with ClientSession(cookies={"tgforums_sid": self.tgforums_cookie},
                                  headers={"User-Agent": self.user_agent}) as session:
             tasks = []
-            # url_to_use = GAME_TXT_URL
 
             async def fetch(round_data: RoundData):
                 round_data.timestamp = isoparse(round_data.timestamp)
                 responses = []
-                for link in self.get_log_links(round_data):
+                async for link in self.get_log_links():
                     # Edge case warning: if we go beyond the year 2017 or so, the logs path changes.
                     # I don't expect anyone to go that far so I won't be doing anything about it
                     async with session.get(link) as r:
@@ -62,14 +79,6 @@ class LogDownloader(ABC):
                             continue
                         responses.append(await r.read())
                     return round_data, b'\r\n'.join(responses)
-
-            # if self.tgforums_cookie and self.user_agent:
-            #     url_to_use = GAME_TXT_ADMIN_URL
-            #     round_data, response = await fetch(rounds[0])
-            #     if not response:
-            #         print(f"{Fore.RED}ERROR: The cookie and user agent were set but invalid,",
-            #               f"reverting to normal logs.{Fore.RESET}")
-            #         url_to_use = GAME_TXT_URL
 
             for round_data in rounds:
                 tasks.append(asyncio.ensure_future(fetch(round_data=round_data)))
@@ -90,8 +99,9 @@ class LogDownloader(ABC):
         return round_data.server.encode("utf-8") + b" " + str(round_data.roundID).encode("utf-8") + b" | " + line + b"\n"
 
     async def process_and_write(self, output_path: str = None):
-        """In progress"""
+        """Processes the data, downloads the logs and saves them to a file"""
         output_path = output_path or self.output_path
+        self.rounds = self.rounds or await self.update_round_list()
         with open(output_path, 'wb') as file:
             pbar = tqdm(self.get_logs_async(self.rounds))
             async for round_data, logs in pbar:
