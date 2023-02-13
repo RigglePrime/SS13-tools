@@ -21,10 +21,10 @@ async def get_multiple_round_json(round_ids: Iterable[str]) -> Generator[dict, N
     tasks = []
     async with ClientSession(headers={"User-Agent": USER_AGENT}) as session:
         async def fetch_one(round_id: str):
-            async with session.get(f"{SCRUBBY_URL}{str(round_id)}?raw=true") as r:
-                if not r.ok:
-                    print(f"Request {round_id} returned status {r.status} instead of ok", file=sys.stderr)
-                return await r.json()
+            async with session.get(f"{SCRUBBY_URL}{str(round_id)}?raw=true") as resp:
+                if not resp.ok:
+                    print(f"Request {round_id} returned status {resp.status} instead of ok", file=sys.stderr)
+                return await resp.json()
         for round_id in round_ids:
             round_id = round_id if round_id is str else str(round_id)
             tasks.append(asyncio.ensure_future(fetch_one(round_id)))
