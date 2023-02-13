@@ -72,14 +72,15 @@ class LogDownloader(ABC):
                 async with session.get(link) as rsp:
                     if not rsp.ok:
                         return round_data, None
-                    return await round_data, rsp.read()
+                    return round_data, await rsp.read()
 
             for round_data, link in self.get_log_links():
                 tasks.append(asyncio.ensure_future(fetch(round_data, link)))
 
             # This could be out of order but we don't really care, it's not important
-            for round_data, task in tasks:
-                response: bytes = await task
+            for task in tasks:
+                response: bytes
+                round_data, response = await task
                 if not response:
                     yield round_data, None
                 else:

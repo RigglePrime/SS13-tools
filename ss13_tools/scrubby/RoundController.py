@@ -34,7 +34,7 @@ async def get_multiple_round_json(round_ids: Iterable[str]) -> Generator[dict, N
         for task in tasks:
             resp = await task
             yield resp
-        asyncio.gather(tasks)
+        await asyncio.gather(*tasks)
 
 
 async def get_multiple_round_source_urls(round_ids: Iterable[str]) -> Generator[bool, None, None]:
