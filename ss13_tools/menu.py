@@ -81,3 +81,11 @@ class CentComItem(MenuItem):
 
     def run(self):
         from .centcom import __main__  # noqa: F401 # pylint: disable=import-outside-toplevel,unused-import
+
+
+class UserExistsItem(MenuItem):
+    name = "BYOND user exists"
+    description = "Check if users on a list exist or not"
+
+    def run(self):
+        from .byond import __main__  # noqa: F401 # pylint: disable=import-outside-toplevel,unused-import
