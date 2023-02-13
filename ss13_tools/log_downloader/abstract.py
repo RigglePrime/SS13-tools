@@ -52,11 +52,6 @@ class LogDownloader(ABC):
     def filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
         """Filters lines from a log file, returning only the ones we want"""
 
-    @staticmethod
-    @abstractmethod
-    def interactive() -> LogDownloader:
-        """Interactively set variables"""
-
     async def get_logs_async(self, rounds: Iterable[RoundData])\
             -> Generator[tuple[RoundData, Union[list[bytes], None]], None, None]:
         """This is a generator that yields a tuple of the `RoundData` and list of round logs, for all rounds in `rounds`
@@ -123,3 +118,8 @@ class LogDownloader(ABC):
                     pbar.display()
                 for line in self.filter_lines(logs):
                     file.write(self.format_line_bytes(line, round_data))
+
+    @staticmethod
+    @abstractmethod
+    def interactive() -> LogDownloader:
+        """Interactively set variables"""
