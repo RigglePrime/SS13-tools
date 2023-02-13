@@ -30,6 +30,7 @@ class RoundData:  # pylint: disable=too-many-instance-attributes
         """Converts a Scrubby JSON response directly to a Python RoundData object"""
         return json.loads(await r.text(), object_hook=lambda d: RoundData(**d))
 
+    # TODO: someone needs to fix this, it's a horrible way to do it
     @staticmethod
     async def should_not_be_used_this_way(round_id: int, timestamp: str, server: str) -> list[RoundData]:
         # This needs to be reworked. heavily. log_downloader is still a mess. Better than before, still a mess.
