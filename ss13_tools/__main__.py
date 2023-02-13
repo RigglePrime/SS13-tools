@@ -7,8 +7,7 @@ import sys
 
 from colorama import Fore, Style
 
-from .log_downloader import CkeyLogDownloader
-from .log_downloader import RoundLogDownloader
+from .log_downloader import CkeyLogDownloader, RoundLogDownloader
 
 
 try:
