@@ -77,7 +77,7 @@ class RoundAndSlurItem(MenuItem):
 
 class CentComItem(MenuItem):
     name = "CentCom"
-    description = "Search the CentCom ban database for multiple ckeys at once"
+    description = "Search the CentCom ban database for ckeys"
 
     def run(self):
         from .centcom import __main__  # noqa: F401 # pylint: disable=import-outside-toplevel,unused-import
