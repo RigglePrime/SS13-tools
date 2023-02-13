@@ -96,7 +96,8 @@ class LogDownloader(ABC):
     async def process_and_write(self, output_path: str = None):
         """Processes the data, downloads the logs and saves them to a file"""
         output_path = output_path or self.output_path
-        self.rounds = self.rounds or await self.update_round_list()
+        if not self.rounds:
+            await self.update_round_list()
         with open(output_path, 'wb') as file:
             pbar = tqdm(self.get_logs_async(self.rounds))
             async for round_data, logs in pbar:
