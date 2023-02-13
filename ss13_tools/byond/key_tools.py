@@ -13,7 +13,7 @@ from ..constants import USER_AGENT
 
 def canonicalize(key: str) -> str:
     """Turns a user's key into canonical form (ckey)"""
-    return ''.join([c for c in key.lower() if c in ascii_lowercase + digits + '@'])
+    return ''.join([letter for letter in key.lower() if letter in ascii_lowercase + digits + '@'])
 
 
 def user_exists(key: str) -> bool:
