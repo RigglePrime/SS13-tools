@@ -43,7 +43,7 @@ class LogDownloader(ABC):
         url = GAME_TXT_ADMIN_URL if self.tgforums_cookie else GAME_TXT_URL
         for round_data, file_name in product(self.rounds, self.files):
             round_data.timestamp = isoparse(round_data.timestamp)
-            yield url.format(
+            yield round_data, url.format(
                 server=round_data.server.lower().replace('bagil', 'basil'),
                 year=str(round_data.timestamp.year),
                 month=f"{round_data.timestamp.month:02d}",
@@ -66,19 +66,19 @@ class LogDownloader(ABC):
                                  headers={"User-Agent": self.user_agent}) as session:
             tasks = []
 
-            async def fetch(link: str):
+            async def fetch(round_data: RoundData, link: str):
                 # Edge case warning: if we go beyond the year 2017 or so, the logs path changes.
                 # I don't expect anyone to go that far so I won't be doing anything about it
                 async with session.get(link) as rsp:
                     if not rsp.ok:
-                        return None
-                    return await rsp.read()
+                        return round_data, None
+                    return await round_data, rsp.read()
 
-            for link in self.get_log_links():
-                tasks.append(asyncio.ensure_future(fetch(link)))
+            for round_data, link in self.get_log_links():
+                tasks.append(asyncio.ensure_future(fetch(round_data, link)))
 
             # This could be out of order but we don't really care, it's not important
-            for round_data, task in zip(self.rounds, tasks):
+            for round_data, task in tasks:
                 response: bytes = await task
                 if not response:
                     yield round_data, None

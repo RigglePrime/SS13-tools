@@ -32,7 +32,7 @@ class RoundData:  # pylint: disable=too-many-instance-attributes
 
     # TODO: someone needs to fix this, it's a horrible way to do it
     @staticmethod
-    async def should_not_be_used_this_way(round_id: int, timestamp: str, server: str) -> list[RoundData]:
+    def should_not_be_used_this_way(round_id: int, timestamp: str, server: str) -> RoundData:
         # This needs to be reworked. heavily. log_downloader is still a mess. Better than before, still a mess.
         # self.rounds is still used, that needs to be reworked since it relies on RoundData (this thing)
         # Right now I'm not in the mood, so I'll push it down for future me.

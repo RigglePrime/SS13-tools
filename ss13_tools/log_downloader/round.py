@@ -21,7 +21,8 @@ class RoundLogDownloader(LogDownloader):
             while i <= self.rbound:
                 yield i
                 i += 1
-        return round_ids_to_round_data(round_list_generator())
+        async for round_data in round_ids_to_round_data(round_list_generator()):
+            self.rounds.append(round_data)
 
     def filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
         return logs
