@@ -14,7 +14,7 @@ colour = choice([Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLUE_EX, Fore.LIGHT
                 Fore.LIGHTYELLOW_EX, Fore.MAGENTA, Fore.RED, Fore.WHITE, Fore.YELLOW])
 
 print(f"Welcome to {colour}ss13-tools{Fore.RESET}! What would you like to do?")
-classes = dict(enumerate(sorted(x() for x in MenuItem.__subclasses__()), 1))
+classes = {str(i): x for i, x in enumerate(sorted(x() for x in MenuItem.__subclasses__()), 1)}
 
 for key, value in classes.items():
     print(f"{Fore.GREEN}{key}{Fore.RESET}: {value.description}")
