@@ -38,6 +38,7 @@ class CkeyLogDownloader(LogDownloader):
             number_of_rounds = input(f"How many rounds? [{DEFAULT_NUMBER_OF_ROUNDS}] ")
             try:
                 if not number_of_rounds.strip():
+                    number_of_rounds = DEFAULT_NUMBER_OF_ROUNDS
                     break
                 number_of_rounds = int(number_of_rounds) if number_of_rounds.isdigit() else int(number_of_rounds, 16)
                 break
