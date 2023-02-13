@@ -23,7 +23,7 @@ except FileNotFoundError:
 
 
 class CkeySingleItem(MenuItem):
-    weight = 1
+    weight = 20
     name = "ckey log downloader"
     description = "Download someone's say history"
 
@@ -41,7 +41,7 @@ class SlurDetectorSingleItem(MenuItem):
 
 
 class CkeyAndSlurItem(MenuItem):
-    weight = 2
+    weight = 19
     name = "ckey log slur detector"
     description = "Run slur detection on someone's say logs"
 
@@ -54,7 +54,7 @@ class CkeyAndSlurItem(MenuItem):
 
 
 class RoundSingleItem(MenuItem):
-    weight = 3
+    weight = 18
     name = "round log downloader"
     description = "Download logs from a range of rouds"
 

@@ -9,7 +9,7 @@ from typing import Annotated
 class MenuItem(ABC):
     """Represents an item on the main menu"""
 
-    weight: Annotated[float, "The weight of the menu item. A lower number means it will be placed higher."] = 10.0
+    weight: Annotated[float, "The weight of the menu item. A higher number means it will be placed higher."] = 10.0
     name: Annotated[str, "Name of the item"] = "Unnamed item"
     description: Annotated[str, "The item's description, what it's supposed to do"] = "Coders fix this"
 
