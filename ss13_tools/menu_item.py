@@ -22,10 +22,10 @@ class MenuItem(ABC):
         return f"{self.name}: {self.description}"
 
     def __lt__(self, other) -> bool:
-        return self.weight < other.weight or self.description < other.name
+        return self.weight < other.weight and self.description < other.name
 
     def __gt__(self, other) -> bool:
-        return self.weight > other.weight or self.description > other.name
+        return self.weight > other.weight and self.description > other.name
 
     def __eq__(self, other) -> bool:
         return self.weight == other.weight and self.description == other.name
