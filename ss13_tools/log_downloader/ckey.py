@@ -8,6 +8,10 @@ from ..byond import canonicalize
 from .. import scrubby
 
 
+class CkeyLogDownloaderException(Exception):
+    """Uh oh, something went wrong"""
+
+
 class CkeyLogDownloader(LogDownloader):
     """Downloads logs in which a ckey was present"""
     ckey: Annotated[Optional[str], "Canonical form of user's key, can be None"]
@@ -27,8 +31,11 @@ class CkeyLogDownloader(LogDownloader):
         self.rounds = await scrubby.GetReceipts(self.ckey, self.number_of_rounds, self.only_played)
 
     def filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
+        if not self.ckey:
+            raise CkeyLogDownloaderException("Ckey was empty")
+        ckey = self.ckey.lower().encode('utf-8')
         for log in logs:
-            if self.ckey.lower() in log.lower():
+            if ckey in log.lower():
                 yield log
 
     @staticmethod
