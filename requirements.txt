@@ -1,5 +1,0 @@
-aiohttp
-python-dateutil
-tqdm
-colorama
-requests
