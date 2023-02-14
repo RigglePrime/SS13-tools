@@ -1,18 +1,23 @@
-# Admin tools
+# SS13 tools
+[![PyLint](https://github.com/RigglePrime/SS13-tools/actions/workflows/pylint.yml/badge.svg)](https://github.com/RigglePrime/SS13-tools/actions/workflows/pylint.yml)
+[![Flake8](https://github.com/RigglePrime/SS13-tools/actions/workflows/flake8-lint.yml/badge.svg)](https://github.com/RigglePrime/SS13-tools/actions/workflows/flake8-lint.yml)
 
-A set of tools made for the administration of the /tg/ SS13 codebase. Hopefully more tools to come.
+A set of tools to help with automating tasks for the /tg/ branch of SS13.
 
-Made for Python 3.9.7
+Made for Python 3.9+
 
-## For all admins
+## How to run
 
-- `centcom_query` for querying the global ban database
+`python -m ss13_tools` or dowload the executable [here](https://github.com/RigglePrime/SS13-tools/releases/latest)
 
-## For admin trainers
+## Contents
 
-- `trainer_suite.py` combines slur detection with automatic log downloading
-- `candy_stalker.py` automatically gets soemone's round say logs, works only on /tg/station13, as it uses Scrubby and public logs
-- `slur_detector.py` scans some text and determines if any specified slurs are present
+- auth (TODO)
+- byond: tools for working with BYOND, such as checking if a ckey exists
+- [centcom](https://centcom.melonmesa.com/)
+- log_downloader: downloads logs from tg's [parsed logs](https://tgstation13.org/parsed-logs)
+- scrubby: scrubby tools
+- slur_detector: what it says on the tin
 
 ## Downloading
 
