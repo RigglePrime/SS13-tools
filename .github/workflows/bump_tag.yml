@@ -27,3 +27,4 @@ jobs:
         MINOR_STRING_TOKEN: '[minor]'
         PATCH_STRING_TOKEN: '[patch]'
         NONE_STRING_TOKEN: '[none]'
+        INITIAL_VERSION: 2.0.1
