@@ -6,7 +6,7 @@ import sys
 
 from colorama import Fore, Style
 
-from .menu import MenuItem
+from ss13_tools.menu import MenuItem  # Absolute import because of pyinstaller
 
 
 colour = choice([Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX,

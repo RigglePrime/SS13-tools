@@ -37,7 +37,8 @@ class SlurDetectorSingleItem(MenuItem):
     description = "Run slur detection on a file"
 
     def run(self):
-        from .slur_detector import __main__  # noqa: F401 # pylint: disable=import-outside-toplevel,unused-import
+        from .slur_detector import main  # pylint: disable=import-outside-toplevel
+        main()
 
 
 class CkeyAndSlurItem(MenuItem):
@@ -80,7 +81,8 @@ class CentComItem(MenuItem):
     description = "Search the CentCom ban database for ckeys"
 
     def run(self):
-        from .centcom import __main__  # noqa: F401 # pylint: disable=import-outside-toplevel,unused-import
+        from .centcom import main  # pylint: disable=import-outside-toplevel
+        main()
 
 
 class UserExistsItem(MenuItem):
@@ -88,4 +90,5 @@ class UserExistsItem(MenuItem):
     description = "Check if users on a list exist or not"
 
     def run(self):
-        from .byond import __main__  # noqa: F401 # pylint: disable=import-outside-toplevel,unused-import
+        from .byond import main  # pylint: disable=import-outside-toplevel
+        main()
