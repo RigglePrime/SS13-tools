@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "SS13-tools"
-version = "2.0.0"
+version = "2.0.1"
 description = "Python toolchain for SS13"
 authors = ["RigglePrime <27156122+RigglePrime@users.noreply.github.com>", "tattle <66640614+dragomagol@users.noreply.github.com>"]
+readme = "README.md"
+repository = "https://github.com/RigglePrime/SS13-tools"
+keywords = ["ss13", "tgstation"]
 
 [tool.poetry.dependencies]
 python = "^3.9.1,<3.12"
