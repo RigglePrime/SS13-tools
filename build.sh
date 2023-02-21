@@ -14,4 +14,5 @@ fi
 
 poetry install
 source ./.venv/Scripts/activate
-python3 ./build.py
+python3 ./prepapre.py
+poetry run pyinstaller --onefile ./entrypoint.py -n SS13Tools
