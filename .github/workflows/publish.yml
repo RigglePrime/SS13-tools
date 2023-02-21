@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          cache: 'poetry' # caching poetry dependencies
+          cache: 'poetry'
       - name: Build
         run: pwsh build.ps1
       - name: Upload artifact
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          cache: 'poetry' # caching poetry dependencies
+          cache: 'poetry'
       - name: Publish
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
