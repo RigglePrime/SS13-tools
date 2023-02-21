@@ -151,9 +151,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Python poetry
-poetry.lock
-
 # Github won't like this one, even if it's used for detection
 slurs
 
