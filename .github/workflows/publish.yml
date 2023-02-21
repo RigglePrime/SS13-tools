@@ -2,11 +2,8 @@ name: Publish
 
 on:
   push:
-    branches:
-    - master
-  pull_request:
-    branches:
-    - master
+    tags:
+      - '*'
 
 jobs:
   windows_build:
@@ -28,7 +25,7 @@ jobs:
         with:
           name: SS13Tools
           path: dist/SS13Tools.exe
-          retention-days: 1
+          retention-days: 7
 
   pypi_publish:
     name: Publish on PyPi
