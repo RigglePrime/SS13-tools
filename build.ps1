@@ -4,7 +4,7 @@ if (-not (Get-Command py -errorAction SilentlyContinue)) {
 }
 if (-not (Get-Command poetry -errorAction SilentlyContinue)) {
     Write-Host "Installing poetry"
-    (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+    pip install poetry
 }
 
 Write-Host "Installing dependencies"
