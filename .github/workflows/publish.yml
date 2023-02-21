@@ -1,9 +1,9 @@
 name: Publish
 
 on:
-  create:
+  push:
     tags:
-      - v2.**
+      - '*'
 
 jobs:
   windows_build:
