@@ -1,0 +1,18 @@
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  windows_build:
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    name: Windows Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: pwsh build.ps1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: dist/SS13Tools.exe
