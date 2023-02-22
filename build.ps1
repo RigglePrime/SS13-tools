@@ -11,3 +11,4 @@ Write-Host "Installing dependencies"
 poetry install
 Write-Host "Running pyinstaller"
 poetry run pyinstaller --onefile .\ss13_tools\__main__.py -n SS13Tools
+exit $LastExitCode
