@@ -92,3 +92,12 @@ class UserExistsItem(MenuItem):
     def run(self):
         from .byond import main  # pylint: disable=import-outside-toplevel
         main()
+
+
+class TokenTestServiceItem(MenuItem):
+    name = "Token test service"
+    description = "The one-stop shop for TG13 token testing"
+
+    def run(self):
+        from .auth import main  # pylint: disable=import-outside-toplevel
+        main()
