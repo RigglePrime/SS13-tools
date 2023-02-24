@@ -9,3 +9,5 @@ __all__ = [
     'canonicalize',
     'user_exists'
 ]
+
+del colorama_init

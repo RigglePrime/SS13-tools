@@ -12,3 +12,5 @@ __all__ = [
     'byond',
     'log_downloader'
 ]
+
+del colorama_init

@@ -19,3 +19,5 @@ __all__ = [
     'RoundLogDownloader',
     'RoundData'
 ]
+
+del colorama_init

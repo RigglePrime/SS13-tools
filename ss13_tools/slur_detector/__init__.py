@@ -8,3 +8,5 @@ colorama_init()
 __all__ = [
     'SlurDetector'
 ]
+
+del colorama_init
