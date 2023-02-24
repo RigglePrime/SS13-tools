@@ -6,6 +6,7 @@ Provides methods to authenticate against raw logs
 from __future__ import annotations
 
 # Grrr globals but right now I don't care, refactor later
+# Maybe if another station needs to add their own auth
 
 import time
 import os
@@ -148,7 +149,7 @@ def load_passport() -> None:
         pass
 
 
-def create_with_token(token: str, override_old: bool = False) -> bool:
+def create_from_token(token: str, override_old: bool = False) -> bool:
     """Creates a new passport from a token. Tests the token before setting it, retuning if the token is valid or not
 
     If override_old is not true, the new token won't be used if the old one is still valid"""
@@ -166,12 +167,11 @@ def interactive():
     """Interactively authenticate. Calls functions to load and test the passport before asking the user"""
     global PASSPORT  # pylint: disable=global-statement
     print("Authenticating...", end='')
-    load_passport()
     if is_authenticated():
         print(Fore.GREEN, "passport valid", Fore.RESET)
         valid_for = PASSPORT.expires_at - datetime.utcnow()
         print(f"The token has {valid_for} left.")
-        return
+        return True
     print(Fore.RED, "not authenticated!", Fore.RESET)
     print(f"Please go to {Style.BRIGHT}{TOKEN_URL}{Style.NORMAL} and obtain a token. The token will NOT be saved " +
           f"in this software, so please store it somewhere safe.\nWith it, anyone could access raw logs, {Fore.CYAN}" +
@@ -191,10 +191,22 @@ def interactive():
             print(f"{Fore.GREEN}Authenticated.{Fore.RESET} Valid for {valid_for} from now")
             PASSPORT = new_passport
             save_passport()
-            return
+            return True
         print(f"{Fore.RED}Something went wrong, please try again.{Fore.RESET}")
 
 
 def is_authenticated() -> bool:
     """Checks if we're authenticated. If a passport file exists and is invalid, it will be deleted"""
     return bool(PASSPORT) and PASSPORT.test()
+
+
+def seconds_left() -> float:
+    """Returns the TTL in seconds"""
+    return PASSPORT.seconds_left()
+
+
+def get_auth_headers():
+    """Returns all headers needed to authorize. Does not check validity."""
+    if not PASSPORT:
+        return None
+    return {"Authorization": f"Bearer {PASSPORT.rawlogs_passport}"}
