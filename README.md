@@ -12,6 +12,8 @@ Made for Python 3.9+
 
 `pip install ss13-tools; python -m ss13_tools` (pip3 on Linux) or dowload the executable [here](https://github.com/RigglePrime/SS13-tools/releases/latest)
 
+Remember, if you ever screw an input up try pressing the up arrow.
+
 ## Contents
 
 - auth: authenticate and download from raw logs
