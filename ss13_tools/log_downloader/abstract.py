@@ -60,7 +60,8 @@ class LogDownloader(ABC):
             self.files = [file.replace(".log", ".txt") for file in self.files]
 
         for round_data, file_name in product(self.rounds, self.files):
-            round_data.timestamp = isoparse(round_data.timestamp)
+            if isinstance(round_data.timestamp, str):
+                round_data.timestamp = isoparse(round_data.timestamp)
             yield round_data, url.format(
                 server=round_data.server.lower().replace('bagil', 'basil').replace(' ', '-'),
                 year=str(round_data.timestamp.year),
