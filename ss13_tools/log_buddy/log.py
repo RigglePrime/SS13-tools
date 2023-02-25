@@ -281,6 +281,9 @@ class Log:
         # A large tuple... there is no better way, I thought for a long time
         # If you think of a better way, please PR it or make an issue report
 
+        # Special case, has no patient or other text
+        elif other.startswith("was flashed(AOE)"):
+            pass
         # Two words
         elif other.startswith((
             "has shot", "has sprayed", "has attacked", "has grabbed",
