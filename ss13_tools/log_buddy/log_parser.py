@@ -117,7 +117,7 @@ class LogFile:
                 self.__parse_one_line(line)
             except Exception as exception:  # pylint: disable=broad-exception-caught
                 if not quiet:
-                    print(f"Could not be parsed: '{line}', with the reason:", exception)
+                    print(f"Could not be parsed: '{line.strip()}', with the reason:", exception)
                 if verbose:
                     traceback.print_exc()
 
