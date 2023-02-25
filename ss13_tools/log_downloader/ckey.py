@@ -29,10 +29,10 @@ class CkeyLogDownloader(LogDownloader):
         self.number_of_rounds = number_of_rounds
         self.output_path = output_path.format(ckey=self.ckey or "output")
 
-    async def update_round_list(self) -> None:
+    async def _update_round_list(self) -> None:
         self.rounds = await scrubby.GetReceipts(self.ckey, self.number_of_rounds, self.only_played)
 
-    def filter_lines(self, logs: Iterable[bytes]) -> Iterable[bytes]:
+    def _filter_lines(self, logs: Iterable[bytes]) -> Iterable[bytes]:
         if not self.filter_logs:
             for log in logs:
                 yield log

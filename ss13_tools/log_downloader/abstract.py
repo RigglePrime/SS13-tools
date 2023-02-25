@@ -47,7 +47,7 @@ class LogDownloader(ABC):
         return tgauth_interactive()
 
     @abstractmethod
-    async def update_round_list(self) -> None:  # Not the best way of doing it but I can't be bothered right now
+    async def _update_round_list(self) -> None:  # Not the best way of doing it but I can't be bothered right now
         """Generates a list of rounds and saves it to self.rounds"""
 
     def get_log_links(self) -> Iterable[str]:
@@ -72,10 +72,10 @@ class LogDownloader(ABC):
             )
 
     @abstractmethod
-    def filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
+    def _filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
         """Filters lines from a log file, returning only the ones we want"""
 
-    async def get_logs_async(self) -> Generator[tuple[RoundData, Union[list[bytes], None]], None, None]:
+    async def __get_logs_async(self) -> Generator[tuple[RoundData, Union[list[bytes], None]], None, None]:
         """This is a generator that yields a tuple of the `RoundData` and list of round logs, for all rounds in `rounds`
 
         if `output_bytes` is true, the function will instead yield `bytes` instead of `str`
@@ -110,12 +110,12 @@ class LogDownloader(ABC):
             await asyncio.gather(*tasks)
 
     @staticmethod
-    def format_line_bytes(line: bytes, round_data: RoundData) -> bytes:
+    def _format_line_bytes(line: bytes, round_data: RoundData) -> bytes:
         """Takes the raw line and formats it to `{server_name} {round_id} | {unmodified line}`"""
         return round_data.server.encode("utf-8") + b" " + str(round_data.roundID).encode("utf-8") + b" | " + line + b"\n"
 
     @staticmethod
-    def output_raw_line(line: bytes, _) -> bytes:
+    def _output_raw_line(line: bytes, _) -> bytes:
         """Returns the line right back"""
         return line + b"\n"
 
@@ -123,10 +123,10 @@ class LogDownloader(ABC):
         """Processes the data, downloads the logs and saves them to a file"""
         output_path = output_path or self.output_path
         if not self.rounds:
-            await self.update_round_list()
-        formatter = self.output_raw_line if self.output_only_log_line else self.format_line_bytes
+            await self._update_round_list()
+        formatter = self._output_raw_line if self.output_only_log_line else self._format_line_bytes
         with open(output_path, 'wb') as file:
-            pbar = tqdm(self.get_logs_async(), total=len(self.rounds)*len(self.files))
+            pbar = tqdm(self.__get_logs_async(), total=len(self.rounds)*len(self.files))
             async for round_data, logs in pbar:
                 # Type hints
                 round_data: RoundData
@@ -144,7 +144,7 @@ class LogDownloader(ABC):
                     print(f"{Fore.MAGENTA}WARNING:{Fore.RESET} round start suicide " +
                           f"in round {round_data.roundID} on {round_data.server}")
                     pbar.display()
-                for line in self.filter_lines(logs):
+                for line in self._filter_lines(logs):
                     file.write(formatter(line, round_data))
 
     @staticmethod
