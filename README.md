@@ -14,7 +14,7 @@ Made for Python 3.9+
 
 ## Contents
 
-- auth (TODO)
+- auth: authenticate and download from raw logs
 - byond: tools for working with BYOND, such as checking if a ckey exists
 - [centcom](https://centcom.melonmesa.com/)
 - log_downloader: downloads logs from tg's [parsed logs](https://tgstation13.org/parsed-logs)
