@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from ..__version__ import __version__
-
 import os
-from .log import Log, LogType
 from enum import Enum
-from typing import Annotated, Iterable, Union, Literal
 import traceback
+from typing import Annotated, Iterable, Union, Literal
 from html import unescape as html_unescape
+
+
+from .log import Log, LogType
+from ..__version__ import __version__
+from ..log_downloader import RoundLogDownloader
+from ..scrubby import get_round_source_url
 
 
 HEARING_RANGE = 9
@@ -23,6 +26,10 @@ class InvalidType(Exception):
 
 
 class UnsupportedLogTypeException(Exception):
+    """Strange log type you have there"""
+
+
+class LogParserException(Exception):
     """Strange log type you have there"""
 
 
@@ -67,8 +74,11 @@ class LogFile:
     Examples:
 
     `log_file = LogFile()` # Empty log file, useful for combining more later using `collate`,
+
     `log_file = LogFile(open("game.log").readlines(), LogFileType.UNKNOWN)`,
-    `log_file = LogFile(["logline 1", "log line 2", "log line 3"]) # NOTE: must be a valid log or the parser will raise an exception`
+
+    `log_file = LogFile(["logline 1", "log line 2", "log line 3"])\
+    # NOTE: must be a valid log or the parser will raise an exception`
     """
     round_id: Annotated[int, "Stores the round ID. If unknown, it will equal -1"]
     unfiltered_logs: Annotated[list[Log], "Stores a list of all logs"]
@@ -77,7 +87,8 @@ class LogFile:
     sortable: bool
     log_source: Annotated[str, "Source of the logs (if available)"]
 
-    def __init__(self, logs: list[str] = None, log_type: LogFileType = LogFileType.UNKNOWN, verbose: bool = False, quiet: bool = False) -> None:
+    def __init__(self, logs: list[str] = None, log_type: LogFileType = LogFileType.UNKNOWN,
+                 verbose: bool = False, quiet: bool = False) -> None:
         if verbose and quiet:
             print("Really? You want me to be silent and verbose? Those are mutually exclusive you know")
         self.round_id = -1
@@ -91,7 +102,8 @@ class LogFile:
         if not logs:
             return
         if "Starting up round ID" in logs[0]:
-            self.round_id = int(logs[0].split("Starting up round ID ")[1].strip(". \r\n")) # Also remove \r\n just in case, had some errors with that before
+            # Also remove \r\n just in case, had some errors with that before
+            self.round_id = int(logs[0].split("Starting up round ID ")[1].strip(". \r\n"))
             logs = logs[2:]
 
         for line in logs:
@@ -100,7 +112,7 @@ class LogFile:
             try:
                 line = line.strip("\r\n ")
                 if line.startswith("-censored"):
-                    continue # Skip censored lines
+                    continue  # Skip censored lines
 
                 # VOTE is split into multiple lines, so account for that
                 if line.startswith("- <b>") and self.unfiltered_logs and self.unfiltered_logs[-1].log_type == LogType.VOTE:
@@ -115,14 +127,14 @@ class LogFile:
                     self.unfiltered_logs.pop()
                 log = Log(line)
                 self.unfiltered_logs.append(log)
-                if log.agent and log.agent.ckey and log.agent.ckey.replace("[DC]","") not in self.who:
-                    self.who.append(log.agent.ckey.replace("[DC]",""))
-            except Exception as exception:
+                if log.agent and log.agent.ckey and log.agent.ckey.replace("[DC]", "") not in self.who:
+                    self.who.append(log.agent.ckey.replace("[DC]", ""))
+            except Exception as exception:  # pylint: disable=broad-exception-caught
                 if not quiet:
                     print(f"Could not be parsed: '{line}', with the reason:", exception)
                 if verbose:
                     traceback.print_exc()
-        self.unfiltered_logs.sort(key=lambda l:l.time)
+        self.unfiltered_logs.sort(key=lambda log: log.time)
         self.logs = self.unfiltered_logs
 
     def __len__(self) -> int:
@@ -131,7 +143,7 @@ class LogFile:
 
     def add_log(self, log: Log, reset_workset: bool = True, sort: bool = True) -> None:
         """Appends a log entry to the end.
-        
+
         Parameters:
         `log` (Log): the Log object to be added
         `reset_workset` (bool): if we should also reset the working set
@@ -141,7 +153,8 @@ class LogFile:
 
         Returns None
         """
-        if not isinstance(log, Log): raise InvalidType(f"Type Log required but type {str(type(log))} was found")
+        if not isinstance(log, Log):
+            raise InvalidType(f"Type Log required but type {str(type(log))} was found")
         self.unfiltered_logs.append(log)
         if reset_workset:
             self.reset_work_set()
@@ -150,7 +163,7 @@ class LogFile:
 
     def add_logs(self, logs: list[Log], reset_workset: bool = True, sort: bool = True) -> None:
         """Appends a list of log entries to the end.
-        
+
         Parameters:
         logs (list[Log]): the Log objects list to be added
         `reset_workset` (bool): if we should also reset the working set
@@ -170,8 +183,9 @@ class LogFile:
         Example call: `my_logs.sort()`
 
         Returns None"""
-        if not self.sortable: raise NotSortableException("Not enough information to sort the logs")
-        self.logs.sort(key=lambda l:l.time)
+        if not self.sortable:
+            raise NotSortableException("Not enough information to sort the logs")
+        self.logs.sort(key=lambda log: log.time)
 
     def collate(self, logfile: LogFile) -> None:
         """Collates (extends, adds together) two LogFile objects and changes the LogFileType to COLLATED.
@@ -181,20 +195,24 @@ class LogFile:
         Parameters:
         `logfile` (LogFile): the LogFile object you want to combine
 
-        Example: `my_logs = LogFile()` `my_logs.collate(LogFile.from_file("game.txt"))` `my_logs.collate(LogFile.from_file("attack.txt"))`
+        Example:
+        `my_logs = LogFile()`
+        `my_logs.collate(LogFile.from_file("game.txt"))`
+        `my_logs.collate(LogFile.from_file("attack.txt"))`
 
         Returns `None`
         """
         self.add_logs(logfile.unfiltered_logs, sort=True)
         self.log_type = LogFileType.COLLATED
         self.who.extend(logfile.who)
-        self.who = list(set(self.who)) # Remove duplicates
+        self.who = list(set(self.who))  # Remove duplicates
         self.who.sort()
         self.logs = self.unfiltered_logs
 
     def filter_ckeys(self, *ckeys: str) -> None:
-        """Removes all logs in which the specified ckeys are not present, saving the result in self.work_set. Works much like Notepad++,
-        but only counts the agent (actor, the one who performed the action). See `filter_strings` for a function like Notepad++ bookmark
+        """Removes all logs in which the specified ckeys are not present, saving the result
+        in self.work_set. Works much like Notepad++, but only counts the agent (actor, the
+        one who performed the action). See `filter_strings` for a function like Notepad++ bookmark
 
         Parameters:
         `ckeys` (tuple[str, ...]): ckeys to filter
@@ -213,13 +231,16 @@ class LogFile:
         self.logs = filtered
 
     def filter_strings(self, *strings: str, case_sensitive: bool = False) -> None:
-        """Removes all logs in which the specified strings are not present, saving them in `self.work_set`. Works exactly like Notepad++ bookmark
+        """Removes all logs in which the specified strings are not present, saving them in
+        `self.work_set`. Works exactly like Notepad++ bookmark
 
         Parameters:
         `strings` (tuple[str, ...]): strings to filter
         `case_sensitive` (bool): toggles case sensitivity
 
-        Example calls: `my_logs.filter_strings("Hi!")`, `my_logs.filter_strings("attacked", "injected", "I hate you")`, `my_logs.filter_strings("racial slur", case_sensitive=True)` (as many strings as you want)
+        Example calls: `my_logs.filter_strings("Hi!")`
+        `my_logs.filter_strings("attacked", "injected", "I hate you")`
+        `my_logs.filter_strings("racial slur", case_sensitive=True)` (as many strings as you want)
 
         Returns `None`"""
         filtered = []
@@ -240,10 +261,11 @@ class LogFile:
 
     def filter_strings_case_sensitive(self, *strings: str) -> None:
         """Shorter for `filter_strings(*strings, case_sensitive = True)`"""
-        self.filter_strings(*strings, case_sensitive = True)
+        self.filter_strings(*strings, case_sensitive=True)
 
     def filter_heard(self, ckey: str, walking_error: int = 4) -> None:
-        """Removes all log entries which could not have been heard by the specified ckey (very much in alpha) and stores the remaining lines in `self.work_set`
+        """Removes all log entries which could not have been heard by the specified ckey
+        (very much in alpha) and stores the remaining lines in `self.work_set`
 
         Parameters:
         `ckey` (str): desired ckey
@@ -252,28 +274,29 @@ class LogFile:
         Example call: `my_logs.filter_heard("ckey")`
 
         Returns `None`"""
-        self.logs = self.get_only_heard(ckey, walking_error = walking_error)
+        self.logs = self.get_only_heard(ckey, walking_error=walking_error)
 
-    def filter_conversation(self, *ckeys: str, walking_error: int = 4) -> None: # TODO: hide lines not in conversation
-        """Tries to get a conversation between multiple parties, excluding what they would and would not hear. Only accounts for local say (for now). Saves the result in `self.work_set`
+    def filter_conversation(self, *ckeys: str, walking_error: int = 4) -> None:  # TODO: hide lines not in conversation
+        """Tries to get a conversation between multiple parties, excluding what they would and would not hear.
+        Only accounts for local say (for now). Saves the result in `self.work_set`
 
         Parameters:
         `ckeys` (tuple[str, ...]): ckeys to use for sorting
         `walking_error` (int): added to hearing range to account for the lack of logs
 
         Example call: `my_logs.filter_conversation("ckey1", "ckey2", "ckey3")` (as many or little ckeys as you want)
-        
+
         Returns None"""
         self.filter_ckeys(*ckeys)
         final = []
         for ckey in ckeys:
-            final.extend(self.get_only_heard(ckey, walking_error = walking_error))
+            final.extend(self.get_only_heard(ckey, walking_error=walking_error))
 
         if not final:
             print("Operation completed with empty set. Aborting.")
             return
         final = list(set(final))
-        final.sort(key=lambda l:l.time)
+        final.sort(key=lambda log: log.time)
         self.logs = final
 
     def reset_work_set(self):
@@ -282,15 +305,19 @@ class LogFile:
         Example call: my_logs.reset_work_set()"""
         self.logs = self.unfiltered_logs
 
-    def get_only_heard(self, ckey: str, logs_we_care_about: Union[list[LogType], Literal["ALL"]] = "ALL", walking_error: int = 4) -> list[Log]:
-        """Removes all log entries which could not have been heard by the specified ckey (very much in alpha). Uses logs from `self.work_set`
+    def get_only_heard(self, ckey: str, logs_we_care_about: Union[list[LogType],
+                       Literal["ALL"]] = "ALL", walking_error: int = 4) -> list[Log]:
+        """Removes all log entries which could not have been heard by the specified ckey (very much in alpha).
+        Uses logs from `self.work_set`
 
         Parameters:
         `ckey` (str): ckeys to use
         `logs_we_care_about` (list[LogType])
         `walking_error` (int): added to hearing range to account for the lack of logs
 
-        Example calls: `my_logs.get_only_heard("ckey")`, `my_logs.get_only_heard("ckey", "ALL")`, `my_logs.get_only_heard("ckey", [LogType.SAY, LogType.WHISPER])`
+        Example calls: `my_logs.get_only_heard("ckey")`
+        `my_logs.get_only_heard("ckey", "ALL")`
+        `my_logs.get_only_heard("ckey", [LogType.SAY, LogType.WHISPER])`
 
         Returns `list[Log]`"""
         self.sort()
@@ -301,7 +328,9 @@ class LogFile:
         last_loc = cur_loc
         for log in self.logs:
             # Check for ckey. If our target was included in the action we can safely assume they saw it
-            if (log.agent and ckey == log.agent.ckey) or (log.patient and ckey == log.patient.ckey) or (log.text and f"{ckey}/(" in log.text): 
+            if (log.agent and ckey == log.agent.ckey) or\
+               (log.patient and ckey == log.patient.ckey) or\
+               (log.text and f"{ckey}/(" in log.text):
                 # If there's a location attached, update it
                 if log.location:
                     last_loc = cur_loc
@@ -311,18 +340,18 @@ class LogFile:
             # If our target didn't participate, we need to check how far away it happened
 
             # Check z-level, if they differ save location and continue
-            if cur_loc[2] != last_loc[2]: 
+            if cur_loc[2] != last_loc[2]:
                 continue
             # Filter logs that we don't care about but still use their location
             if logs_we_care_about and (logs_we_care_about != "ALL"):
                 continue
-            if type(logs_we_care_about) == list and log.log_type not in logs_we_care_about:
+            if isinstance(logs_we_care_about, list) and log.log_type not in logs_we_care_about:
                 continue
             # Skip logs with no location data available
             if not log.location:
                 continue
             # Calculate distance
-            #if sqrt(pow(cur_loc[0] - log.location[0], 2) + pow(cur_loc[1] - log.location[1], 2)) - hearing_range < 0:
+            # if sqrt(pow(cur_loc[0] - log.location[0], 2) + pow(cur_loc[1] - log.location[1], 2)) - hearing_range < 0:
             if abs(cur_loc[0] - log.location[0]) - hearing_range < 0 and abs(cur_loc[1] - log.location[1]) - hearing_range < 0:
                 filtered.append(log)
             # You (almost) always hear tcomms
@@ -364,7 +393,8 @@ class LogFile:
         filtered = []
         for log in self.logs:
             # Z level must match
-            if log.location[2] != location[2]: continue
+            if log.location[2] != location[2]:
+                continue
             if abs(location[0] - log.location[0]) - radius < 0 and abs(location[1] - log.location[1]) - radius < 0:
                 filtered.append(log)
         if not filtered:
@@ -409,7 +439,7 @@ class LogFile:
         for log in self.logs:
             print(log.raw_line)
 
-    def head(self, n: int = 10) -> None:
+    def head(self, number: int = 10) -> None:
         """Prints the first few lines of the working set to the console.
 
         Parameters:
@@ -421,10 +451,10 @@ class LogFile:
         if not self.logs:
             print("Working set empty")
             return
-        for log in self.logs[:n]:
+        for log in self.logs[:number]:
             print(log.raw_line)
 
-    def tail(self, n: int = 10) -> None:
+    def tail(self, number: int = 10) -> None:
         """Prints the last few lines of the working set to the console.
 
         Parameters:
@@ -436,7 +466,7 @@ class LogFile:
         if not self.logs:
             print("Working set empty")
             return
-        for log in self.logs[-n:]:
+        for log in self.logs[-number:]:
             print(log.raw_line)
 
     def write_working_to_file(self, filename: str) -> None:
@@ -448,12 +478,12 @@ class LogFile:
         Example call: `my_logs.write_working_to_file("logs.txt")`
 
         Returns None"""
-        with open(filename, "w", encoding = "utf-8") as f:
+        with open(filename, "w", encoding="utf-8") as file:
             for log in self.logs:
-                f.write(str(log) + "\n")
-            f.write(f"Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n")
+                file.write(str(log) + "\n")
+            file.write(f"Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n")
             if self.log_source:
-                f.write(f"Logs acquired from {self.log_source}")
+                file.write(f"Logs acquired from {self.log_source}")
 
     @staticmethod
     def from_file(filename: str, log_type: LogFileType = None, verbose: bool = False, quiet: bool = False) -> LogFile:
@@ -461,18 +491,20 @@ class LogFile:
 
         Parameters:
         `filename` (str): name (and location) of the desired file
-        `type` (LogFileType): type of the log. Use if you want to override log type detection (optional, defaults to LogFileType.UNKNOWN)
+        `type` (LogFileType): type of the log. Use if you want to override log type detection
+        (optional, defaults to LogFileType.UNKNOWN)
         `verbose` (bool): toggle verbose mode (False by default)
         `quiet` (bool): toggle quiet mode (False by default)
 
         Example call: `my_logs = LogFile.from_file("game.txt")`
 
         Returns LogFile"""
-        if filename.endswith(".html"): raise UnsupportedLogTypeException(f"{filename} does not seem to be supported")
+        if filename.endswith(".html"):
+            raise UnsupportedLogTypeException(f"{filename} does not seem to be supported")
         if not log_type and "." in filename:
             log_type = LogFileType.parse_log_file_type(filename.split(".", 1)[0])
-        with open(filename, "r", encoding = "utf-8") as f:
-            lines = f.readlines()
+        with open(filename, "r", encoding="utf-8") as file:
+            lines = file.readlines()
         return LogFile(lines, log_type, verbose, quiet)
 
     @staticmethod
@@ -505,7 +537,7 @@ class LogFile:
         return log_collection
 
     @staticmethod
-    def from_round_id(round_id: int, logs_we_care_about: list[str] = None, verbose: bool = False, quiet: bool = False) -> LogFile:
+    def from_round_id(round_id: int, logs_we_care_about: list[str] = None) -> LogFile:
         """Downloads multiple files from a public logs link. The link should look like
         `https://tgstation13.org/parsed-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/`,
         but with actual values inserted.
@@ -534,17 +566,14 @@ class LogFile:
                 "shuttle.txt"
             ]
 
-        log_collection = LogFile()
-        
-        for log_file in logs_we_care_about:
-            if not quiet:
-                print(f"Retrieving {log_file}")
-            r = req.get(link + str(log_file))
-            if not r.ok:
-                if not quiet: print(f"Error {r.status_code} while retrieving {log_file}")
-                continue
-            log_collection.collate(LogFile(r.text.replace("\r", "").split("\n"), verbose=verbose, quiet=quiet))
-        log_collection.log_source = link
+        downloader = RoundLogDownloader(round_id, round_id)
+        downloader.output_only_log_line = True
+        downloader.files = logs_we_care_about
+        downloader.try_authenticate_interactive()
+        downloader.process_and_write()
+        log_collection = LogFile.from_file(downloader.output_path)
+        log_collection.log_type = LogFileType.COLLATED
+        log_collection.log_source = get_round_source_url(round_id=round_id)
         return log_collection
 
 

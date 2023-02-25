@@ -8,6 +8,7 @@ from html import unescape as html_unescape
 
 from dateutil.parser import isoparse
 
+
 class LogType(Enum):
     """What type of log file is it?"""
     UNKNOWN = 0
@@ -44,6 +45,7 @@ class LogType(Enum):
         except KeyError:
             return LogType.UNKNOWN
 
+
 class DamageType(Enum):
     """What type of damage is it? (enum)"""
     UNKNOWN = 0
@@ -61,11 +63,13 @@ class DamageType(Enum):
         except KeyError:
             return DamageType.UNKNOWN
 
+
 class SiliconLogType(Enum):
     """What type of silicon log is it? (enum)"""
     MISC = 0
     CYBORG = 1
     LAW = 2
+
 
 class Player:
     """This class holds methods for parsing ckey strings ('ckey/(name)')"""
@@ -100,10 +104,12 @@ class Player:
         # ((?:\w+ ?)+|\*no key\*)\/\(((?:\w+ ?)+?)\)
         # Above does not work since it catches "has grabbed MY NAME/(John Smith)"
         # as the ckey "has grabbed MY NAME"
-        raise Exception("Not yet implemented")
+        raise NotImplementedError("Not yet implemented")
+
 
 class UnknownLogException(Exception):
     """Thrown when a log type is not known. (so unexpected!)"""
+
 
 class Log:
     """Represents one log entry
@@ -124,7 +130,7 @@ class Log:
 
         self.raw_line = line
         date_time, other = self.raw_line.split("] ", 1)
-        self.time = isoparse(date_time[1:]) # Remove starting [
+        self.time = isoparse(date_time[1:])  # Remove starting [
         if other.endswith("VOTE:"):
             other += " "
 
@@ -153,7 +159,7 @@ class Log:
     patient: Annotated[Optional[Player], "Player receiving the action"]
     raw_line: Annotated[str, "Raw, unmodified line"]
     log_type: Annotated[LogType, "Type of the log"]
-    location: Annotated[Optional[Tuple[int,int,int]], "X, Y, Y where the action was performed"]
+    location: Annotated[Optional[Tuple[int, int, int]], "X, Y, Y where the action was performed"]
     location_name: Annotated[Optional[str], "Name of the location where the action was performed"]
     text: Annotated[Optional[str], "Any remaining unparsed text"]
     is_dead: Annotated[Optional[bool], "Is the agent dead?"]
@@ -169,8 +175,9 @@ class Log:
     # Virus specific
     virus_name: Annotated[SiliconLogType, "If log type is virus, it will store the virus name"]
 
-    #Telecomms specific
-    telecomms_network: Annotated[str, "If log type is TCOMMS, the network on which the message was spoken on will be stored here"]
+    # Telecomms specific
+    telecomms_network: Annotated[str, "If log type is TCOMMS, the network on which the message was spoken \
+                                      on will be stored here"]
 
     def parse_game(self, log: str) -> None:
         """Parses a game log entry from `GAME:` onwards (GAME: should not be included)"""
@@ -204,7 +211,7 @@ class Log:
 
     def parse_emote(self, log: str) -> None:
         """Parses a game log entry from `EMOTE:` onwards (EMOTE: should not be included)"""
-        agent, other = log.split(") ", 1) # Ensure that we didn't get a name with spaces
+        agent, other = log.split(") ", 1)  # Ensure that we didn't get a name with spaces
         self.agent = Player.parse_player(agent)
         if " (" not in other:
             self.text = other.strip()
@@ -262,7 +269,7 @@ class Log:
             other_temp = other.split(" ", 1)[1]
             parse_key = True
         # NOTE: Performance? Not sure if it helps go check yourself, I am too lazy
-        elif not other.startswith(("has", "was", "is", "started")): 
+        elif not other.startswith(("has", "was", "is", "started")):
             # I love the logs. I love spaghetti.
             if "is being stripped of" in other or \
                     "has been stripped of" in other or \
@@ -283,7 +290,7 @@ class Log:
             "has handcuffed", "has crushed", "has tackled", "has electrocuted",
             "has attached", "has strangled", "has cremated", "has zapped",
             "has implanted", "has stung", "has augmented", "has bopped", "has stuffed",
-            "has places", # Do NOT fix this typo, I will have to add another damn startswith
+            "has places",  # Do NOT fix this typo, I will have to add another damn startswith
             # "has hit", # I don't think this is ever used against players, so I'll leave it out
             # Another typo... feel free to fix for free GBP since we already have "kicked"
             "has kicks"
@@ -298,13 +305,13 @@ class Log:
         # Three words
         elif other.startswith((
             "has fired at",
-            #"started fireman carrying", # Doesn't have a ckey, just a mob name
-            #"was fireman carried by", # Doesn't have a ckey, just a mob name
+            # "started fireman carrying", # Doesn't have a ckey, just a mob name
+            # "was fireman carried by", # Doesn't have a ckey, just a mob name
             "has operated on",
             "has stun attacked",
             # "has pulled from", # Annoying to implement, so I won't
             "has restrained (CQC)",
-            "has CQCs (CQC)", # Many typos were discovered today
+            "has CQCs (CQC)",  # Many typos were discovered today
             "has disarmed (CQC)",
             "has resisted grab",
             "has broke grab",
@@ -317,7 +324,7 @@ class Log:
             "has attempted to inject",
             "has attempted to punch",
             "has attempted to strangle",
-            "has been shot by", # NOTE: shot by can have an empty value. I love SS13 logs
+            "has been shot by",  # NOTE: shot by can have an empty value. I love SS13 logs
             "has threw and hit",
             "has attempted to handcuff",
             "has attempted to apply",
@@ -327,7 +334,7 @@ class Log:
             parse_key = True
         # Five words
         elif other.startswith(("has tended to the wounds", "has attempted to neck grab",
-                                "has overloaded the heart of")):
+                               "has overloaded the heart of")):
             other_temp = other.split(" ", 5)[5]
             parse_key = True
 
@@ -411,7 +418,7 @@ class Log:
             agent = log.split(") by ", 1)[1]
             self.agent = Player.parse_player(agent)
             self.virus_name, other = log.split("A culture bottle was printed for the virus ")[1]\
-                                                            .split(" sym:", 1)
+                                        .split(" sym:", 1)
             self.text = "printed, sym:" + other.strip()
         else:
             agent, other = log.split(" was infected by virus: ")
@@ -463,7 +470,7 @@ class Log:
         self.text = html_unescape(other.strip())
 
     def parse_tgui(self, log: str) -> None:
-        """Parses a TGUI log without the date""" # Send help, this is a mess
+        """Parses a TGUI log without the date"""  # Send help, this is a mess
         other = log
 
         # Just in case because sometimes we have no ckey.
@@ -475,14 +482,14 @@ class Log:
             mob, other = other.split(" at ", 1)
             location, other = other.split(")", 1)
 
-            #Can't use parse_and_set_location because it's a snowflake log yet again! Fun.
+            # Can't use parse_and_set_location because it's a snowflake log yet again! Fun.
             self.location = tuple(int(x) for x in location.split(","))
 
             agent = f"{key}/({mob})"
 
         if " in " in other:
             something, other = other.split(" in ", 1)
-            something = something.strip() # Just in case
+            something = something.strip()  # Just in case
             if something:
                 # If the first branch ran, this should be empty. If it didn't then we have a ckey
                 # Logging is a giant mess
@@ -509,17 +516,16 @@ class Log:
         # and turn into a list
         match = match[-1][1:-1].split(",")
         # Turn all elements to ints, convert to tuple
-        self.location = tuple(int(x) for x in match) # Bad practice since it's a side effect
+        self.location = tuple(int(x) for x in match)  # Bad practice since it's a side effect
         return loc
 
     def generic_say_parse(self, log: str) -> None:
         """Parses a generic SAY log entry from SAY: onwards (includes SAY, WHISPER, OOC)
         (should only include line from SAY: onwards, without the SAY)"""
-        agent, other = log.split(") ", 1) # Ensure that we didn't get a name with spaces
+        agent, other = log.split(") ", 1)  # Ensure that we didn't get a name with spaces
         self.agent = Player.parse_player(agent)
         # Priority announcements, yet another exception
-        if other.startswith(("(priority announcement)", "(message to the other server)")) and \
-                            '" ' not in other:
+        if other.startswith(("(priority announcement)", "(message to the other server)")) and '" ' not in other:
             self.text = html_unescape(other.strip())
             return
         text, other = other.split('" ', 1)
@@ -539,9 +545,11 @@ class Log:
     def __str__(self):
         """String representation"""
         return self.raw_line
+
     def __repr__(self):
         """Object representation"""
         return self.raw_line
+
 
 if __name__ == "__main__":
     single_log = Log(input())
