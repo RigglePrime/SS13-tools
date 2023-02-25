@@ -226,7 +226,8 @@ class Log:
         (RADIOEMOTE: should not be included)"""
         self.parse_emote(log)
 
-    def parse_attack(self, log: str) -> None:
+    # I have decided that we will all just have to bear with it.
+    def parse_attack(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `ATTACK:` onwards (ATTACK: should not be included)"""
         if ") " in log:
             agent, other = log.split(") ", 1)
