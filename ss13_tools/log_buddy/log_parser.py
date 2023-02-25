@@ -106,40 +106,42 @@ class LogFile:
             self.round_id = int(logs[0].split("Starting up round ID ")[1].strip(". \r\n"))
             logs = logs[2:]
 
+        self.__parse_logs(logs, verbose=verbose, quiet=quiet)
+        self.unfiltered_logs.sort(key=lambda log: log.time)
+        self.logs = self.unfiltered_logs
+
+    def __parse_logs(self, logs: list[str], verbose: bool = False, quiet: bool = False):
         for line in logs:
             if not line:
                 continue
             try:
-                line = line.strip("\r\n ")
-                if line.startswith("-censored"):
-                    continue  # Skip censored lines
-
-                # VOTE is split into multiple lines, so account for that
-                if line.startswith("- <b>") and self.unfiltered_logs and self.unfiltered_logs[-1].log_type == LogType.VOTE:
-                    self.unfiltered_logs[-1].text += ", " + html_unescape(line.replace("- <b>", "").replace("</b>", ""))
-                    continue
-
-                # Priority announcements (and others like it) sometimes do this
-                if line.startswith("- ") and self.unfiltered_logs:
-                    # Don't actually insert a new line
-                    line = self.unfiltered_logs[-1].raw_line + "\\n" + line.replace("- ", "")
-                    # Remove the incomplete entry (so we can parse location too!)
-                    self.unfiltered_logs.pop()
-                log = Log(line)
-                self.unfiltered_logs.append(log)
-                if log.agent and log.agent.ckey and log.agent.ckey.replace("[DC]", "") not in self.who:
-                    self.who.append(log.agent.ckey.replace("[DC]", ""))
+                self.__parse_one_line(line)
             except Exception as exception:  # pylint: disable=broad-exception-caught
                 if not quiet:
                     print(f"Could not be parsed: '{line}', with the reason:", exception)
                 if verbose:
                     traceback.print_exc()
-        self.unfiltered_logs.sort(key=lambda log: log.time)
-        self.logs = self.unfiltered_logs
 
-    def __len__(self) -> int:
-        """Returns the length of the logs array"""
-        return self.logs.__len__()
+    def __parse_one_line(self, line: str):
+        line = line.strip("\r\n ")
+        if line.startswith("-censored"):
+            return  # Skip censored lines
+
+        # VOTE is split into multiple lines, so account for that
+        if line.startswith("- <b>") and self.unfiltered_logs and self.unfiltered_logs[-1].log_type == LogType.VOTE:
+            self.unfiltered_logs[-1].text += ", " + html_unescape(line.replace("- <b>", "").replace("</b>", ""))
+            return
+
+        # Priority announcements (and others like it) sometimes do this
+        if line.startswith("- ") and self.unfiltered_logs:
+            # Don't actually insert a new line
+            line = self.unfiltered_logs[-1].raw_line + "\\n" + line.replace("- ", "")
+            # Remove the incomplete entry (so we can parse location too!)
+            self.unfiltered_logs.pop()
+        log = Log(line)
+        self.unfiltered_logs.append(log)
+        if log.agent and log.agent.ckey and log.agent.ckey.replace("[DC]", "") not in self.who:
+            self.who.append(log.agent.ckey.replace("[DC]", ""))
 
     def add_log(self, log: Log, reset_workset: bool = True, sort: bool = True) -> None:
         """Appends a log entry to the end.
@@ -484,6 +486,10 @@ class LogFile:
             file.write(f"Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n")
             if self.log_source:
                 file.write(f"Logs acquired from {self.log_source}")
+
+    def __len__(self) -> int:
+        """Returns the length of the logs array"""
+        return self.logs.__len__()
 
     @staticmethod
     def from_file(filename: str, log_type: LogFileType = None, verbose: bool = False, quiet: bool = False) -> LogFile:
