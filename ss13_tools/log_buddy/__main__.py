@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=import-outside-toplevel,not-callable
 import inspect
 import os
 import sys
@@ -8,8 +9,8 @@ from colorama import Fore, init as colorama_init
 from _sitebuiltins import _Helper
 
 # Log is unused, but it's here so the user doesn't have to import it manually
-from .log import Log, LogType  # noqa: F401 pylint: disable=unused-import
-from .log_parser import LogFile
+from ss13_tools.log_buddy.log import Log, LogType  # noqa: F401 pylint: disable=unused-import
+from ss13_tools.log_buddy.log_parser import LogFile
 
 # Change the help text, so users can more easily understand what to do
 _Helper.__repr__ = lambda self: f"""Welcome to {Fore.CYAN}LogBuddy{Fore.RESET}!
@@ -65,13 +66,30 @@ def main():
     colorama_init()
 
     # Hand pick random startup colours
-    from random import choice  # pylint: disable=import-outside-toplevel
+    from random import choice
     colour = choice([Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX,
                     Fore.LIGHTGREEN_EX, Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX,
                     Fore.LIGHTYELLOW_EX, Fore.MAGENTA, Fore.RED, Fore.WHITE, Fore.YELLOW])
 
-    from IPython import embed  # pylint: disable=import-outside-toplevel
-    embed(header=f"""{colour}
+    from IPython.terminal.embed import InteractiveShellEmbed
+    from IPython.paths import get_ipython_dir
+
+    # Get instance
+    shell = InteractiveShellEmbed.instance()
+
+    # Load default config
+    profile_dir = os.path.join(get_ipython_dir(), 'profile_default')
+    shell.config_file_paths.append(profile_dir)
+    shell.load_config_file()
+
+    # Gets magics
+    from ss13_tools.log_buddy.log_magics import LogMagics
+    shell.register_magics(LogMagics)
+
+    # Cleanup
+    del LogMagics, get_ipython_dir, InteractiveShellEmbed, choice
+
+    shell(header=f"""{colour}
  _                 _____           _     _
 | |               | ___ \\         | |   | |
 | |     ___   __ _| |_/ /_   _  __| | __| |_   _
