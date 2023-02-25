@@ -2,6 +2,7 @@
 
 - [LogBuddy](#logbuddy)
   - [Currently supported log files](#currently-supported-log-files)
+  - [Quick start](#quick-start)
   - [How it works](#how-it-works)
   - [Example](#example)
   - [Cheat sheet](#cheat-sheet)
@@ -30,6 +31,10 @@ LogBuddy is a helper tool for reading log files. It has features to:
 - telecomms.txt
 - uplink.txt
 - shuttle.txt
+
+## Quick start
+
+Remember, if you ever screw an input up try pressing the up arrow.
 
 ## How it works
 
