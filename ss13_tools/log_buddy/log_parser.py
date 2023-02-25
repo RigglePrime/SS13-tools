@@ -115,7 +115,7 @@ class LogFile:
 
     def __parse_logs(self, logs: list[str], verbose: bool = False, quiet: bool = False):
         for line in logs:
-            if not line:
+            if not line.strip():
                 continue
             try:
                 self.__parse_one_line(line)
