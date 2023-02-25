@@ -10,7 +10,8 @@ import sys
 from colorama import Style, Fore
 
 from .menu_item import MenuItem
-from .log_downloader import CkeyLogDownloader, RoundLogDownloader
+from .constants import POSITIVE_RESPONSES
+from .log_downloader import CkeyLogDownloader, RoundLogDownloader, RoundListLogDownloader
 
 try:
     from .slur_detector import SlurDetector
@@ -142,6 +143,16 @@ class PlayedTogetherItem(MenuItem):
               f"{Fore.GREEN}{len(round_set) / number_of_rounds * 100}%{Fore.RESET} together")
         print(f"Those rounds were:{Fore.GREEN}", ', '.join(str(x) for x in round_set) or "none!", Fore.RESET)
 
+        if not round_set:
+            return
+        print(f"Would you like to download these rounds? [y/{Style.BRIGHT}N{Style.NORMAL}] ")
+        if not input().strip() in POSITIVE_RESPONSES:
+            return
+        downloader = RoundListLogDownloader(round_set)
+        downloader.try_authenticate_interactive()
+        asyncio.run(downloader.process_and_write())
+        print("Saved as", downloader.output_path)
+
 
 class LogBuddyItem(MenuItem):
     name = "LogBuddy"
@@ -150,3 +161,12 @@ class LogBuddyItem(MenuItem):
     def run(self):
         from .log_buddy import main
         main()
+
+
+class RoundListDownloaderItem(MenuItem):
+    name = "Round list downloader"
+    description = "Download a comma separated list of rounds"
+
+    def run(self):
+        downloader = RoundListLogDownloader.interactive()
+        asyncio.run(downloader.process_and_write())
