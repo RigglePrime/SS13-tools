@@ -11,10 +11,15 @@ from . import RoundData
 from ..constants import USER_AGENT
 
 
+def get_round_json(round_id: int) -> str:
+    """Gets the json info from a round ID"""
+    return req.get(ROUND_SOURCE_URL.format(round_id=str(round_id)), timeout=10,
+                   headers={"User-Agent": USER_AGENT}).json()
+
+
 def get_round_source_url(round_id: int) -> str:
     """Gets the source url from a round ID"""
-    return req.get(ROUND_SOURCE_URL.format(round_id=str(round_id)), timeout=10,
-                   headers={"User-Agent": USER_AGENT}).json()['baseURL']
+    return get_round_json(round_id=round_id)['currentRound']['baseURL']
 
 
 async def get_multiple_round_json(round_ids: Iterable[str]) -> Generator[dict, None, None]:
