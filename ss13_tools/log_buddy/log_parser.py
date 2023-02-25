@@ -565,7 +565,7 @@ class LogFile:
         downloader.output_only_log_line = True
         downloader.files = logs_we_care_about
         downloader.try_authenticate_interactive()
-        downloader.process_and_write()
+        asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
         log_collection.log_source = get_round_source_url(round_id=round_id)
