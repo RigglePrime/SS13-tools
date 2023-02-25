@@ -7,6 +7,8 @@ import traceback
 from typing import Annotated, Iterable, Union, Literal
 from html import unescape as html_unescape
 
+from ss13_tools.log_buddy.constants import ALL_LOGS_WE_PARSE
+
 
 from .log import Log, LogType
 from ..__version__ import __version__
@@ -544,33 +546,19 @@ class LogFile:
 
     @staticmethod
     def from_round_id(round_id: int, logs_we_care_about: list[str] = None) -> LogFile:
-        """Downloads multiple files from a public logs link. The link should look like
-        `https://tgstation13.org/parsed-logs/{server}/data/logs/{year}/{month}/{day}/round-{round_id}/`,
-        but with actual values inserted.
+        """Downloads multiple files from a round ID.
 
         Parameters:
+        `round_id` (int): round to download
         `logs_we_care_about` (list[str]): list of strings, containing the file names.
         For example: `["game.txt", "attack.txt"]`. This defaults to all supported files.
 
-        `verbose` (bool): toggle verbose mode (False by default)
-        `quiet` (bool): toggle quiet mode (False by default)
-
-        Example call: `my_logs = LogFile.from_logs_link("link here")`
+        Example call: `my_logs = LogFile.from_round_id(185556)`
 
         Returns `LogFile`"""
         # Should be all supported log types as a default. Don't forget to update this list! (you will)
         if not logs_we_care_about:
-            logs_we_care_about = [
-                "game.txt",
-                "attack.txt",
-                "pda.txt",
-                "silicon.txt",
-                "mecha.txt",
-                "virus.txt",
-                "telecomms.txt",
-                "uplink.txt",
-                "shuttle.txt"
-            ]
+            logs_we_care_about = ALL_LOGS_WE_PARSE.copy()
 
         downloader = RoundLogDownloader(round_id, round_id)
         downloader.output_only_log_line = True
@@ -580,6 +568,33 @@ class LogFile:
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
         log_collection.log_source = get_round_source_url(round_id=round_id)
+        return log_collection
+
+    @staticmethod
+    def from_multiple_rounds(start_round_id: int, end_round_id: int, logs_we_care_about: list[str] = None) -> LogFile:
+        """Downloads multiple rounds worth of data.
+
+        Parameters:
+        `start_round_id` (int): first round to download
+        `end_round_id` (int): last round to download (inclusive)
+        `logs_we_care_about` (list[str]): list of strings, containing the file names.
+        For example: `["game.txt", "attack.txt"]`. This defaults to all supported files.
+
+        Example call: `my_logs = LogFile.from_multiple_rounds(185556, 191100)`
+
+        Returns `LogFile`"""
+        # Should be all supported log types as a default. Don't forget to update this list! (you will)
+        if not logs_we_care_about:
+            logs_we_care_about = ALL_LOGS_WE_PARSE.copy()
+
+        downloader = RoundLogDownloader(start_round_id, end_round_id)
+        downloader.output_only_log_line = True
+        downloader.files = logs_we_care_about
+        downloader.try_authenticate_interactive()
+        downloader.process_and_write()
+        log_collection = LogFile.from_file(downloader.output_path)
+        log_collection.log_type = LogFileType.COLLATED
+        log_collection.log_source = f"{start_round_id}-{end_round_id}"
         return log_collection
 
 
