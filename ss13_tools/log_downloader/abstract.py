@@ -24,6 +24,7 @@ class LogDownloader(ABC):
     output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_OUTPUT_PATH
     rounds: Annotated[list[RoundData], "The list of rounds to download"] = []
     files: Annotated[list[str], "Which files do we want to dowload?"] = DEFAULT_FILES.copy()
+    output_only_log_line: Annotated[bool, "Should we format our line or not?"] = False
 
     def authenticate(self, token: str, override_old: bool) -> bool:
         """Tries to authenticate against the TG forums"""
@@ -108,15 +109,21 @@ class LogDownloader(ABC):
             await asyncio.gather(*tasks)
 
     @staticmethod
-    def format_line_bytes(line: bytes, round_data: RoundData) -> list[str]:
+    def format_line_bytes(line: bytes, round_data: RoundData) -> bytes:
         """Takes the raw line and formats it to `{server_name} {round_id} | {unmodified line}`"""
         return round_data.server.encode("utf-8") + b" " + str(round_data.roundID).encode("utf-8") + b" | " + line + b"\n"
+
+    @staticmethod
+    def output_raw_line(line: bytes, _) -> bytes:
+        """Returns the line right back"""
+        return line + b"\n"
 
     async def process_and_write(self, output_path: str = None):
         """Processes the data, downloads the logs and saves them to a file"""
         output_path = output_path or self.output_path
         if not self.rounds:
             await self.update_round_list()
+        formatter = self.output_raw_line if self.output_only_log_line else self.format_line_bytes
         with open(output_path, 'wb') as file:
             pbar = tqdm(self.get_logs_async(), total=len(self.rounds)*len(self.files))
             async for round_data, logs in pbar:
@@ -137,7 +144,7 @@ class LogDownloader(ABC):
                           f"in round {round_data.roundID} on {round_data.server}")
                     pbar.display()
                 for line in self.filter_lines(logs):
-                    file.write(self.format_line_bytes(line, round_data))
+                    file.write(formatter(line, round_data))
 
     @staticmethod
     @abstractmethod
