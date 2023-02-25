@@ -383,7 +383,7 @@ class Log:
         self.agent = Player.parse_player(agent)
         # Sending a message with the message monitor console adds a "sent " FOR NO PARTICULAR REASON
         # It gets better... it also moves " to "...
-        if "PDA: message monitor console" in other:
+        if "PDA: message monitor console" in other or "Tablet: message monitor console" in other:
             _pda_type, other = other.split(') sent "')
             text, other = other.split('" to ', 1)
             loc_start = self.parse_and_set_location(other)
