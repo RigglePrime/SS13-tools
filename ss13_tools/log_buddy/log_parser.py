@@ -8,12 +8,11 @@ import traceback
 from typing import Annotated, Iterable, Union, Literal
 from html import unescape as html_unescape
 
-from ss13_tools.log_buddy.constants import ALL_LOGS_WE_PARSE
-
 
 from .log import Log, LogType
+from .constants import ALL_LOGS_WE_PARSE
 from ..__version__ import __version__
-from ..log_downloader import RoundLogDownloader
+from ..log_downloader import RoundLogDownloader, RoundListLogDownloader
 from ..scrubby import get_round_source_url
 
 
@@ -595,6 +594,33 @@ class LogFile:
         log_collection.log_type = LogFileType.COLLATED
         log_collection.write_working_to_file(downloader.output_path)
         log_collection.log_source = f"{start_round_id}-{end_round_id}"
+        return log_collection
+
+    @staticmethod
+    def from_round_collection(*rounds: int, logs_we_care_about: list[str] = None) -> LogFile:
+        """Downloads multiple rounds worth of data.
+
+        Parameters:
+        `*rounds` (int): list of rounds to download
+        `logs_we_care_about` (list[str]): list of strings, containing the file names.
+        For example: `["game.txt", "attack.txt"]`. This defaults to all supported files.
+
+        Example call: `my_logs = LogFile.from_round_collection(185556, 185558, 185560, ...)`
+
+        Returns `LogFile`"""
+        # Should be all supported log types as a default. Don't forget to update this list! (you will)
+        if not logs_we_care_about:
+            logs_we_care_about = ALL_LOGS_WE_PARSE.copy()
+
+        downloader = RoundListLogDownloader(rounds)
+        downloader.output_only_log_line = True
+        downloader.files = logs_we_care_about
+        downloader.try_authenticate_interactive()
+        asyncio.run(downloader.process_and_write())
+        log_collection = LogFile.from_file(downloader.output_path)
+        log_collection.log_type = LogFileType.COLLATED
+        log_collection.write_working_to_file(downloader.output_path)
+        log_collection.log_source = "rounds " + ', '.join(str(x) for x in rounds)
         return log_collection
 
 
