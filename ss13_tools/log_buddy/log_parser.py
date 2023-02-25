@@ -104,10 +104,6 @@ class LogFile:
 
         if not logs:
             return
-        if "Starting up round ID" in logs[0]:
-            # Also remove \r\n just in case, had some errors with that before
-            self.round_id = int(logs[0].split("Starting up round ID ")[1].strip(". \r\n"))
-            logs = logs[2:]
 
         self.__parse_logs(logs, verbose=verbose, quiet=quiet)
         self.unfiltered_logs.sort(key=lambda log: log.time)
