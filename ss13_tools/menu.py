@@ -25,7 +25,7 @@ except FileNotFoundError:
 class CkeySingleItem(MenuItem):
     weight = 1
     name = "ckey log downloader"
-    description = "Download someone's say history"
+    description = "Download someone's say history (and more!)"
 
     def run(self):
         downloader = CkeyLogDownloader.interactive()
