@@ -6,33 +6,44 @@ from typing import Generator, Iterable, Annotated, Union
 from itertools import product
 
 from aiohttp import ClientSession
-from colorama import Fore
+from colorama import Fore, Style
 from dateutil.parser import isoparse
 from tqdm.asyncio import tqdm
 
 from .constants import DEFAULT_OUTPUT_PATH, GAME_TXT_URL, GAME_TXT_ADMIN_URL, DEFAULT_FILES
-from ..constants import USER_AGENT
+from ..constants import USER_AGENT, POSITIVE_RESPONSES, NEGATIVE_RESPONSES
 from ..scrubby import RoundData
+from ..auth import is_authenticated, create_from_token, interactive as tgauth_interactive, get_auth_headers, seconds_left
 
 
 class LogDownloader(ABC):
     """Log downloader object. For downloading logs.
     Either pass the arguments in the constructor or call `interactive()`"""
 
-    tgforums_cookie: Annotated[str, "Forum cookie if you want raw logs"] = ""
     user_agent: Annotated[str, "User agent so people know who keeps spamming requests (and for raw logs)"] = USER_AGENT
     output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_OUTPUT_PATH
     rounds: Annotated[list[RoundData], "The list of rounds to download"] = []
-    files: Annotated[list[str], "Which files do we want to dowload?"] = DEFAULT_FILES
+    files: Annotated[list[str], "Which files do we want to dowload?"] = DEFAULT_FILES.copy()
 
-    def authenticate(self) -> bool:
+    def authenticate(self, token: str, override_old: bool) -> bool:
         """Tries to authenticate against the TG forums"""
+        if is_authenticated():
+            return True
+        return create_from_token(token=token, override_old=override_old)
 
-    def authenticate_interactive(self) -> bool:
+    def try_authenticate_interactive(self) -> bool:
         """Tries to authenticate against the TG forums interactively"""
-        if input("Would you like to log in? ").lower() not in ['y', 'yes', 'true', '1']:
+        if is_authenticated() and seconds_left() < 30:
+            print(f"{Fore.YELLOW}WARNING{Fore.RESET}: token has less than 30 seconds left")
+            print(f"Refresh the token? [{Style.BRIGHT}Y{Style.NORMAL}/n] ", end='')
+            if input().lower() not in NEGATIVE_RESPONSES:
+                while not create_from_token(input("Token: ").strip(), True):
+                    pass  # There's a print if Passport errors on creation. Terrible code. Future me will fix it.
+                return True
+        print(f"Would you like to access raw logs? [y/{Style.BRIGHT}N{Style.NORMAL}] ", end='')
+        if input().lower() not in POSITIVE_RESPONSES:
             return False
-        return self.authenticate()
+        return tgauth_interactive()
 
     @abstractmethod
     async def update_round_list(self) -> None:  # Not the best way of doing it but I can't be bothered right now
@@ -40,11 +51,17 @@ class LogDownloader(ABC):
 
     def get_log_links(self) -> Iterable[str]:
         """Gets the links of logs we want to download"""
-        url = GAME_TXT_ADMIN_URL if self.tgforums_cookie else GAME_TXT_URL
+        if is_authenticated():
+            url = GAME_TXT_ADMIN_URL
+            self.files = [file.replace(".txt", ".log") for file in self.files]
+        else:
+            url = GAME_TXT_URL
+            self.files = [file.replace(".log", ".txt") for file in self.files]
+
         for round_data, file_name in product(self.rounds, self.files):
             round_data.timestamp = isoparse(round_data.timestamp)
             yield round_data, url.format(
-                server=round_data.server.lower().replace('bagil', 'basil'),
+                server=round_data.server.lower().replace('bagil', 'basil').replace(' ', '-'),
                 year=str(round_data.timestamp.year),
                 month=f"{round_data.timestamp.month:02d}",
                 day=f"{round_data.timestamp.day:02d}",
@@ -62,8 +79,10 @@ class LogDownloader(ABC):
         if `output_bytes` is true, the function will instead yield `bytes` instead of `str`
 
         On 404, the list will be None instead"""
-        async with ClientSession(cookies={"tgforums_sid": self.tgforums_cookie},
-                                 headers={"User-Agent": self.user_agent}) as session:
+        headers = {"User-Agent": self.user_agent}
+        if is_authenticated():
+            headers.update(get_auth_headers())
+        async with ClientSession(headers=headers) as session:
             tasks = []
 
             async def fetch(round_data: RoundData, link: str):
@@ -84,7 +103,7 @@ class LogDownloader(ABC):
                 if not response:
                     yield round_data, None
                 else:
-                    yield round_data, response.split(b"\r\n")
+                    yield round_data, response.replace(b'\r', b'').split(b'\n')
 
             await asyncio.gather(*tasks)
 
@@ -108,7 +127,7 @@ class LogDownloader(ABC):
                 pbar.set_description(f"Getting ID {round_data.roundID} on {round_data.server}")
                 if not logs:
                     pbar.clear()
-                    print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not find round " +
+                    print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not get a file from round " +
                           f"{round_data.roundID} on {round_data.server}")
                     pbar.display()
                     continue

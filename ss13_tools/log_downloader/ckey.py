@@ -3,9 +3,10 @@ from typing import Annotated, Iterable, Optional
 from colorama import Fore, Style
 
 from .abstract import LogDownloader
-from .constants import DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_CKEY_OUTPUT_PATH
+from .constants import DEFAULT_FILES, DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_CKEY_OUTPUT_PATH
 from ..byond import canonicalize
 from .. import scrubby
+from ..constants import NEGATIVE_RESPONSES, POSITIVE_RESPONSES
 
 
 class CkeyLogDownloaderException(Exception):
@@ -19,6 +20,7 @@ class CkeyLogDownloader(LogDownloader):
         = DEFAULT_ONLY_PLAYED
     number_of_rounds: Annotated[int, "The number of rounds to download"] = DEFAULT_NUMBER_OF_ROUNDS
     output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_CKEY_OUTPUT_PATH.format(ckey="output")
+    filter_logs: Annotated[bool, "Should we filter the logs?"] = True
 
     def __init__(self, key: str = None, only_played: bool = DEFAULT_ONLY_PLAYED,
                  number_of_rounds: int = DEFAULT_NUMBER_OF_ROUNDS, output_path: str = None) -> None:
@@ -30,7 +32,10 @@ class CkeyLogDownloader(LogDownloader):
     async def update_round_list(self) -> None:
         self.rounds = await scrubby.GetReceipts(self.ckey, self.number_of_rounds, self.only_played)
 
-    def filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
+    def filter_lines(self, logs: Iterable[bytes]) -> Iterable[bytes]:
+        if not self.filter_logs:
+            for log in logs:
+                yield log
         if not self.ckey:
             raise CkeyLogDownloaderException("Ckey was empty")
         ckey = self.ckey.lower().encode('utf-8')
@@ -52,10 +57,17 @@ class CkeyLogDownloader(LogDownloader):
             except ValueError:
                 print(f"{Fore.RED}Rounds should be an int in base 10 or 16{Fore.RESET}")
         print(f"Do you want to get only rounds in which they played? [y/{Style.BRIGHT}N{Style.RESET_ALL}] ", end="")
-        only_played = input().lower() in ['y', 'yes', 'true', '1']  # Input and colorama don't mix
+        only_played = input().lower() in POSITIVE_RESPONSES  # Input and colorama don't mix
         output_path = input(f"Where should I write the file? [{DEFAULT_CKEY_OUTPUT_PATH}] ")
         output_path = output_path or DEFAULT_CKEY_OUTPUT_PATH.format(ckey=ckey)
         downloader = CkeyLogDownloader(key=ckey, only_played=only_played,
                                        number_of_rounds=number_of_rounds, output_path=output_path)
-        # self.authenticate_interactive()
+        print("Which files do you want to download?")
+        print("(separate the files with a comma, like so: attack.txt,game.txt,pda.txt)")
+        file_list = [x.strip() for x in input(f"[{','.join(DEFAULT_FILES)}] ").split(',') if x.strip()]
+        if file_list:
+            downloader.files = file_list
+        print(f"Want only the logs that this person is in? [{Style.BRIGHT}Y{Style.RESET_ALL}/n] ", end="")
+        downloader.filter_logs = input().lower().strip() not in NEGATIVE_RESPONSES
+        downloader.try_authenticate_interactive()
         return downloader
