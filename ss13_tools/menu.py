@@ -108,7 +108,7 @@ class PlayedTogetherItem(MenuItem):
     name = "Rounds played together"
     description = "Tells you the rounds two (or more) people have all played in"
 
-    def run(self):
+    def run(self):  # noqa: C901
         while True:
             try:
                 number_of_rounds = int(input("How many rounds? "))
