@@ -2,7 +2,7 @@
 This file contains the menu items that should be loaded into the main menu.
 All of them must inherit from MenuItem
 """
-# pylint: disable=missing-class-docstring,too-few-public-methods
+# pylint: disable=missing-class-docstring,too-few-public-methods,import-outside-toplevel
 import asyncio
 import traceback
 import sys
@@ -37,7 +37,7 @@ class SlurDetectorSingleItem(MenuItem):
     description = "Run slur detection on a file"
 
     def run(self):
-        from .slur_detector import main  # pylint: disable=import-outside-toplevel
+        from .slur_detector import main
         main()
 
 
@@ -81,7 +81,7 @@ class CentComItem(MenuItem):
     description = "Search the CentCom ban database for ckeys"
 
     def run(self):
-        from .centcom import main  # pylint: disable=import-outside-toplevel
+        from .centcom import main
         main()
 
 
@@ -90,7 +90,7 @@ class UserExistsItem(MenuItem):
     description = "Check if users on a list exist or not"
 
     def run(self):
-        from .byond import main  # pylint: disable=import-outside-toplevel
+        from .byond import main
         main()
 
 
@@ -99,5 +99,45 @@ class TokenTestServiceItem(MenuItem):
     description = "The one-stop shop for TG13 token testing"
 
     def run(self):
-        from .auth import main  # pylint: disable=import-outside-toplevel
+        from .auth import main
         main()
+
+
+class PlayedTogetherItem(MenuItem):
+    name = "Rounds played together"
+    description = "Tells you the rounds two (or more) people have all played in"
+
+    def run(self):
+        while True:
+            try:
+                number_of_rounds = int(input("How many rounds? "))
+                break
+            except ValueError:
+                print("That doesn't seem to be a number...")
+
+        from .scrubby import GetReceipts, ScrubbyException
+        print("Please enter the desired ckeys. Leave empty to stop")
+        receipts_collection = []
+        ckeys = []
+        while ckey := input():
+            try:
+                ckeys.append(ckey)
+                receipts = asyncio.run(GetReceipts(ckey, number_of_rounds, False))
+                receipts_collection.append(receipts)
+            except ScrubbyException:
+                print("Seems like that ckey couldn't be found! Check your spelling and try again")
+        print("Calculating...")
+        round_set = set(rd.roundID for rd in receipts_collection[0])
+        if len(receipts_collection) == 1:
+            print("Seems like there's only one person here, here's the rounds they played in:")
+            print(', '.join(str(x) for x in round_set))
+            return
+
+        for receipts in receipts_collection[1:]:
+            round_set = round_set & set(rd.roundID for rd in receipts)
+
+        print("Here are your stats:")
+        print("I looked for the ckeys", ', '.join(ckeys))
+        print(f"Out of {number_of_rounds} rounds, they played " +
+              f"{Fore.GREEN}{len(round_set) / number_of_rounds * 100}%{Fore.RESET} together")
+        print(f"Those rounds were:{Fore.GREEN}", ', '.join(str(x) for x in round_set) or "none!", Fore.RESET)
