@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import asyncio
 import os
 from enum import Enum
 import traceback
@@ -591,7 +592,7 @@ class LogFile:
         downloader.output_only_log_line = True
         downloader.files = logs_we_care_about
         downloader.try_authenticate_interactive()
-        downloader.process_and_write()
+        asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
         log_collection.log_source = f"{start_round_id}-{end_round_id}"
