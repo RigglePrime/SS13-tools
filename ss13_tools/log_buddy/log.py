@@ -465,7 +465,8 @@ class Log:
 
     def parse_shuttle(self, log: str) -> None:
         """Parses a game log entry from `SHUTTLE:` onwards (SHUTTLE: should not be included)"""
-        if log.startswith("Shuttle call reason:") or " set a new shuttle, " in log:
+        if log.startswith(("Shuttle call reason:", "There is no means of calling the emergency shuttle anymore."))\
+           or " set a new shuttle, " in log:
             self.text = html_unescape(log.strip())
             return
 
