@@ -18,6 +18,7 @@ Made for Python 3.9+
 - byond: tools for working with BYOND, such as checking if a ckey exists
 - [centcom](https://centcom.melonmesa.com/)
 - log_downloader: downloads logs from tg's [parsed logs](https://tgstation13.org/parsed-logs)
+- [LogBuddy](./ss13_tools/log_buddy/README.md)
 - scrubby: scrubby tools
 - slur_detector: what it says on the tin
 
