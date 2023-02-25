@@ -141,3 +141,12 @@ class PlayedTogetherItem(MenuItem):
         print(f"Out of {number_of_rounds} rounds, they played " +
               f"{Fore.GREEN}{len(round_set) / number_of_rounds * 100}%{Fore.RESET} together")
         print(f"Those rounds were:{Fore.GREEN}", ', '.join(str(x) for x in round_set) or "none!", Fore.RESET)
+
+
+class LogBuddyItem(MenuItem):
+    name = "LogBuddy"
+    description = "Run LogBuddy"
+
+    def run(self):
+        from .log_buddy import main
+        main()
