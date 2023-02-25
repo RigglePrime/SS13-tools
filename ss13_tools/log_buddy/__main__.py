@@ -51,14 +51,14 @@ def main():
     """Main"""
     print("LogBuddy starting...")
 
-    main_file = LogFile()
+    logs = LogFile()
 
     if len(sys.argv) > 1:
         if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
-            main_file = LogFile.from_folder(sys.argv[1])
+            logs = LogFile.from_folder(sys.argv[1])
         else:
             for file in sys.argv[1:]:
-                main_file.collate(LogFile.from_file(file))
+                logs.collate(LogFile.from_file(file))
 
     # When you bundle everything with pyinstaller, help stops working for some reason
     help = _Helper()  # noqa: F841 pylint: disable=unused-variable,redefined-builtin

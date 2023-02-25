@@ -33,10 +33,10 @@ LogBuddy is a helper tool for reading log files. It has features to:
 
 ## How it works
 
-When starting the application with parameters, a variable called `main_file` is created, which
+When starting the application with parameters, a variable called `logs` is created, which
 contains all lines from all log files provided, sorted by time. Any function called accesses and
-modifies the `logs` variable of your `main_file`, so you may chain multiple functions.
-To reset the work set and remove all filters, call `main_file.reset_work_set()`.
+modifies the `logs` variable of your `logs`, so you may chain multiple functions.
+To reset the work set and remove all filters, call `logs.reset_work_set()`.
 
 ## Example
 
@@ -70,7 +70,7 @@ When loading logs you may see some errors. It's usually fine to ignore them, unl
 Sometimes there are strange and uncommon ways to log things, and it's hard to account for all of them.
 
 Before getting started you may want to see some stats. To see the amount of log lines loaded, run
-`len(my_logs)` (or `main_file` if you're using the default variable). To see the list of all
+`len(my_logs)` (or `logs` if you're using the default variable). To see the list of all
 players that connected during that round, you can run `my_logs.who`, or `len(my_logs.who)` for the
 number of players that have connected.
 
