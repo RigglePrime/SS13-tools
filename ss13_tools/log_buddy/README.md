@@ -54,8 +54,8 @@ have as much to type. For this example feel free to download as many (or just on
 as you'd like. The list of supported files is just above.
 
 As an alternative you can use
-`my_logs = LogFile.from_logs_link("https://tgstation13.org/parsed-logs/terry/data/logs/2022/03/18/round-180150/")`
-(the link should be replaced with your own). This will automatically download all available log files.
+`my_logs = LogFile.from_round_id(180150)`
+This will automatically download all available log files.
 
 To load the whole folder (and save the result to a variable), we use `my_logs = LogFile.from_folder("logs")`.
 If your logs folder is somewhere else, just type out the whole absolute or relative paths (for example, `../logs/`).
@@ -69,13 +69,8 @@ underscores instead of spaces). Just don't forget to replace `my_logs` with your
 When loading logs you may see some errors. It's usually fine to ignore them, unless there's many of them.
 Sometimes there are strange and uncommon ways to log things, and it's hard to account for all of them.
 
-If you have a public logs website (see: [this link](https://tgstation13.org/parsed-logs/)), you can use
-`my_logs = LogFile.from_logs_link("link_to_root_of_files")`. You know you have the right link when you see
-many different log files displayed. An example of the full link is can be seen
-[here](https://tgstation13.org/parsed-logs/terry/data/logs/2022/03/01/round-179256/).
-
 Before getting started you may want to see some stats. To see the amount of log lines loaded, run
-`len(my_logs.logs)` (or `main_file` if you're using the default variable). To see the list of all
+`len(my_logs)` (or `main_file` if you're using the default variable). To see the list of all
 players that connected during that round, you can run `my_logs.who`, or `len(my_logs.who)` for the
 number of players that have connected.
 
@@ -128,14 +123,14 @@ I strongly suggest running it with Windows Terminal, as it has MUCH nicer colour
 you may get an option to "open in Windows Terminal", if not use "`cd <directory>`, or `cd ..` to go back),
 and run the executable from there (type the name out).
 
-Using Python:
+Using Python Poetry:
 
-- `pip install -r requirements.txt`
-- `python LogBuddy.py`
+- `poetry install`
+- `python -m ss13_tools.log_buddy`
 
 Optionally:
 
-- `python LogBuddy.py logs`, where `./logs/` is a folder that contains logs (all will
+- `python -m ss13_tools.log_buddy logs`, where `./logs/` is a folder that contains logs (all will
 be parsed)
 
 I recommend creating a virtual environment, but it's not necessary. If you don't
@@ -144,5 +139,3 @@ strange issues, start worrying about it.
 
 Optionally, you can provide a log file, or folder with multiple log files.
 The script will automatically load those in. You also manually do it later.
-
-Made in Python 3.9
