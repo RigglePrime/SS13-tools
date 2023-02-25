@@ -145,7 +145,7 @@ class PlayedTogetherItem(MenuItem):
 
         if not round_set:
             return
-        print(f"Would you like to download these rounds? [y/{Style.BRIGHT}N{Style.NORMAL}] ")
+        print(f"Would you like to download these rounds? [y/{Style.BRIGHT}N{Style.NORMAL}] ", end="")
         if not input().strip() in POSITIVE_RESPONSES:
             return
         downloader = RoundListLogDownloader(round_set)
