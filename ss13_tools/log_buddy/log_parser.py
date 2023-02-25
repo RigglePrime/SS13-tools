@@ -564,6 +564,8 @@ class LogFile:
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
+        # Sort the logs
+        log_collection.write_working_to_file(downloader.output_path)
         log_collection.log_source = get_round_source_url(round_id=round_id)
         return log_collection
 
@@ -591,6 +593,7 @@ class LogFile:
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
+        log_collection.write_working_to_file(downloader.output_path)
         log_collection.log_source = f"{start_round_id}-{end_round_id}"
         return log_collection
 
