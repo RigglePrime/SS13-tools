@@ -72,22 +72,22 @@ def main():
                     Fore.LIGHTYELLOW_EX, Fore.MAGENTA, Fore.RED, Fore.WHITE, Fore.YELLOW])
 
     from IPython.terminal.embed import InteractiveShellEmbed
-    from IPython.paths import get_ipython_dir
+    # from IPython.paths import get_ipython_dir
 
     # Get instance
     shell = InteractiveShellEmbed.instance()
 
-    # Load default config
-    profile_dir = os.path.join(get_ipython_dir(), 'profile_default')
-    shell.config_file_paths.append(profile_dir)
-    shell.load_config_file()
+    # Load default config (some day we will actually load it)
+    # profile_dir = os.path.join(get_ipython_dir(), 'profile_default')
+    # shell.config_file_paths.append(profile_dir)
+    # shell.load_config_file()
 
     # Gets magics
     from ss13_tools.log_buddy.log_magics import LogMagics
     shell.register_magics(LogMagics)
 
     # Cleanup
-    del LogMagics, get_ipython_dir, InteractiveShellEmbed, choice
+    del LogMagics, InteractiveShellEmbed, choice  # , get_ipython_dir
 
     shell(header=f"""{colour}
  _                 _____           _     _
