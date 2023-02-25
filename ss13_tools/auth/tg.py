@@ -195,6 +195,7 @@ def interactive():
         print(f"{Fore.RED}Something went wrong, please try again.{Fore.RESET}")
 
 
+# This gets called a lot, I should probably change how test works some day, but right now it's fine
 def is_authenticated() -> bool:
     """Checks if we're authenticated. If a passport file exists and is invalid, it will be deleted"""
     return bool(PASSPORT) and PASSPORT.test()
