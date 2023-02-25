@@ -115,7 +115,7 @@ class LogFile:
 
     def __parse_logs(self, logs: list[str], verbose: bool = False, quiet: bool = False):
         for line in logs:
-            if not line.strip():
+            if not line.strip() or line == " - -------------------------" or "] Starting up round ID " in line:
                 continue
             try:
                 self.__parse_one_line(line)
