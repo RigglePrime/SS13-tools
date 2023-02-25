@@ -59,7 +59,7 @@ class LogFileType(Enum):
     @staticmethod
     def list():
         """Returns all possible log file types"""
-        return [x for x in LogFileType]
+        return list(LogFileType)
 
 
 class LogFile:
