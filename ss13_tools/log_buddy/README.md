@@ -144,9 +144,13 @@ because it's exactly what you think it is, an embedded [IPython](https://ipython
 shell but better! The same thing Jupyter notebooks use. What this means is you can run arbitrary Python code!
 You can interact with all available modules and create custom code.
 
+The above commands are called IPython magics. They integrate pretty well with the shell. For more info
+see [this file](log_magics.py)
+
 When starting the application with command line parameters (if you don't know what those are skip this),
-a variable called `logs` is created, which contains all lines from all log files provided, sorted by time. Any function called accesses and modifies the `logs` variable of your `logs`, so you may chain multiple functions.
-To reset the work set and remove all filters, call `logs.reset_work_set()`.
+a variable called `logs` is created, which contains all lines from all log files provided, sorted by time.
+Any function called accesses and modifies the `logs` variable of your `logs` (confusing, I know), so you
+may chain multiple functions. To reset the work set and remove all filters, call `logs.reset_work_set()`.
 
 ### Example
 
