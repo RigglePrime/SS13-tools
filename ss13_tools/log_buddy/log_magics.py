@@ -1,6 +1,7 @@
 """Defines our special log magics so people can use short commands"""
 # pylint: disable=unused-argument
 import re
+import os
 
 from IPython.terminal.magics import Magics, magics_class, line_magic
 
@@ -171,6 +172,16 @@ class LogMagics(Magics):
             parameter_s = "logs.log"
         print(f"Writing to file {parameter_s}")
         self.shell.user_ns[LOGS_VARIABLE_NAME].write_working_to_file(parameter_s)
+
+    @line_magic
+    def load_file(self, parameter_s=''):
+        """Opens the file and adds all logs to our current collection"""
+        if not parameter_s:
+            print("Enter a file name!")
+        if not os.path.exists(parameter_s):
+            print("File does not exist")
+            return
+        self.shell.user_ns[LOGS_VARIABLE_NAME].collate(LogFile.from_file(parameter_s))
 
 
 def register_aliases(shell):
