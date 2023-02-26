@@ -163,6 +163,7 @@ class LogMagics(Magics):
         """Clears the logs, freeing memory"""
         print("Are you sure you want to remove all logs? [y/N] ", end="")
         if input().strip().lower() != 'y':
+            print("Cancelled")
             return
         self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile()
         print("Logs cleared!")
