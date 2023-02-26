@@ -56,7 +56,7 @@ def main():
 
     if len(sys.argv) > 1:
         if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
-            logs = LogFile.from_folder(sys.argv[1])
+            logs.collate(LogFile.from_folder(sys.argv[1]))
         else:
             for file in sys.argv[1:]:
                 logs.collate(LogFile.from_file(file))
@@ -83,8 +83,9 @@ def main():
     # shell.load_config_file()
 
     # Gets magics
-    from ss13_tools.log_buddy.log_magics import LogMagics
+    from ss13_tools.log_buddy.log_magics import LogMagics, register_aliases
     shell.register_magics(LogMagics)
+    register_aliases(shell)
 
     # Cleanup
     del LogMagics, InteractiveShellEmbed, choice  # , get_ipython_dir
