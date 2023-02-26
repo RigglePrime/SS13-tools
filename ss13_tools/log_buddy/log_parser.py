@@ -373,7 +373,7 @@ class LogFile:
         Returns `None`"""
         filtered = []
         for log in self.logs:
-            if log.location_name and location_name.lower() == log.location_name.lower():
+            if log.location_name and location_name.casefold() == log.location_name.casefold():
                 filtered.append(log)
         if not filtered:
             print("Operation completed with empty set. Aborting.")
@@ -470,7 +470,7 @@ class LogFile:
         for log in self.logs[-number:]:
             print(log.raw_line)
 
-    def write_working_to_file(self, filename: str) -> None:
+    def write_working_to_file(self, filename: str, force_overwrite: bool = False) -> None:
         """Writes current `self.work_set` to the desired file.
 
         Parameters:
@@ -479,6 +479,12 @@ class LogFile:
         Example call: `my_logs.write_working_to_file("logs.txt")`
 
         Returns None"""
+        if not force_overwrite and os.path.exists(force_overwrite):
+            print("Seems like there's already a file at that location! Overwrite? [y/N] ", end='')
+            if input().strip().lower() != 'y':
+                print("Nothing was saved.")
+                return
+            print("Okay then, overwriting")
         with open(filename, "w", encoding="utf-8") as file:
             for log in self.logs:
                 file.write(str(log) + "\n")
@@ -565,7 +571,7 @@ class LogFile:
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
         # Sort the logs
-        log_collection.write_working_to_file(downloader.output_path)
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = get_round_source_url(round_id=round_id)
         return log_collection
 
@@ -593,7 +599,7 @@ class LogFile:
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
-        log_collection.write_working_to_file(downloader.output_path)
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = f"{start_round_id}-{end_round_id}"
         return log_collection
 
@@ -620,7 +626,7 @@ class LogFile:
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
-        log_collection.write_working_to_file(downloader.output_path)
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = "rounds " + ', '.join(str(x) for x in rounds)
         return log_collection
 
