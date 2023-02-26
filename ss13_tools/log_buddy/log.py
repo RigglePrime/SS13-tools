@@ -31,6 +31,7 @@ class LogType(Enum):
     TCOMMS = 17
     UPLINK = 18
     SHUTTLE = 19
+    TOPIC = 20
 
     @staticmethod
     def list():
@@ -181,6 +182,10 @@ class Log:
 
     def parse_game(self, log: str) -> None:
         """Parses a game log entry from `GAME:` onwards (GAME: should not be included)"""
+        self.text = log
+
+    def parse_topic(self, log: str) -> None:
+        """Parses a game log entry from `TOPIC:` onwards (TOPIC: should not be included)"""
         self.text = log
 
     def parse_access(self, log: str) -> None:
