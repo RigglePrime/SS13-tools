@@ -199,15 +199,15 @@ class Log:
 
     def parse_ooc(self, log: str) -> None:
         """Parses a game log entry from `OOC:` onwards (OOC: should not be included)"""
-        self.generic_say_parse(log)
+        self.__generic_say_parse(log)
 
     def parse_say(self, log: str) -> None:
         """Parses a game log entry from `SAY:` onwards (SAY: should not be included)"""
-        self.generic_say_parse(log)
+        self.__generic_say_parse(log)
 
     def parse_whisper(self, log: str) -> None:
         """Parses a game log entry from `WHISPER:` onwards (WHISPER: should not be included)"""
-        self.generic_say_parse(log)
+        self.__generic_say_parse(log)
 
     def parse_emote(self, log: str) -> None:
         """Parses a game log entry from `EMOTE:` onwards (EMOTE: should not be included)"""
@@ -524,7 +524,7 @@ class Log:
         self.location = tuple(int(x) for x in match)  # Bad practice since it's a side effect
         return loc
 
-    def generic_say_parse(self, log: str) -> None:
+    def __generic_say_parse(self, log: str) -> None:
         """Parses a generic SAY log entry from SAY: onwards (includes SAY, WHISPER, OOC)
         (should only include line from SAY: onwards, without the SAY)"""
         agent, other = log.split(") ", 1)  # Ensure that we didn't get a name with spaces
