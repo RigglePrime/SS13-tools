@@ -116,7 +116,7 @@ class LogMagics(Magics):
             print(f"Add some ckeys! Usage: %{self.radius.__name__} x y z radius")
             return
         try:
-            x, y, z, radius = (int(x) for x in parameter_s)
+            x, y, z, radius = (int(x) for x in parameter_s)  # pylint: disable=invalid-name
         except ValueError:
             print("Could not convert to an integer")
             return
