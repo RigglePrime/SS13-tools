@@ -36,10 +36,10 @@ LogBuddy is a helper tool for reading log files. It has features to:
 
 ## Quick start
 
-Remember, if you ever screw an input up try pressing the up arrow. The commands below have `%` in front
+Remember, if you ever screw an input up, try pressing the up arrow. The commands below have `%` in front
 of them, but you don't have to use it. Instead of `%dl` try typing `dl`.
 
-As said [below](#how-it-works-for-nerds) this is an IPython shell. If you need to calculate something,
+As said [below](#how-it-works-for-nerds), this is an IPython shell. If you need to calculate something,
 just input it. For example try typing in `5 + 3` and you'll see the result. If you know some Python I
 will encourage you to read the aforementioned section, as you can run arbitrary Python code and customise
 everything.
