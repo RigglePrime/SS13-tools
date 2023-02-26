@@ -1,9 +1,11 @@
 import os
 
-from colorama import Fore
+from colorama import Fore, init
 
 from .constants import SLURS_FILE
 
+
+init()
 if not os.path.exists(SLURS_FILE):
     with open(SLURS_FILE, "w", encoding='utf-8') as file:
         file.write("### Slurs file\n" +
