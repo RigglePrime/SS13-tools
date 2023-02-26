@@ -209,7 +209,7 @@ class LogFile:
         self.who.sort()
         self.logs = self.unfiltered_logs
 
-    def filter_ckeys(self, *ckeys: str) -> None:
+    def filter_ckeys(self, *ckeys: str, source_only: bool = False) -> None:
         """Removes all logs in which the specified ckeys are not present, saving the result
         in self.work_set. Works much like Notepad++, but only counts the agent (actor, the
         one who performed the action). See `filter_strings` for a function like Notepad++ bookmark
@@ -221,9 +221,10 @@ class LogFile:
 
         Returns `None`"""
         filtered = []
-        ckeys = [x.lower() for x in ckeys]
+        ckeys = [x.casefold() for x in ckeys]
         for log in self.logs:
-            if log.agent and log.agent.ckey.lower() in ckeys:
+            if (log.agent and log.agent.ckey.casefold() in ckeys) or \
+               (not source_only and log.patient and log.patient.ckey.casefold() in ckeys):
                 filtered.append(log)
         if not filtered:
             print("Operation completed with empty set. Aborting.")
@@ -287,7 +288,7 @@ class LogFile:
         Example call: `my_logs.filter_conversation("ckey1", "ckey2", "ckey3")` (as many or little ckeys as you want)
 
         Returns None"""
-        self.filter_ckeys(*ckeys)
+        self.filter_ckeys(*ckeys, source_only=True)
         final = []
         for ckey in ckeys:
             final.extend(self.get_only_heard(ckey, walking_error=walking_error))
