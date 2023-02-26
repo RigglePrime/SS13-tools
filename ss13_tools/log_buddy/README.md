@@ -152,8 +152,11 @@ see [this file](log_magics.py)
 
 When starting the application with command line parameters (if you don't know what those are skip this),
 a variable called `logs` is created, which contains all lines from all log files provided, sorted by time.
-Any function called accesses and modifies the `logs` variable of your `logs` (confusing, I know), so you
-may chain multiple functions. To reset the work set and remove all filters, call `logs.reset_work_set()`.
+Any function called accesses and modifies the `logs` attribute of your `logs` variable (confusing, I know),
+so you may chain multiple functions. To reset the work set and remove all filters, call `logs.reset_work_set()`.
+
+IPython magics use **the same variable** for all their functionality. If you `del logs` you will suddenly
+get errors when calling magics.
 
 ### Example
 
