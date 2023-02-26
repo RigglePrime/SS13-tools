@@ -189,7 +189,7 @@ class LogMagics(Magics):
 
 def register_aliases(shell):
     """Adds shorthands for all magics"""
-    macros = [
+    aliases = [
         ('dl', LogMagics.download.__name__),
         ('l', LogMagics.length.__name__),
         ('ckey', LogMagics.search_ckey.__name__),
@@ -198,5 +198,5 @@ def register_aliases(shell):
         ('s', LogMagics.save.__name__),
         ('p', LogMagics.print_logs.__name__),
     ]
-    for alias, magic in macros:
+    for alias, magic in aliases:
         shell.magics_manager.register_alias(alias, magic, 'line')
