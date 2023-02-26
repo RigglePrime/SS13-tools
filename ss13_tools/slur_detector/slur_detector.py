@@ -26,6 +26,10 @@ class SlurDetector:
 
     def scan_text(self, text: Iterable[str]) -> None:
         """Scans the text. Automatically called in __init__"""
+        if not SLURS:
+            print(f"{Fore.RED}ERROR{Fore.RESET} No slurs found, aborting. Please open the slurs file in your " +
+                  "favourite text editor, and add some slurs to it.")
+            return
         for line in text:
             self.process_line(line)
 
