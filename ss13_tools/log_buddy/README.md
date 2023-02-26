@@ -3,9 +3,11 @@
 - [LogBuddy](#logbuddy)
   - [Currently supported log files](#currently-supported-log-files)
   - [Quick start](#quick-start)
-  - [How it works](#how-it-works)
-  - [Example](#example)
-  - [Cheat sheet](#cheat-sheet)
+    - [Quick start (for real this time)](#quick-start-for-real-this-time)
+    - [Available commands (cheat sheet)](#available-commands-cheat-sheet)
+  - [How it works (for nerds)](#how-it-works-for-nerds)
+    - [Example](#example)
+    - [Cheat sheet (for nerds)](#cheat-sheet-for-nerds)
   - [Running](#running)
 
 This tool is "actively" being developed! Make sure to check for updates from time to time, they might add a cool feature!
@@ -36,14 +38,97 @@ LogBuddy is a helper tool for reading log files. It has features to:
 
 Remember, if you ever screw an input up try pressing the up arrow.
 
-## How it works
+As said [below](#how-it-works-for-nerds) this is an IPython shell. If you need to calculate something,
+just input it. For example try typing in `5 + 3` and you'll see the result. If you know some Python I
+will encourage you to read the aforementioned section, as you can run arbitrary Python code and customise
+everything.
 
-When starting the application with parameters, a variable called `logs` is created, which
-contains all lines from all log files provided, sorted by time. Any function called accesses and
-modifies the `logs` variable of your `logs`, so you may chain multiple functions.
+### Quick start (for real this time)
+
+So you've got an annoying appeal with a lot of investigation? You've come to the right place! I'm hoping
+that at the end of this short section you'll know how to use LogBuddy pretty effectively.
+
+After starting it, the first thing you need to do is download some logs.
+
+### Available commands (cheat sheet)
+
+All commands here start with `%`
+([IPython magics](https://ipython.readthedocs.io/en/stable/interactive/magics.html)),
+but you can skip it (automagic is on).
+
+- `%download` (alias `%dl`)
+  - `%download 198563`: download round 198563
+  - `%dl 198563`: same as above
+  - `%download 199563-199999`: download rounds 199500 to 199600 (inclusive). Be careful with this,
+  as downloading and loading more than 100 rounds may slow down your computer by a lot.
+  - `%download 198563 198565 198569 198570`: download rounds 198563, 198565, 198569 and 198570.
+  You can run this command with as many rounds as you want.
+  - `%download 198563, 198565, 198569, 198570` same as before (you can use commas too!)
+- `%save` (alias `%s`): saves logs to a file. This will **overwrite** your files, be careful
+  - `%save` (saves it to the default location, `logs.log`)
+  - `%save some_other_file.log`
+  - `%save WindowSmasher appeal.txt`
+  - `%s`
+  - `%s cool_file.txt`
+- `%length` (alias `%l`): prints the amount of log lines we loaded into memory
+  - `%length`
+  - `%l`
+- `%search_ckey` (alias `%ckey`): searches the logs for the ckeys. This is not the same
+as CTRL+F, as it looks at who commited the action
+  - `%ckey WindowSmasher86` (only logs `WindowSmasher86` was included in)
+  - `%search_ckey WindowSmasher86` (same as above)
+  - `%search_ckey ckey1 ckey2` (union, or better known as logs from both people)
+  - `%search_ckey ckey1 ckey2 ckey3`
+  - `%search_ckey ckey1, ckey2, ckey3`
+  - You can have as many as you want
+- `%search_string` (alias `%string`): literally just CTRL+F, case insensitive
+  - `%string help maint`
+  - `%string security`
+  - `%string thank you very much!`
+- `%heard`: tries to exclude the logs that the person provided couldn't have heard
+  - `%heard ckey`
+- `%conversation`: tries to reconstruct a "conversation". It's like heard but for multiple people
+  - `%conversation ckey`
+  - `%conversation ckey1 ckey2`
+  - Same as `%search_ckey`
+- `%reset`: removes all filters
+  - `%reset`
+- `%location` (alias `%loc`): filters by location. For example, you can get all logs that happened
+in the bar.
+  - `%location Bar`
+  - `%location Medbay Central` (you must provide the whole name)
+- `%radius`: sorts the logs by time. You don't need to call this as they're automatically sorted
+  - `%radius 50 62 2 10` (x=50, y=60, z=2, radius=10)
+- `%type`: filters by log type. To get all types, type `LogType.list()`
+  - `%type GAME ATTACK` (inclusion)
+  - `%type !SILICON` (exclusion, just append `!`)
+- `%print_logs` (alias `%p`): prints the logs
+  - `%print_logs`
+  - `%p`
+- `%head`: pritns the first few logs
+  - `%head`
+  - `%head 20` (print 20 instead of the default)
+- `%tail`: same as head, but from the other side
+  - `%tail`
+  - `%tail 20`
+- `%clear`: USE WITH CAUTION: **deletes** currently stored logs. After using this, there's no
+going back.
+- `%sort`: sorts the logs by time. You don't need to call this as they're automatically sorted
+  - `%sort`
+- `%lsmagic`: list all commands available. A lot are built in, so be careful!
+
+## How it works (for nerds)
+
+Before starting going forward you should look at how the application looks. Oddly familiar, right? It's
+because it's exactly what you think it is, an embedded [IPython](https://ipython.org/) shell. It's a Python
+shell but better! The same thing Jupyter notebooks use. What this means is you can run arbitrary Python code!
+You can interact with all available modules and create custom code.
+
+When starting the application with command line parameters (if you don't know what those are skip this),
+a variable called `logs` is created, which contains all lines from all log files provided, sorted by time. Any function called accesses and modifies the `logs` variable of your `logs`, so you may chain multiple functions.
 To reset the work set and remove all filters, call `logs.reset_work_set()`.
 
-## Example
+### Example
 
 In this example it's assumed you ran the application with no command line arguments (double clicking
 on the executable). To copy something, select it and right click. Topaste it, right click with nothing
@@ -58,9 +143,11 @@ folder `logs`. The folder will be in the same parent folder as the executable (o
 have as much to type. For this example feel free to download as many (or just one!) supported log files
 as you'd like. The list of supported files is just above.
 
-As an alternative you can use
-`my_logs = LogFile.from_round_id(180150)`
+As an alternative you can use `my_logs = LogFile.from_round_id(180150)`
 This will automatically download all available log files.
+
+You can also use `LogFile.from_round_range`, or `LogFile.from_round_collection`. Looking at the docstrings
+should help you understand how they operate.
 
 To load the whole folder (and save the result to a variable), we use `my_logs = LogFile.from_folder("logs")`.
 If your logs folder is somewhere else, just type out the whole absolute or relative paths (for example, `../logs/`).
@@ -97,7 +184,7 @@ This is only the surface of what you can do. Python knowledge comes in handy her
 Python interpreter running in the background, you can do anything you would in Python. Run a file,
 write a custom sort function, the world's your oyster!
 
-## Cheat sheet
+### Cheat sheet (for nerds)
 
 - `my_logs = LogFile.from_file("game.log")`: import game.log and save to `my_logs`
 - `my_logs = LogFile.from_folder("logs")`: open folder logs, import all log files and save to `my_logs`
