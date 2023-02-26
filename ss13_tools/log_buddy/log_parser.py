@@ -479,7 +479,7 @@ class LogFile:
         Example call: `my_logs.write_working_to_file("logs.txt")`
 
         Returns None"""
-        if not force_overwrite and os.path.exists(force_overwrite):
+        if not force_overwrite and os.path.exists(filename):
             print("Seems like there's already a file at that location! Overwrite? [y/N] ", end='')
             if input().strip().lower() != 'y':
                 print("Nothing was saved.")
