@@ -73,7 +73,7 @@ class LogMagics(Magics):
         if not parameter_s:
             print("No string to search for!")
             return
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(parameter_s, source_only=False)
+        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(parameter_s)
 
     @line_magic
     def heard(self, parameter_s=''):
