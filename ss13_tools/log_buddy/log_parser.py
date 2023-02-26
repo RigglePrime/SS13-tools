@@ -503,6 +503,10 @@ class LogFile:
         """Returns the length of the logs array"""
         return self.logs.__len__()
 
+    def __getitem__(self, key):
+        """Access logs like an array, delegates to the underlying logs list"""
+        return self.logs.__getitem__(key)
+
     @staticmethod
     def from_file(filename: str, log_type: LogFileType = None, verbose: bool = False, quiet: bool = False) -> LogFile:
         """Parses the specified log file
