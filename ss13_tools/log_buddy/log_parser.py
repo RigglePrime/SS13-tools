@@ -278,7 +278,7 @@ class LogFile:
 
     def filter_conversation(self, *ckeys: str, walking_error: int = 4) -> None:  # TODO: hide lines not in conversation
         """Tries to get a conversation between multiple parties, excluding what they would and would not hear.
-        Only accounts for local say (for now). Saves the result in `self.work_set`
+        Saves the result in `self.work_set`
 
         Parameters:
         `ckeys` (tuple[str, ...]): ckeys to use for sorting
@@ -569,7 +569,7 @@ class LogFile:
         return log_collection
 
     @staticmethod
-    def from_multiple_rounds(start_round_id: int, end_round_id: int, logs_we_care_about: list[str] = None) -> LogFile:
+    def from_round_range(start_round_id: int, end_round_id: int, logs_we_care_about: list[str] = None) -> LogFile:
         """Downloads multiple rounds worth of data.
 
         Parameters:
