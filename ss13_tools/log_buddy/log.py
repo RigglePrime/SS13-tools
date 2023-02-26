@@ -223,7 +223,7 @@ class Log:
             return
         action, location = other.split(' (', 1)
         self.text = action
-        loc_start = self.parse_and_set_location(location)
+        loc_start = self.__parse_and_set_location(location)
         self.location_name = location[:loc_start]
 
     def parse_radioemote(self, log: str) -> None:
@@ -245,7 +245,7 @@ class Log:
             # Just in case there's some strange log entry
             return
 
-        loc_start = self.parse_and_set_location(other)
+        loc_start = self.__parse_and_set_location(other)
         if loc_start > 0:
             self.location_name = other[:loc_start].split("(")[-1].strip()
             other = other[:loc_start].replace(self.location_name, "").strip(" (")
@@ -391,7 +391,7 @@ class Log:
         if "PDA: message monitor console" in other or "Tablet: message monitor console" in other:
             _pda_type, other = other.split(') sent "')
             text, other = other.split('" to ', 1)
-            loc_start = self.parse_and_set_location(other)
+            loc_start = self.__parse_and_set_location(other)
             self.location_name = other[:loc_start].split("(")[-1].strip()
             # -1 for a space that we stripped, and an extra 1 for the bracket
             patient = other[:loc_start - len(self.location_name) - 2].strip()
@@ -404,7 +404,7 @@ class Log:
                 text = other
             else:
                 text, location = other.split('" (', 1)
-                loc_start = self.parse_and_set_location(location)
+                loc_start = self.__parse_and_set_location(location)
                 self.location_name = location[:loc_start].strip()
         self.patient = Player(None, patient)
         self.text = html_unescape(text.strip())
@@ -412,7 +412,7 @@ class Log:
     def parse_mecha(self, log: str) -> None:
         """Parses a game log entry from `MECHA:` onwards (MECHA: should not be included)"""
         self.text = log.strip()
-        loc_start = self.parse_and_set_location(log)
+        loc_start = self.__parse_and_set_location(log)
         self.location_name = log[:loc_start].split("(")[-1].strip()
 
     def parse_paper(self, log: str) -> None:
@@ -436,7 +436,7 @@ class Log:
             self.virus_name = virus_name
             self.text = "infected, sym:" + other.strip()
         # Location is available in both cases
-        loc_start = self.parse_and_set_location(log)
+        loc_start = self.__parse_and_set_location(log)
         self.location_name = log[:loc_start].split("(")[-1].strip()
 
     def parse_tcomms(self, log: str) -> None:
@@ -457,7 +457,7 @@ class Log:
         text, other = other.split('" (', 1)
         self.text = html_unescape(text.strip())
         _language, location = other.split(") (", 1)
-        loc_start = self.parse_and_set_location(location)
+        loc_start = self.__parse_and_set_location(location)
         self.location_name = location[:loc_start].strip()
 
     def parse_uplink(self, log: str) -> None:
@@ -510,7 +510,7 @@ class Log:
         # extra data (newlines will get appended)
         self.text = other or "Empty"
 
-    def parse_and_set_location(self, log: str) -> int:
+    def __parse_and_set_location(self, log: str) -> int:
         """Finds and parses a location entry. (location name (x, y, z)). Can parse a raw line.
 
         Returns the position of the location in the string as in integer"""
@@ -549,7 +549,7 @@ class Log:
         if "(DEAD)" in text:
             text = text.replace("(DEAD) ", "", 1)
             self.is_dead = True
-        loc_start = self.parse_and_set_location(location)
+        loc_start = self.__parse_and_set_location(location)
         self.location_name = location[:loc_start]
 
     def __str__(self):
