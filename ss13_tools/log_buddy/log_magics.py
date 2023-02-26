@@ -138,7 +138,7 @@ class LogMagics(Magics):
     @line_magic
     def print_logs(self, parameter_s=''):
         """Prints our filtered logs"""
-        self.shell.user_ns[LOGS_VARIABLE_NAME].print_logs()
+        self.shell.user_ns[LOGS_VARIABLE_NAME].print_working()
 
     @line_magic
     def head(self, parameter_s=''):

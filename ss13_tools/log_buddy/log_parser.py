@@ -223,8 +223,8 @@ class LogFile:
         filtered = []
         ckeys = [x.casefold() for x in ckeys]
         for log in self.logs:
-            if (log.agent and log.agent.ckey.casefold() in ckeys) or \
-               (not source_only and log.patient and log.patient.ckey.casefold() in ckeys):
+            if (log.agent and log.agent.ckey and log.agent.ckey.casefold() in ckeys) or \
+               (not source_only and log.patient and log.patient.ckey and log.patient.ckey.casefold() in ckeys):
                 filtered.append(log)
         if not filtered:
             print("Operation completed with empty set. Aborting.")
