@@ -189,7 +189,7 @@ def register_aliases(shell):
     macros = [
         ('dl', LogMagics.download.__name__),
         ('l', LogMagics.length.__name__),
-        ('ckeys', LogMagics.search_ckey.__name__),
+        ('ckey', LogMagics.search_ckey.__name__),
         ('string', LogMagics.search_string.__name__),
         ('loc', LogMagics.location.__name__),
         ('s', LogMagics.save.__name__),
