@@ -57,6 +57,7 @@ class LogMagics(Magics):
     def sort(self, parameter_s=''):
         """Sorts our logs"""
         self.shell.user_ns[LOGS_VARIABLE_NAME].sort()
+        print("Logs sorted!")
 
     @line_magic
     def search_ckey(self, parameter_s=''):
