@@ -124,16 +124,17 @@ class LogMagics(Magics):
     @line_magic
     def type(self, parameter_s=''):
         """Filters by log type"""
-        exclude = (x[1:].strip() for x in re.split(r'[, ]', parameter_s) if x and x[0] == '!')
-        include = (x.strip() for x in re.split(r'[, ]', parameter_s) if x and x[0] != '!')
-        log_types = (LogType.parse_log_type(log_type) for log_type in parameter_s)
-        if LogType.UNKNOWN in log_types:
+        if not parameter_s:
+            print("No log types!")
+        exclude = set(LogType.parse_log_type(x[1:].strip()) for x in re.split(r'[, ]', parameter_s) if x and x[0] == '!')
+        include = set(LogType.parse_log_type(x.strip()) for x in re.split(r'[, ]', parameter_s) if x and x[0] != '!')
+        if LogType.UNKNOWN in include | exclude:
             print("Unrecognised log type. Available types:")
             print(LogType.list())
             print(f"Example include: %{self.type.__name__} GAME ATTACK")
             print(f"Example exclude: %{self.type.__name__} !SILICON")
             return
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_type(include, exclude)
+        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_type(include=include, exclude=exclude)
 
     @line_magic
     def print_logs(self, parameter_s=''):

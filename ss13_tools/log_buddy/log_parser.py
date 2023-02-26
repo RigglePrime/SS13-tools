@@ -414,14 +414,21 @@ class LogFile:
         To get a list of all available LogTypes call `LogType.list()`
 
         Example calls:
-        `my_logs.filter_by_type((LogType.OOC))` (the first argument counts as include)
-        `my_logs.filter_by_type(include=(LogType.SAY))`
-        `my_logs.filter_by_type(exclude=(LogType.TCOMMS))`
+        `my_logs.filter_by_type((LogType.OOC,))` (the first argument counts as include)
+        `my_logs.filter_by_type(include=(LogType.SAY,))`
+        `my_logs.filter_by_type(exclude=(LogType.TCOMMS,))`
         """
 
+        if include:
+            filter_for = set(LogType) & set(include)
+        else:
+            filter_for = set(LogType) - set(exclude)
+        if not filter_for:
+            print("Nothing to filter for!")
+            return
         filtered = []
         for log in self.logs:
-            if (include and log.log_type in include) and (exclude and log.log_type not in exclude):
+            if log.log_type in filter_for:
                 filtered.append(log)
         if not filtered:
             print("Operation completed with empty set. Aborting.")
