@@ -37,7 +37,8 @@ LogBuddy is a helper tool for reading log files. It has features to:
 ## Quick start
 
 Remember, if you ever screw an input up, try pressing the up arrow. The commands below have `%` in front
-of them, but you don't have to use it. Instead of `%dl` try typing `dl`.
+of them, but you don't always have to use it. Instead of `%dl` try typing `dl`. If you get an invalid
+syntax error, try doing it with `%`.
 
 As said [below](#how-it-works-for-nerds), this is an IPython shell. If you need to calculate something,
 just input it. For example try typing in `5 + 3` and you'll see the result. If you know some Python I
@@ -122,7 +123,7 @@ in the bar.
   - `%location Medbay Central` (you must provide the whole name)
 - `%radius`: sorts the logs by time. You don't need to call this as they're automatically sorted
   - `%radius 50 62 2 10` (x=50, y=60, z=2, radius=10)
-- `%type`: filters by log type. To get all types, type `LogType.list()`
+- `%type`: filters by log type. To get all types, type `LogType.list()`. `%` mandatory
   - `%type GAME ATTACK` (inclusion)
   - `%type !SILICON` (exclusion, just append `!`)
 - `%print_logs` (alias `%p`): prints the logs
