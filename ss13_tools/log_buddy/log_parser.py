@@ -380,7 +380,7 @@ class LogFile:
             return
         self.logs = filtered
 
-    def filter_by_radius(self, location: tuple[int, int, int], radius: int) -> None:
+    def filter_by_radius(self, location: tuple[int, int, int], radius: int, exclude_locationless: bool = True) -> None:
         """Removes all logs that did not happen in the specified radius around the location,
         and stores the result in the work set.
 
@@ -393,6 +393,10 @@ class LogFile:
         Returns None"""
         filtered = []
         for log in self.logs:
+            if not log.location:
+                if not exclude_locationless:
+                    filtered.append(log)
+                continue
             # Z level must match
             if log.location[2] != location[2]:
                 continue
