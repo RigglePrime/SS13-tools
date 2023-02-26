@@ -6,6 +6,8 @@
 
 A set of tools to help with automating tasks for the /tg/ branch of SS13.
 
+If you're looking for LogBuddy help, click [here](./ss13_tools/log_buddy/README.md)
+
 Made for Python 3.9+
 
 ## How to run
