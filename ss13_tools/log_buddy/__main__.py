@@ -11,12 +11,13 @@ from _sitebuiltins import _Helper
 # Log is unused, but it's here so the user doesn't have to import it manually
 from ss13_tools.log_buddy.log import Log, LogType  # noqa: F401 pylint: disable=unused-import
 from ss13_tools.log_buddy.log_parser import LogFile
+from ss13_tools.log_buddy.constants import HELP_LINK
 
 # Change the help text, so users can more easily understand what to do
-_Helper.__repr__ = lambda self: f"""Welcome to {Fore.CYAN}LogBuddy{Fore.RESET}!
+_Helper.__repr__ = lambda self: f"""Welcome to {Fore.CYAN}{HELP_LINK}{Fore.RESET}!
 {Fore.YELLOW}Use right click to copy something, CTRL + C will terminate the program.{Fore.RESET}
 
-Please see the latest documentation at {Fore.BLUE}https://github.com/RigglePrime/LogBuddy/blob/master/README.md{Fore.RESET}
+Please see the latest documentation at {Fore.BLUE}{Fore.RESET}
 To get started, type '{Fore.GREEN}LogFile.from_file("game.txt"){Fore.RESET}' (if there is a file named game.txt in the same
 directory) or '{Fore.GREEN}LogFile.from_folder("logs"){Fore.RESET}' (if your game.txt, attack.txt...are stored in a
 folder named logs)
