@@ -36,7 +36,8 @@ LogBuddy is a helper tool for reading log files. It has features to:
 
 ## Quick start
 
-Remember, if you ever screw an input up try pressing the up arrow.
+Remember, if you ever screw an input up try pressing the up arrow. The commands below have `%` in front
+of them, but you don't have to use it. Instead of `%dl` try typing `dl`.
 
 As said [below](#how-it-works-for-nerds) this is an IPython shell. If you need to calculate something,
 just input it. For example try typing in `5 + 3` and you'll see the result. If you know some Python I
@@ -49,6 +50,23 @@ So you've got an annoying appeal with a lot of investigation? You've come to the
 that at the end of this short section you'll know how to use LogBuddy pretty effectively.
 
 After starting it, the first thing you need to do is download some logs.
+
+`%dl 198563`
+
+And that's it! Look at [this section](#available-commands-cheat-sheet) for more ways to download logs.
+You can input several rounds, or even a range. If you want to load them from an already existing file,
+use `%load_file`
+
+Now let's filter them. Let's say our friend `lootgoblin614` got into a fight. They claim to have been
+insulted by someone, so it would be useful to see who they spoke with.
+
+`%heard lootgoblin614` should display only logs they heard. `%p` to print the logs, `%s` to save and
+we're done! Doens't work? First, let's reset the filter with `%reset`. If we know they fought in
+the bar, we can try `%location Bar` (use full location names), and printing that out. We could also
+just filter for ckeys with `%ckey lootgoblin614 barenjoyer999` to get logs from only those two.
+For the full list of commands, see [available commands](#available-commands-cheat-sheet)
+
+When you're done just type `%s` to save to a file, and you're all done. Good luck with the appeal!
 
 ### Available commands (cheat sheet)
 
@@ -64,6 +82,8 @@ but you can skip it (automagic is on).
   - `%download 198563 198565 198569 198570`: download rounds 198563, 198565, 198569 and 198570.
   You can run this command with as many rounds as you want.
   - `%download 198563, 198565, 198569, 198570` same as before (you can use commas too!)
+- `%load_file`: loads logs from a file
+  - `%load_file logs.log`
 - `%save` (alias `%s`): saves logs to a file. This will **overwrite** your files, be careful
   - `%save` (saves it to the default location, `logs.log`)
   - `%save some_other_file.log`
@@ -86,7 +106,7 @@ as CTRL+F, as it looks at who commited the action
   - `%string security`
   - `%string thank you very much!`
 - `%heard`: tries to exclude the logs that the person provided couldn't have heard
-  - `%heard ckey`
+  - `%heard WindowSmasher86`
 - `%conversation`: tries to reconstruct a "conversation". It's like heard but for multiple people
   - `%conversation ckey`
   - `%conversation ckey1 ckey2`
