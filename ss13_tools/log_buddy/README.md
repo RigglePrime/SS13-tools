@@ -44,6 +44,9 @@ just input it. For example try typing in `5 + 3` and you'll see the result. If y
 will encourage you to read the aforementioned section, as you can run arbitrary Python code and customise
 everything.
 
+As everything is happening in the console you can't CTRL+C to copy. Instead select what you want to copy
+with your mouse, and just right click anywhere. To paste, make sure nothing is selected and right click.
+
 ### Quick start (for real this time)
 
 So you've got an annoying appeal with a lot of investigation? You've come to the right place! I'm hoping
