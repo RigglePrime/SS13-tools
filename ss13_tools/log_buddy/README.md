@@ -86,7 +86,7 @@ but you can skip it (automagic is on).
   - `%download 198563 198565 198569 198570`: download rounds 198563, 198565, 198569 and 198570.
   You can run this command with as many rounds as you want.
   - `%download 198563, 198565, 198569, 198570` same as before (you can use commas too!)
-- `%load_file`: loads logs from a file
+- `%load_file`: loads logs from a file, and adds it to the current log set
   - `%load_file logs.log`
 - `%save` (alias `%s`): saves logs to a file. This will **overwrite** your files, be careful
   - `%save` (saves it to the default location, `logs.log`)
