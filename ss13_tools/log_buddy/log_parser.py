@@ -361,19 +361,23 @@ class LogFile:
 
         return filtered
 
-    def filter_by_location_name(self, location_name: str) -> None:
+    def filter_by_location_name(self, location_name: str, exact: bool = False) -> None:
         """Removes all logs that did not happen in the specified location,
         and stores the result in the work set.
 
         Parameters:
         `location_name` (str): the name of the location, case insensitive
+        `exact` (bool): should the strings exactly match, or just contain?
 
         Example call: my_logs.filter_by_location_name("Bar")
 
         Returns `None`"""
         filtered = []
+        location_name = location_name.casefold()
         for log in self.logs:
-            if log.location_name and location_name.casefold() == log.location_name.casefold():
+            if log.location_name and \
+               (exact and location_name in log.location_name.casefold()) or \
+               (location_name == log.location_name.casefold()):
                 filtered.append(log)
         if not filtered:
             print("Operation completed with empty set. Aborting.")
