@@ -550,7 +550,7 @@ class Log:
             text = text.replace("(DEAD) ", "", 1)
             self.is_dead = True
         loc_start = self.__parse_and_set_location(location)
-        self.location_name = location[:loc_start]
+        self.location_name = location[:loc_start].strip()
 
     def __str__(self):
         """String representation"""
