@@ -51,7 +51,7 @@ class LogMagics(Magics):
     @line_magic
     def length(self, parameter_s=''):
         """Prints how many logs we have"""
-        print(len(self.shell.user_ns[LOGS_VARIABLE_NAME]))
+        print("Current number of logs is", len(self.shell.user_ns[LOGS_VARIABLE_NAME]))
 
     @line_magic
     def sort(self, parameter_s=''):
@@ -169,7 +169,7 @@ class LogMagics(Magics):
         print("Logs cleared!")
 
     @line_magic
-    def save(self, parameter_s=''):
+    def save_logs(self, parameter_s=''):
         """Saves the working set to a file"""
         if not parameter_s:
             parameter_s = "logs.log"
@@ -195,7 +195,7 @@ def register_aliases(shell):
         ('ckey', LogMagics.search_ckey.__name__),
         ('string', LogMagics.search_string.__name__),
         ('loc', LogMagics.location.__name__),
-        ('s', LogMagics.save.__name__),
+        ('s', LogMagics.save_logs.__name__),
         ('p', LogMagics.print_logs.__name__),
     ]
     for alias, magic in aliases:

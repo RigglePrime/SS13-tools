@@ -59,7 +59,7 @@ After starting it, the first thing you need to do is download some logs.
 
 And that's it! Look at [this section](#available-commands-cheat-sheet) for more ways to download logs.
 You can input several rounds, or even a range. If you want to load them from an already existing file,
-use `%load_file`
+use `%load_logs`
 
 Now let's filter them. Let's say our friend `lootgoblin614` got into a fight. They claim to have been
 insulted by someone, so it would be useful to see who they spoke with.
@@ -86,12 +86,12 @@ but you can skip it (automagic is on).
   - `%download 198563 198565 198569 198570`: download rounds 198563, 198565, 198569 and 198570.
   You can run this command with as many rounds as you want.
   - `%download 198563, 198565, 198569, 198570` same as before (you can use commas too!)
-- `%load_file`: loads logs from a file, and adds it to the current log set
-  - `%load_file logs.log`
-- `%save` (alias `%s`): saves logs to a file. This will **overwrite** your files, be careful
-  - `%save` (saves it to the default location, `logs.log`)
-  - `%save some_other_file.log`
-  - `%save WindowSmasher appeal.txt`
+- `%load_logs`: loads logs from a file, and adds it to the current log set
+  - `%load_logs logs.log`
+- `%save_logs` (alias `%s`): saves logs to a file. This will **overwrite** your files, be careful
+  - `%save_logs` (saves it to the default location, `logs.log`)
+  - `%save_logs some_other_file.log`
+  - `%save_logs WindowSmasher appeal.txt`
   - `%s`
   - `%s cool_file.txt`
 - `%length` (alias `%l`): prints the amount of log lines we loaded into memory
