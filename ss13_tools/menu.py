@@ -38,7 +38,7 @@ class SlurDetectorSingleItem(MenuItem):
     description = "Run slur detection on a file"
 
     def run(self):
-        from .slur_detector import main
+        from .slur_detector.__main__ import main
         main()
 
 
@@ -82,7 +82,7 @@ class CentComItem(MenuItem):
     description = "Search the CentCom ban database for ckeys"
 
     def run(self):
-        from .centcom import main
+        from .centcom.__main__ import main
         main()
 
 
@@ -91,7 +91,7 @@ class UserExistsItem(MenuItem):
     description = "Check if users on a list exist or not"
 
     def run(self):
-        from .byond import main
+        from .byond.__main__ import main
         main()
 
 
@@ -100,7 +100,7 @@ class TokenTestServiceItem(MenuItem):
     description = "The one-stop shop for TG13 token testing"
 
     def run(self):
-        from .auth import main
+        from .auth.__main__ import main
         main()
 
 
@@ -160,7 +160,7 @@ class LogBuddyItem(MenuItem):
     description = "Run LogBuddy"
 
     def run(self):
-        from .log_buddy import main
+        from .log_buddy.__main__ import main
         main()
 
 
