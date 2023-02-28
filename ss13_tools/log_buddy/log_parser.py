@@ -77,7 +77,7 @@ class LogFile:
 
     `log_file = LogFile()` # Empty log file, useful for combining more later using `collate`,
 
-    `log_file = LogFile(open("game.log").readlines(), LogFileType.UNKNOWN)`,
+    `log_file = LogFile(open("game.log"), LogFileType.UNKNOWN)`,
 
     `log_file = LogFile(["logline 1", "log line 2", "log line 3"])\
     # NOTE: must be a valid log or the parser will raise an exception`
@@ -89,7 +89,7 @@ class LogFile:
     sortable: bool
     log_source: Annotated[str, "Source of the logs (if available)"]
 
-    def __init__(self, logs: list[str] = None, log_type: LogFileType = LogFileType.UNKNOWN,
+    def __init__(self, logs: Iterable[str] = None, log_type: LogFileType = LogFileType.UNKNOWN,
                  verbose: bool = False, quiet: bool = False) -> None:
         if verbose and quiet:
             print("Really? You want me to be silent and verbose? Those are mutually exclusive you know")
@@ -108,7 +108,7 @@ class LogFile:
         self.unfiltered_logs.sort(key=lambda log: log.time)
         self.logs = self.unfiltered_logs
 
-    def __parse_logs(self, logs: list[str], verbose: bool = False, quiet: bool = False):
+    def __parse_logs(self, logs: Iterable[str], verbose: bool = False, quiet: bool = False):
         for line in logs:
             if not line.strip() or line == " - -------------------------" or "] Starting up round ID " in line:
                 continue
@@ -534,8 +534,7 @@ class LogFile:
         if not log_type and "." in filename:
             log_type = LogFileType.parse_log_file_type(filename.split(".", 1)[0])
         with open(filename, "r", encoding="utf-8") as file:
-            lines = file.readlines()
-        return LogFile(lines, log_type, verbose, quiet)
+            return LogFile(file, log_type, verbose, quiet)
 
     @staticmethod
     def from_folder(folder: str, verbose: bool = False, quiet: bool = False) -> LogFile:
