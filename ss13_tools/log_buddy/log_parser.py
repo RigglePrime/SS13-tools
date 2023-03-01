@@ -231,7 +231,7 @@ class LogFile:
             return
         self.logs = filtered
 
-    def filter_strings(self, *strings: str, case_sensitive: bool = False) -> None:
+    def filter_strings(self, *strings: str, case_sensitive: bool = False, additive: bool = False) -> None:
         """Removes all logs in which the specified strings are not present, saving them in
         `self.work_set`. Works exactly like Notepad++ bookmark
 
@@ -258,7 +258,10 @@ class LogFile:
         if not filtered:
             print("Operation completed with empty set. Aborting.")
             return
-        self.logs = filtered
+        if additive:
+            self.logs.append(filtered)
+        else:
+            self.logs = filtered
 
     def filter_strings_case_sensitive(self, *strings: str) -> None:
         """Shorter for `filter_strings(*strings, case_sensitive = True)`"""
