@@ -9,6 +9,9 @@ from html import unescape as html_unescape
 from dateutil.parser import isoparse
 
 
+from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE
+
+
 class LogType(Enum):
     """What type of log file is it?"""
     UNKNOWN = 0
@@ -70,6 +73,34 @@ class SiliconLogType(Enum):
     MISC = 0
     CYBORG = 1
     LAW = 2
+
+
+class AdminLogType(Enum):
+    """What type of admin log is it? (enum)"""
+    OTHER = "other"
+    STATUS_CHANGE = "status_change"
+    ANNOUNCE = "announce"
+    PLAYER_PANEL = "pp"
+    ANTAG_PANEL = "check_antag"
+    AGHOST = "aghost"
+    SUBTLE_MESSAGE = "sm"
+    # OFFER_CONTROL = "offer"
+    DIRECT_NARRATE = "dn"
+    DAMAGE = "damage"
+    DSAY = "dsay"
+    SMITE = "smite"
+    AHEAL = "aheal"
+    COMMAND_REPORT = "command_report"
+    BUILD_MODE = "buildmode"
+    DELETE = "delete"
+    SPAWN = "spawn"
+    HEADSET_MESSAGE = "hm"
+    # MODIFY = "mod"
+    PLAY_SOUND = "sound"
+    COMMEND = "commend"
+    EQUIPMENT = "equipment"
+    OBJECT_SAY = "osay"
+    TELEPORT = "teleport"
 
 
 class Player:
@@ -180,6 +211,9 @@ class Log:
     telecomms_network: Annotated[str, "If log type is TCOMMS, the network on which the message was spoken \
                                       on will be stored here"]
 
+    # Admin specific
+    admin_log_type: Annotated[AdminLogType, "Sores what kind of admin log it is (None if not an admin log)"]
+
     def parse_game(self, log: str) -> None:
         """Parses a game log entry from `GAME:` onwards (GAME: should not be included)"""
         self.text = log
@@ -192,9 +226,173 @@ class Log:
         """Parses a game log entry from `ACCESS:` onwards (ACCESS: should not be included)"""
         self.text = log
 
-    def parse_admin(self, log: str) -> None:
+    # Another one of those overly-complex functions, but what can you do...
+    def parse_admin(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `ADMIN:` onwards (ADMIN: should not be included)"""
-        self.text = log
+        # A yandere dev looking function. I'd do a regex but this runs faster
+        # I'm calling this current implementation good enough. It's not the best, but it will do
+        # TODO: improve
+        self.admin_log_type = AdminLogType.OTHER
+        other = log
+        if other.startswith("Announce: "):
+            self.admin_log_type = AdminLogType.ANNOUNCE
+            _, other = other.split(": ", 1)
+            agent, other = other.split(") ", 1)
+            self.agent = Player.parse_player(agent)
+            self.text = other[1:].strip()  # Remove ':'
+            return
+        if other.startswith("SubtlePM: "):
+            self.admin_log_type = AdminLogType.SUBTLE_MESSAGE
+            _, other = other.split(": ", 1)
+            agent, other = other.split(" -> ", 1)
+            self.agent = Player.parse_player(agent)
+            patient, other = other.split(") : ", 1)
+            self.patient = Player.parse_player(patient)
+            self.text = other
+            return
+        if other.startswith("Build Mode: "):
+            self.admin_log_type = AdminLogType.BUILD_MODE
+            _, other = other.split(": ", 1)
+            agent, other = other.split(") ", 1)
+            self.agent = Player.parse_player(agent)
+            loc_start = self.__parse_and_set_location(other)
+            if loc_start > 0:
+                if "modified the " in other:
+                    self.text = other
+                    return
+                self.location_name = other[:loc_start].rsplit("(", 1)[-1].strip()
+                other = other[:loc_start].replace(self.location_name, "").strip(" (")
+                if " at " in other:
+                    other, location_name = other.split(" at ", 1)
+                    self.location_name = location_name.strip()
+            self.text = other.strip()
+            return
+        if other.startswith("Starting query #"):
+            self.text = other
+            return
+        if other.startswith("DirectNarrate: "):
+            self.admin_log_type = AdminLogType.DIRECT_NARRATE
+            agent, other = other[15:].split(" to ", 1)
+            self.agent = Player.parse_player(agent)
+            patient, other = other.split("): ", 1)
+            self.patient = Player.parse_player(patient)
+            self.text = other.strip()
+            return
+        match = re.search(ADMIN_STAT_CHANGE, other)
+        if match:
+            self.admin_log_type = AdminLogType.STATUS_CHANGE
+            agent, other = other.split(match[0])
+            self.agent = Player(agent.strip(), None)
+            other = match[0] + other.rstrip('.')
+            self.text = other
+            return
+        if other.startswith("DSAY: "):
+            self.__generic_say_parse(log[6:])
+            return
+        # If we're here, the line probably starts with our agent
+        # Except when it doesn't
+        if " exploit " in other and "attempted" in other:
+            self.text = other
+            return
+        if other.endswith(" is trying to join, but needs to verify their ckey."):
+            if "/(" in other:
+                self.agent = Player(other.split(") ", 1)[0].strip(), None)
+            else:
+                self.agent = Player(other.split(" ", 1)[0].strip(), None)
+            self.text = other
+            return
+        if " custom away mission" in other:
+            other = other.replace("Admin ", "", 1)  # Because WHY WOULD IT BE UNIFORM
+            agent, other = other.split(") ", 1)
+            self.agent = Player.parse_player(agent)
+            return
+        agent, other = other.split(") ", 1)
+        self.agent = Player.parse_player(agent)
+        if re.search(ADMIN_BUILD_MODE, other):
+            self.admin_log_type = AdminLogType.BUILD_MODE
+        elif match := re.search(ADMIN_OSAY_EXP, other):
+            self.admin_log_type = AdminLogType.OBJECT_SAY
+            self.patient = Player(None, match[1])
+            self.location_name = match[2]
+            self.text = match[3]
+            self.__parse_and_set_location(other)
+            return
+        elif other.startswith("has created a command report: "):
+            self.admin_log_type = AdminLogType.COMMAND_REPORT
+            # I can't be bothered anymore
+        elif other.startswith("(reply to "):
+            self.admin_log_type = AdminLogType.HEADSET_MESSAGE
+            # len("(reply to ") == 10
+            other = other[10:]
+            patient, other = other.split(") ", 1)
+            self.patient = Player.parse_player(patient)
+            loc_start = self.__parse_and_set_location(other)
+            if loc_start > 0:
+                self.location_name = other[:loc_start].split("(")[-1].strip()
+                other = other[:loc_start].replace(self.location_name, "").strip(" (")
+            self.text = other.strip(' "')
+            return
+        elif other.startswith("created ") or other.startswith("spawned ") or other.startswith("pod-spawned "):
+            self.admin_log_type = AdminLogType.SPAWN
+        elif other.startswith("changed the equipment of "):
+            self.admin_log_type = AdminLogType.EQUIPMENT
+            self.patient = Player.parse_player(other[25:])
+        elif other.startswith("dealt ") and " to " in other:
+            self.admin_log_type = AdminLogType.DAMAGE
+            self.patient = Player.parse_player(other.split(" to ", 1)[1].strip())
+        elif other.startswith("commended "):
+            self.admin_log_type = AdminLogType.COMMEND
+            self.patient = Player.parse_player(other[10:])
+        elif other.startswith("has offered control of "):
+            # len("has offered control of (" == 24
+            self.patient = Player.parse_player(other[24:].rsplit(")", 1)[0])
+        elif other.startswith("added a new objective for "):
+            self.patient = Player(other[26:].split(":", 1)[0], None)
+        elif other.startswith("played web sound"):
+            self.admin_log_type = AdminLogType.PLAY_SOUND
+        elif other.startswith("jumped to "):
+            self.admin_log_type = AdminLogType.TELEPORT
+            loc_start = self.__parse_and_set_location(other)
+            if loc_start > 0:
+                # len("jumped to ") == 10
+                self.location_name = other[10:loc_start]
+        elif other.startswith("teleported "):
+            self.admin_log_type = AdminLogType.TELEPORT
+            # len("teleported ") == 11
+            patient, location = other[11:].split(" to ", 1)
+            self.patient = Player.parse_player(patient)
+            loc_start = self.__parse_and_set_location(location)
+            if loc_start > 0:
+                self.location_name = location[:loc_start]
+        elif other.startswith("has removed ") and "antagonist status" in other:
+            self.admin_log_type = AdminLogType.ANTAG_PANEL
+            self.patient = Player.parse_player(other[other.index("antagonist status from ") + 23:])
+        elif other.startswith("punished "):
+            self.admin_log_type = AdminLogType.SMITE
+            # Same as before
+            self.patient = Player.parse_player(other[9:])
+        elif other.startswith("healed / Revived "):
+            self.admin_log_type = AdminLogType.AHEAL
+            self.patient = Player.parse_player(other[17:])
+        elif other.startswith("possessed a golem shell enslaved to"):
+            # Same as before, 36 is the len
+            self.patient = Player.parse_player(other[36:])
+        elif " player panel" in other:
+            self.admin_log_type = AdminLogType.PLAYER_PANEL
+            if "individual" in other and "*null*" not in other:
+                # Same again
+                patient = Player.parse_player(other[17:-1])
+            return
+        elif "checked antagonists" in other:
+            self.admin_log_type = AdminLogType.ANTAG_PANEL
+        elif "admin ghosted" in other:
+            self.admin_log_type = AdminLogType.AGHOST
+        # For debugging. No, I won't remove it.
+        # if not self.agent:
+        #     print("\u001b[31m[!]\u001b[0m", log)
+        # if self.admin_log_type == AdminLogType.OTHER and not self.patient:
+        #     print("\u001b[33m[*]\u001b[0m", log)
+        self.text = other.strip()
 
     def parse_adminprivate(self, log: str) -> None:
         """Parses a game log entry from `ADMINPRIVATE:` onwards
@@ -516,7 +714,7 @@ class Log:
         Returns the position of the location in the string as in integer"""
         # NOTE: this does not set location name, as it is not always present
         # Find all possible location strings
-        match = re.findall(r"\(\d{1,3},\d{1,3},\d{1,2}\)", log)
+        match = re.findall(LOC_REGEX, log)
         # Check if there are any results
         if not match:
             return -1
