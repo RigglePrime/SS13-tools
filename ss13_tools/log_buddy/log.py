@@ -296,7 +296,7 @@ class Log:
             return
         if other.endswith(" is trying to join, but needs to verify their ckey."):
             if "/(" in other:
-                self.agent = Player(other.split(") ", 1)[0].strip(), None)
+                self.agent = Player.parse_player(other.split(") ", 1)[0].strip())
             else:
                 self.agent = Player(other.split(" ", 1)[0].strip(), None)
             self.text = other
