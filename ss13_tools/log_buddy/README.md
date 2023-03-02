@@ -84,13 +84,23 @@ All commands here start with `%`
 but you can skip it (automagic is on).
 
 - `%download` (alias `%dl`)
+  - Options:
+    - c: force the program to interpret your input as a ckey
+    - p: only get the round the person played in? (applies only for ckeys)
+    - r: the amount of rounds to download (applies only for ckeys)
   - `%download 198563`: download round 198563
   - `%dl 198563`: same as above
   - `%download 199563-199999`: download rounds 199500 to 199600 (inclusive). Be careful with this,
   as downloading and loading more than 100 rounds may slow down your computer by a lot.
   - `%download 198563 198565 198569 198570`: download rounds 198563, 198565, 198569 and 198570.
   You can run this command with as many rounds as you want.
-  - `%download 198563, 198565, 198569, 198570` same as before (you can use commas too!)
+  - `%download -p coolckey123` downloads 50 (default) rounds that `coolckey123` played in
+  - `%download -r10 coolckey123` downloads 10 rounds that `coolckey123` played in
+  - `%download -c 123123123` this option is useful, as `dl` would interpret numbers as a round ID.
+  `-c` forces it to interpret it as a ckey
+  - `%download -c -r=10 123123123` you can have more than one switch! The `=` is optional
+  - `%download -cr=10 123123123` you can group options like this! The `=` is optional. Just remember
+to have the number right next to the character (r). Doing `-rc10` would assign 10 to c (error)
 - `%load_logs`: loads logs from a file, and adds it to the current log set
   - `%load_logs logs.log`
 - `%save_logs` (alias `%s`): saves logs to a file. This will **overwrite** your files, be careful
@@ -111,7 +121,8 @@ as CTRL+F, as it looks at who commited the action
   - `%search_ckey ckey1, ckey2, ckey3`
   - You can have as many as you want
 - `%search_string` (alias `%string`): literally just CTRL+F, case insensitive. If you need to look for something
-that has spaces, either use `-r` (raw mode), or add quotation marks (`'`)
+that has spaces, either use `-r` (raw mode), or add quotation marks (`'`). If your desired input has quotation marks,
+use `\'` to escape them.
   - Options:
     - a: append mode. Take from the unfiltered logs and append the results to the current work set
     - c: case sensitive mode
@@ -129,7 +140,7 @@ that has spaces, either use `-r` (raw mode), or add quotation marks (`'`)
 - `%conversation`: tries to reconstruct a "conversation". It's like heard but for multiple people
   - `%conversation ckey`
   - `%conversation ckey1 ckey2`
-  - Same as `%search_ckey`
+  - You can do similar things as with `%search_ckey`
 - `%reset`: removes all filters
   - `%reset`
 - `%location` (alias `%loc`): filters by location. For example, you can get all logs that happened
