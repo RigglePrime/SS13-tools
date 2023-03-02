@@ -27,6 +27,7 @@ class CkeyLogDownloader(LogDownloader):
         self.ckey = canonicalize(key) if key else None
         self.only_played = only_played
         self.number_of_rounds = number_of_rounds
+        output_path = output_path or DEFAULT_CKEY_OUTPUT_PATH
         self.output_path = output_path.format(ckey=self.ckey or "output")
 
     async def _update_round_list(self) -> None:
