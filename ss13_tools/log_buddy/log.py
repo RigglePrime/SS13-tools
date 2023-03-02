@@ -214,9 +214,36 @@ class Log:
     # Admin specific
     admin_log_type: Annotated[AdminLogType, "Sores what kind of admin log it is (None if not an admin log)"]
 
-    def parse_game(self, log: str) -> None:
+    def parse_game(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `GAME:` onwards (GAME: should not be included)"""
-        self.text = log
+        other = log
+        loc_start = self.__parse_and_set_location(other)
+        if loc_start > 0:
+            if "emitter turned " in other:
+                other, player_and_loc = other.split(" by ", 1)
+                player_and_loc = player_and_loc.split(" in ", 1)
+                self.agent = Player.parse_player(player_and_loc[0])
+                self.location_name = player_and_loc[1].split(" (")[0]
+            elif "emitter lost power" in other:
+                self.location_name = other[:loc_start].split(" in ", 1)[1].strip()
+            elif other.startswith("A grenade detonated") or \
+                    other.startswith("An explosion has triggered a gibtonite deposit") or \
+                    other.startswith("Reagent explosion reaction occurred") or \
+                    (" at " in other and " (" not in other):
+                self.location_name = other[:loc_start].split(" at ")[1].strip()
+            elif " in " in other and " (" not in other:
+                self.location_name = other[:loc_start].split(" in ")[1].strip()
+            else:
+                self.location_name = other[:loc_start].rsplit(" (", 1)[-1].strip()
+        if "Last fingerprints:" in other:
+            other, fingerprints = other.strip(". ").split("Last fingerprints:")
+            if "/(" in fingerprints:
+                self.agent = Player.parse_player(fingerprints)
+            elif fingerprints != "*null*":
+                self.agent = Player(fingerprints, None)
+        elif "/(" in other and ") " in other:
+            self.agent = Player.parse_player(other.split(") ", 1)[0])
+        self.text = other
 
     def parse_topic(self, log: str) -> None:
         """Parses a game log entry from `TOPIC:` onwards (TOPIC: should not be included)"""
