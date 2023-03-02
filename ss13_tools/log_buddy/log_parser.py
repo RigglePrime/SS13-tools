@@ -245,7 +245,8 @@ class LogFile:
 
         Returns `None`"""
         filtered = []
-        for log in self.logs:
+        logs_it = self.unfiltered_logs if additive else self.logs
+        for log in logs_it:
             raw_line = log.raw_line
             if not case_sensitive:
                 raw_line = raw_line.casefold()
