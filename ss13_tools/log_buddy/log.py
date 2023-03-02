@@ -9,7 +9,8 @@ from html import unescape as html_unescape
 from dateutil.parser import isoparse
 
 
-from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE
+from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
+    GAME_BOMB_HORRIBLE_HREF
 
 
 class LogType(Enum):
@@ -237,10 +238,18 @@ class Log:
                 self.location_name = other[:loc_start].rsplit(" (", 1)[-1].strip()
         if "Last fingerprints:" in other:
             other, fingerprints = other.strip(". ").split("Last fingerprints:")
+            fingerprints = fingerprints.lstrip()
             if "/(" in fingerprints:
                 self.agent = Player.parse_player(fingerprints)
             elif fingerprints != "*null*":
                 self.agent = Player(fingerprints, None)
+        if log.startswith("Bomb valve opened"):
+            agent = log.split("- Last touched by: ")[1]
+            match = re.match(GAME_BOMB_HORRIBLE_HREF, agent)
+            self.agent = Player(match[1], match[2])
+        elif log.startswith("Lesser Gold Slime chemical mob spawn"):
+            agent = log.split(" carried by ", 1)[1].rsplit(" with last ", 1)[0]
+            self.agent = Player.parse_player(agent)
         elif "/(" in other and ") " in other:
             self.agent = Player.parse_player(other.split(") ", 1)[0])
         self.text = other
