@@ -200,3 +200,47 @@ def register_aliases(shell):
     ]
     for alias, magic in aliases:
         shell.magics_manager.register_alias(alias, magic, 'line')
+
+
+def parse_quoted_string(string: str, sep: str = ' ') -> list[str]:
+    """Returns a list of strings, separated by a whitespace"""
+    quotes = """"'"""  # Very confusing :)
+    sep_len = len(sep)
+    cur_quote = None
+    cur_marker = 0
+    assert sep not in quotes
+    length = len(string)
+    ret = []
+    i = -1  # We need i to start at 0 in the loop
+    while (i := i + 1) < length:
+        if string[i] == "\\":
+            # This next line shortens our string by 1, so no need to increment
+            string = string.replace("\\", "", 1)
+            length -= 1
+            continue
+        if not cur_quote and string.startswith(sep, i):
+            if cur_marker == i:
+                cur_marker = i + 1
+                continue
+            ret.append(string[cur_marker:i])
+            # Set the current marker at the beginning of the next string, and
+            # i to the last (since it will get +1'd)
+            cur_marker = (i := i + sep_len - 1) + 1  # I LOVE the walrus operator
+            continue
+        if string[i] not in quotes:
+            continue
+        if not cur_quote:  # Are we in a quoted string?
+            cur_quote = quotes[quotes.index(string[i])]
+            cur_marker = i + 1
+            continue
+        if cur_quote != string[i]:  # Wrong quote, ignore
+            continue
+        cur_quote = None
+        ret.append(string[cur_marker:i])  # Got one!
+        cur_marker = i + 1
+    if cur_quote:  # Check that we're not in the middle of a string
+        if not ret:
+            ret.append(string[cur_marker:])
+        else:
+            ret[-1] = ret[-1] + string[cur_marker:]
+    return ret
