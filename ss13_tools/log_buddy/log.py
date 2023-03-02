@@ -8,7 +8,7 @@ from html import unescape as html_unescape
 
 from dateutil.parser import isoparse
 
-
+from ss13_tools.byond import canonicalize
 from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
     GAME_BOMB_HORRIBLE_HREF
 
@@ -116,6 +116,7 @@ class Player:
                 self.ckey = self.ckey[1:]
             if self.ckey.endswith('[DC]'):
                 self.ckey = self.ckey[:-4]
+            self.ckey = canonicalize(self.ckey)
         self.mob_name = mob_name
 
     def __str__(self) -> str:
