@@ -111,6 +111,11 @@ class Player:
 
     def __init__(self, ckey: str, mob_name: str) -> None:
         self.ckey = None if ckey == "*no key*" else ckey
+        if self.ckey:
+            if self.ckey.startswith('@'):
+                self.ckey = self.ckey[1:]
+            if self.ckey.endswith('[DC]'):
+                self.ckey = self.ckey[:-4]
         self.mob_name = mob_name
 
     def __str__(self) -> str:
@@ -236,8 +241,11 @@ class Log:
                 self.location_name = other[:loc_start].split(" in ")[1].strip()
             else:
                 self.location_name = other[:loc_start].rsplit(" (", 1)[-1].strip()
-        if "Last fingerprints:" in other:
-            other, fingerprints = other.strip(". ").split("Last fingerprints:")
+        if "Last fingerprints: " in other:
+            other, fingerprints = other.strip(". ").split("Last fingerprints: ")
+            if other.startswith("[Projectile firer: "):
+                # Remove the start, and the closing bracket
+                other = other[19:-1]
             fingerprints = fingerprints.lstrip()
             if "/(" in fingerprints:
                 self.agent = Player.parse_player(fingerprints)
@@ -326,6 +334,19 @@ class Log:
             self.patient = Player.parse_player(patient)
             self.text = other.strip()
             return
+        if " relic used by " in other:
+            self.admin_log_type = AdminLogType.OTHER
+            agent, other = other.split(" relic used by ", 1)[1].rsplit(" in ", 1)
+            self.agent = Player.parse_player(agent)
+            self.text = other.strip()
+            loc_start = self.__parse_and_set_location(other)
+            if loc_start > 0:
+                self.location_name = other[:loc_start].strip()
+            self.text = log[:20].strip()
+            return
+        if other.startswith("The syndicate bomb that "):
+            self.agent = Player.parse_player(other[24:].split(" had primed ")[0])
+            self.text = other.strip()
         match = re.search(ADMIN_STAT_CHANGE, other)
         if match:
             self.admin_log_type = AdminLogType.STATUS_CHANGE
