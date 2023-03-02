@@ -22,6 +22,11 @@ flake8 = "^6.0.0"
 pylint = "^2.15.8"
 pyinstaller = "^5.8.0"
 
+[tool.poetry.scripts]
+ss13tools = "ss13_tools.cli:main"
+logbuddy = "ss13_tools.cli:log_buddy"
+centcom = "ss13_tools.cli:centcom"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
