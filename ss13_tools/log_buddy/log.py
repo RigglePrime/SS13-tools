@@ -224,6 +224,20 @@ class Log:
     def parse_game(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `GAME:` onwards (GAME: should not be included)"""
         other = log
+        if " relic used by " in other:
+            self.admin_log_type = AdminLogType.OTHER
+            agent, other = other.split(" relic used by ", 1)[1].rsplit(" in ", 1)
+            self.agent = Player.parse_player(agent)
+            self.text = other.strip()
+            loc_start = self.__parse_and_set_location(other)
+            if loc_start > 0:
+                self.location_name = other[:loc_start].strip()
+            self.text = log[:20].strip()
+            return
+        if other.startswith("The syndicate bomb that "):
+            self.agent = Player.parse_player(other[24:].split(" had primed ")[0])
+            self.text = other.strip()
+            return
         loc_start = self.__parse_and_set_location(other)
         if loc_start > 0:
             if "emitter turned " in other:
@@ -335,19 +349,6 @@ class Log:
             self.patient = Player.parse_player(patient)
             self.text = other.strip()
             return
-        if " relic used by " in other:
-            self.admin_log_type = AdminLogType.OTHER
-            agent, other = other.split(" relic used by ", 1)[1].rsplit(" in ", 1)
-            self.agent = Player.parse_player(agent)
-            self.text = other.strip()
-            loc_start = self.__parse_and_set_location(other)
-            if loc_start > 0:
-                self.location_name = other[:loc_start].strip()
-            self.text = log[:20].strip()
-            return
-        if other.startswith("The syndicate bomb that "):
-            self.agent = Player.parse_player(other[24:].split(" had primed ")[0])
-            self.text = other.strip()
         match = re.search(ADMIN_STAT_CHANGE, other)
         if match:
             self.admin_log_type = AdminLogType.STATUS_CHANGE
