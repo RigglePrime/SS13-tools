@@ -110,18 +110,18 @@ class LogFile:
 
     def __parse_logs(self, logs: Iterable[str], verbose: bool = False, quiet: bool = False):
         for line in logs:
-            if not line.strip() or line == " - -------------------------" or "] Starting up round ID " in line:
+            line = line.strip()
+            if not line or line == "- -------------------------" or line == '-' or "] Starting up round ID " in line:
                 continue
             try:
                 self.__parse_one_line(line)
             except Exception as exception:  # pylint: disable=broad-exception-caught
                 if not quiet:
-                    print(f"Could not be parsed: '{line.strip()}', with the reason:", exception)
+                    print(f"Could not be parsed: '{line}', with the reason:", exception)
                 if verbose:
                     traceback.print_exc()
 
     def __parse_one_line(self, line: str):
-        line = line.strip("\r\n ")
         if line.startswith("-censored"):
             return  # Skip censored lines
 
