@@ -10,7 +10,7 @@ from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
 from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
-    GAME_BOMB_HORRIBLE_HREF
+    GAME_BOMB_HORRIBLE_HREF, GAME_I_LOVE_BOMBS
 
 
 class LogType(Enum):
@@ -234,8 +234,16 @@ class Log:
                 self.location_name = other[:loc_start].strip()
             self.text = log[:20].strip()
             return
-        if other.startswith("The syndicate bomb that "):
-            self.agent = Player.parse_player(other[24:].split(" had primed ")[0])
+        if match := re.match(GAME_I_LOVE_BOMBS, other):
+            self.agent = Player.parse_player(match[1])
+            self.text = other.strip()
+            return
+        if other.startswith("Blast wave primed by "):
+            agent, location = other[21:].split(" fired from ", 1)
+            location = location.split(" roughly towards ", 1)[0].strip()
+            self.agent = Player.parse_player(agent.strip())
+            loc_start = self.__parse_and_set_location(location)
+            self.location_name = location[:loc_start].strip()
             self.text = other.strip()
             return
         loc_start = self.__parse_and_set_location(other)
@@ -244,7 +252,7 @@ class Log:
                 other, player_and_loc = other.split(" by ", 1)
                 player_and_loc = player_and_loc.split(" in ", 1)
                 self.agent = Player.parse_player(player_and_loc[0])
-                self.location_name = player_and_loc[1].split(" (")[0]
+                self.location_name = player_and_loc[1].split(" (")[0].strip()
             elif "emitter lost power" in other:
                 self.location_name = other[:loc_start].split(" in ", 1)[1].strip()
             elif other.startswith("A grenade detonated") or \
@@ -254,13 +262,20 @@ class Log:
                 self.location_name = other[:loc_start].split(" at ")[1].strip()
             elif " in " in other and " (" not in other:
                 self.location_name = other[:loc_start].split(" in ")[1].strip()
+            elif " on fire with " in other:
+                agent, patient = other.split(") set ", 1)
+                self.agent = Player.parse_player(agent.strip())
+                self.patient = Player.parse_player(patient.split(" on fire with ", 1)[0])
+                self.location_name = other.rsplit(" at ", 1)[0].strip()
+                self.text = other.strip()
+                return
             else:
                 self.location_name = other[:loc_start].rsplit(" (", 1)[-1].strip()
         if "Last fingerprints: " in other:
             other, fingerprints = other.strip(". ").split("Last fingerprints: ")
-            if other.startswith("[Projectile firer: "):
+            if fingerprints.startswith("[Projectile firer: "):
                 # Remove the start, and the closing bracket
-                other = other[19:-1]
+                fingerprints = fingerprints[19:-1]
             fingerprints = fingerprints.lstrip()
             if "/(" in fingerprints:
                 self.agent = Player.parse_player(fingerprints)
@@ -275,7 +290,7 @@ class Log:
             self.agent = Player.parse_player(agent)
         elif "/(" in other and ") " in other:
             self.agent = Player.parse_player(other.split(") ", 1)[0])
-        self.text = other
+        self.text = other.strip()
 
     def parse_topic(self, log: str) -> None:
         """Parses a game log entry from `TOPIC:` onwards (TOPIC: should not be included)"""
@@ -384,7 +399,7 @@ class Log:
         elif match := re.search(ADMIN_OSAY_EXP, other):
             self.admin_log_type = AdminLogType.OBJECT_SAY
             self.patient = Player(None, match[1])
-            self.location_name = match[2]
+            self.location_name = match[2].strip()
             self.text = match[3]
             self.__parse_and_set_location(other)
             return
@@ -426,7 +441,7 @@ class Log:
             loc_start = self.__parse_and_set_location(other)
             if loc_start > 0:
                 # len("jumped to ") == 10
-                self.location_name = other[10:loc_start]
+                self.location_name = other[10:loc_start].strip()
         elif other.startswith("teleported "):
             self.admin_log_type = AdminLogType.TELEPORT
             # len("teleported ") == 11
@@ -434,7 +449,7 @@ class Log:
             self.patient = Player.parse_player(patient)
             loc_start = self.__parse_and_set_location(location)
             if loc_start > 0:
-                self.location_name = location[:loc_start]
+                self.location_name = location[:loc_start].strip()
         elif other.startswith("has removed ") and "antagonist status" in other:
             self.admin_log_type = AdminLogType.ANTAG_PANEL
             self.patient = Player.parse_player(other[other.index("antagonist status from ") + 23:])
@@ -490,10 +505,10 @@ class Log:
         if " (" not in other:
             self.text = other.strip()
             return
-        action, location = other.split(' (', 1)
+        action, location, coords = other.rsplit(' (', 2)
         self.text = action
-        loc_start = self.__parse_and_set_location(location)
-        self.location_name = location[:loc_start]
+        self.__parse_and_set_location(coords)
+        self.location_name = location.strip()
 
     def parse_radioemote(self, log: str) -> None:
         """Parses a game log entry from `RADIOEMOTE:` onwards
@@ -643,7 +658,7 @@ class Log:
             self.text = log.strip()
             loc_start = self.__parse_and_set_location(log)
             if loc_start > 0:
-                self.location_name = log.split('" (', 1)[1][:loc_start]
+                self.location_name = log.split('" (', 1)[1][:loc_start].strip()
         else:
             self.silicon_log_type = SiliconLogType.MISC
         agent, other = log.split(") ", 1)
@@ -814,7 +829,7 @@ class Log:
             return
         text, other = other.split('" ', 1)
         self.text = html_unescape(text.strip('"').replace('"', '| '))
-        other, location = other.split('(', 1)
+        other, location, coords = other.rsplit('(', 2)
         other = other.strip()
         if other:
             self.text += " | " + other
@@ -823,8 +838,8 @@ class Log:
         if "(DEAD)" in text:
             text = text.replace("(DEAD) ", "", 1)
             self.is_dead = True
-        loc_start = self.__parse_and_set_location(location)
-        self.location_name = location[:loc_start].strip()
+        self.__parse_and_set_location(coords)
+        self.location_name = location.strip()
 
     def __str__(self):
         """String representation"""
