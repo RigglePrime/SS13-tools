@@ -70,11 +70,24 @@ class LogMagics(Magics):
 
     @line_magic
     def search_string(self, parameter_s=''):
-        """Works just like bookmarking in Notepad++, or CTRL+F multiple times. Case insensitive"""
+        """Works just like bookmarking in Notepad++, or CTRL+F multiple times. Case insensitive
+
+        Options:
+            - a: append mode. Take from the unfiltered logs and append the results to the current work set
+            - c: case sensitive mode
+            - r: raw mode. Do not parse any strings, ignore quotation marks
+        """
         if not parameter_s:
             print("No string to search for!")
             return
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(parameter_s)
+        opts, args = self.parse_options(parameter_s.replace('\\"', '\\\\"').replace('"', '"""'), 'acr')
+        additive = 'a' in opts
+        case_s = 'c' in opts
+        if 'r' in opts:
+            self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(args, case_sensitive=case_s, additive=additive)
+            return
+        args = parse_quoted_string(args)
+        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(*args, case_sensitive=case_s, additive=additive)
 
     @line_magic
     def heard(self, parameter_s=''):
@@ -177,7 +190,7 @@ class LogMagics(Magics):
         self.shell.user_ns[LOGS_VARIABLE_NAME].write_working_to_file(parameter_s)
 
     @line_magic
-    def load_file(self, parameter_s=''):
+    def load_logs(self, parameter_s=''):
         """Opens the file and adds all logs to our current collection"""
         if not parameter_s:
             print("Enter a file name!")
@@ -230,6 +243,8 @@ def parse_quoted_string(string: str, sep: str = ' ') -> list[str]:
         if string[i] not in quotes:
             continue
         if not cur_quote:  # Are we in a quoted string?
+            if cur_marker != i:
+                ret.append(string[cur_marker:i])
             cur_quote = quotes[quotes.index(string[i])]
             cur_marker = i + 1
             continue
@@ -238,9 +253,6 @@ def parse_quoted_string(string: str, sep: str = ' ') -> list[str]:
         cur_quote = None
         ret.append(string[cur_marker:i])  # Got one!
         cur_marker = i + 1
-    if cur_quote:  # Check that we're not in the middle of a string
-        if not ret:
-            ret.append(string[cur_marker:])
-        else:
-            ret[-1] = ret[-1] + string[cur_marker:]
+    if cur_marker < i:  # Check if there's anything left
+        ret.append(string[cur_marker:])
     return ret

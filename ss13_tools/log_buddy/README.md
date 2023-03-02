@@ -70,6 +70,11 @@ the bar, we can try `%location Bar` (use full location names), and printing that
 just filter for ckeys with `%ckey lootgoblin614 barenjoyer999` to get logs from only those two.
 For the full list of commands, see [available commands](#available-commands-cheat-sheet)
 
+**Caution:** before using ckey search, verify nothing broke by typing `logs.who`. If you see strange
+ckeys, something probably broke and this might be unreliable. You can still use it normally if your
+target's ckey is only shown once (or if you input all of their different ckeys shown there).
+if not, use the `%string` search instead.
+
 When you're done just type `%s` to save to a file, and you're all done. Good luck with the appeal!
 
 ### Available commands (cheat sheet)
@@ -105,10 +110,20 @@ as CTRL+F, as it looks at who commited the action
   - `%search_ckey ckey1 ckey2 ckey3`
   - `%search_ckey ckey1, ckey2, ckey3`
   - You can have as many as you want
-- `%search_string` (alias `%string`): literally just CTRL+F, case insensitive
-  - `%string help maint`
+- `%search_string` (alias `%string`): literally just CTRL+F, case insensitive. If you need to look for something
+that has spaces, either use `-r` (raw mode), or add quotation marks (`'`)
+  - Options:
+    - a: append mode. Take from the unfiltered logs and append the results to the current work set
+    - c: case sensitive mode
+    - r: raw mode. Do not parse any strings, ignore quotation marks
+  - `%string 'help maint'`
+  - `%string -r help maint`
   - `%string security`
-  - `%string thank you very much!`
+  - `%string 'thank you very much!'`
+  - `%string -a 'string to add'`: instead of filtering the current filtered logs, append the results (union)
+    - Running these would produce the same result: `%string string1 string2` or `%string string1`, `%string -a string2`
+  - `%string -c 'Case Sensitive'`: enable case sensitive mode
+  - `%string -ar Case Sensitive`: same as above (you can group options)
 - `%heard`: tries to exclude the logs that the person provided couldn't have heard
   - `%heard WindowSmasher86`
 - `%conversation`: tries to reconstruct a "conversation". It's like heard but for multiple people
