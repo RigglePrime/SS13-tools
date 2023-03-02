@@ -568,6 +568,11 @@ class Log:
         elif log.startswith("LAW: "):
             self.silicon_log_type = SiliconLogType.LAW
             log = log[5:]
+        elif "upload console was created at" in log:
+            self.text = log.strip()
+            loc_start = self.__parse_and_set_location(log)
+            if loc_start > 0:
+                self.location_name = log.split('" (', 1)[1][:loc_start]
         else:
             self.silicon_log_type = SiliconLogType.MISC
         agent, other = log.split(") ", 1)
