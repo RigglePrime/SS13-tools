@@ -260,6 +260,18 @@ class Log:
 
     def parse_access(self, log: str) -> None:
         """Parses a game log entry from `ACCESS:` onwards (ACCESS: should not be included)"""
+        if log.startswith("Login: "):
+            if "/(" in log:
+                self.agent = Player.parse_player(log[7:].split(" from ")[0])
+            else:
+                self.agent = Player(log[7:].split(" from ")[0], None)
+        elif log.startswith("Mob Login: "):
+            self.agent = Player.parse_player(log[11:].split(" was assigned to")[0])
+        elif log.startswith("Logout: "):
+            if "/(" in log:
+                self.agent = Player.parse_player(log[8:])
+            else:
+                self.agent = Player(log[8:], None)
         self.text = log
 
     # Another one of those overly-complex functions, but what can you do...
