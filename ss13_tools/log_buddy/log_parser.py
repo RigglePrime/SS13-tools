@@ -260,7 +260,9 @@ class LogFile:
             print("Operation completed with empty set. Aborting.")
             return
         if additive:
-            self.logs.append(filtered)
+            self.logs.extend(filtered)
+            self.logs = list(set(self.logs))  # Make sure they're unique
+            self.sort()
         else:
             self.logs = filtered
 
