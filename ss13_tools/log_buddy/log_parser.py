@@ -8,6 +8,7 @@ import traceback
 from typing import Annotated, Iterable, Union, Literal
 from html import unescape as html_unescape
 
+from tqdm import tqdm
 
 from .log import Log, LogType
 from .constants import ALL_LOGS_WE_PARSE
@@ -109,17 +110,20 @@ class LogFile:
         self.logs = self.unfiltered_logs
 
     def __parse_logs(self, logs: Iterable[str], verbose: bool = False, quiet: bool = False):
-        for line in logs:
+        pbar = tqdm(logs)
+        for line in pbar:
             line = line.strip()
             if not line or line == "- -------------------------" or line == '-' or "] Starting up round ID " in line:
                 continue
             try:
                 self.__parse_one_line(line)
             except Exception as exception:  # pylint: disable=broad-exception-caught
+                pbar.clear()
                 if not quiet:
                     print(f"Could not be parsed: '{line}', with the reason:", exception)
                 if verbose:
                     traceback.print_exc()
+                pbar.display()
 
     def __parse_one_line(self, line: str):
         if line.startswith("-censored"):
