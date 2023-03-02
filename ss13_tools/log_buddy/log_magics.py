@@ -23,30 +23,36 @@ class LogMagics(Magics):
         if not parameter_s:
             print(f"No arguments! Usage: %{self.download.__name__} <round id>")
             return
-        if '-' in parameter_s:
-            parameter_s = parameter_s.split('-')
-            if len(parameter_s) != 2:
+        opts, args = self.parse_options(parameter_s, 'cpr:')
+        if 'c' not in opts and '-' in args:
+            args = args.split('-')
+            if len(args) != 2:
                 print("I don't know what to do with this, please try again")
                 return
             try:
-                first, last = (int(x) for x in parameter_s)
+                first, last = (int(x) for x in args)
             except ValueError:
                 print("One of these is not a number, try again")
                 return
             self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_round_range(first, last)
             return
-        if ' ' in parameter_s or ',' in parameter_s:
+        if 'c' not in opts and ' ' in args or ',' in args:
             # Split with spaces and commas
-            parameter_s = re.split(r'[, ]', parameter_s)
+            args = re.split(r'[, ]', args)
             try:
                 # Prase ints and get rid of empty strings
-                round_ids = (int(x) for x in parameter_s if x)
+                round_ids = (int(x) for x in args if x)
             except ValueError:
                 print("One of those is not a number, please try again")
                 return
             self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_round_collection(*round_ids)
             return
-        self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_round_id(int(parameter_s))
+        if 'c' not in opts and args.isnumeric():
+            self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_round_id(int(args))
+        else:
+            rounds = int(opts['r'].lstrip('=')) if 'r' in opts else 50
+            only_played = 'p' in opts
+            self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_ckey(args, rounds=rounds, only_played=only_played)
 
     @line_magic
     def length(self, parameter_s=''):

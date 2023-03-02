@@ -12,7 +12,7 @@ from html import unescape as html_unescape
 from .log import Log, LogType
 from .constants import ALL_LOGS_WE_PARSE
 from ..__version__ import __version__
-from ..log_downloader import RoundLogDownloader, RoundListLogDownloader
+from ..log_downloader import RoundLogDownloader, RoundListLogDownloader, CkeyLogDownloader
 from ..scrubby import get_round_source_url
 
 
@@ -652,6 +652,35 @@ class LogFile:
         log_collection.log_type = LogFileType.COLLATED
         log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = "rounds " + ', '.join(str(x) for x in rounds)
+        return log_collection
+
+    @staticmethod
+    def from_ckey(ckey: str, rounds: int = 50, only_played: bool = False, logs_we_care_about: list[str] = None) -> LogFile:
+        """Downloads multiple rounds worth of data, where the specified ckey was present.
+
+        Parameters:
+        `ckey` (str): the ckey
+        `rounds` (int): number of rounds
+        `logs_we_care_about` (list[str]): list of strings, containing the file names.
+        For example: `["game.txt", "attack.txt"]`. This defaults to all supported files.
+
+        Example call: `my_logs = LogFile.from_ckey("Riggle")`
+
+        Returns `LogFile`"""
+        # Should be all supported log types as a default. Don't forget to update this list! (you will)
+        if not logs_we_care_about:
+            logs_we_care_about = ALL_LOGS_WE_PARSE.copy()
+
+        downloader = CkeyLogDownloader(ckey, only_played, rounds)
+        downloader.output_only_log_line = True
+        downloader.files = logs_we_care_about
+        downloader.filter_logs = False
+        downloader.try_authenticate_interactive()
+        asyncio.run(downloader.process_and_write())
+        log_collection = LogFile.from_file(downloader.output_path)
+        log_collection.log_type = LogFileType.COLLATED
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
+        log_collection.log_source = f"{rounds} latest rounds that {ckey} played in"
         return log_collection
 
 
