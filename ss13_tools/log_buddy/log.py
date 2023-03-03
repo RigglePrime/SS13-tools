@@ -353,6 +353,9 @@ class Log:
             self.patient = Player.parse_player(patient)
             self.text = other.strip()
             return
+        if other.startswith("Chat Name Check: ") or other.startswith("<span class='boldnotice'>Roundstart logout report"):
+            self.text = other.strip()
+            return
         if other.startswith("Build Mode: "):
             self.admin_log_type = AdminLogType.BUILD_MODE
             _, other = other.split(": ", 1)
@@ -741,6 +744,10 @@ class Log:
         else:
             agent, other = log.split(" was infected by virus: ")
             self.agent = Player.parse_player(agent)
+            if " sym:" not in other:
+                # Heart attacks my beloved...
+                self.text = other.strip()
+                return
             virus_name, other = other.split(" sym:")
             self.virus_name = virus_name
             self.text = "infected, sym:" + other.strip()
