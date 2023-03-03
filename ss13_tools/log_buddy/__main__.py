@@ -19,9 +19,10 @@ _Helper.__repr__ = lambda self: f"""Welcome to {Fore.CYAN}LogBuddy{Fore.RESET}!
 
 Please see the latest documentation at {Fore.BLUE}{HELP_LINK}{Fore.RESET}.
 The above link should be more than enough! If you are unsure about a command, just append or
-prepend it with '?'. For example: '%download?' or '?%download'
+prepend it with '{Fore.GREEN}?{Fore.RESET}'.
+For example: '{Fore.GREEN}%download?{Fore.RESET}' or '{Fore.GREEN}?%download{Fore.RESET}'
 
-If you're a nerd and would like to know more, type 'help(MORE)'
+If you're a {Fore.CYAN}nerd{Fore.RESET} and would like to know more, type '{Fore.GREEN}help(MORE){Fore.RESET}'
 """
 
 MORE = type("anon", (), {
