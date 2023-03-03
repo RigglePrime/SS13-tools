@@ -16,11 +16,13 @@ from ss13_tools.log_buddy.constants import HELP_LINK
 # Change the help text, so users can more easily understand what to do
 _Helper.__repr__ = lambda self: f"""Welcome to {Fore.CYAN}LogBuddy{Fore.RESET}!
 {Fore.YELLOW}Use right click to copy something, CTRL + C will terminate the program.{Fore.RESET}
+{Fore.YELLOW}Tab will autocomplete, the up and down arrows will cycle through your previous commands.{Fore.RESET}
 
 Please see the latest documentation at {Fore.BLUE}{HELP_LINK}{Fore.RESET}.
-The above link should be more than enough! If you are unsure about a command, just append or
-prepend it with '{Fore.GREEN}?{Fore.RESET}'.
+The above link should be more than enough! If you are unsure about a command,
+just append or prepend it with '{Fore.GREEN}?{Fore.RESET}'.
 For example: '{Fore.GREEN}%download?{Fore.RESET}' or '{Fore.GREEN}?%download{Fore.RESET}'
+To get a list of all possible commands (magics), type '{Fore.GREEN}%lsmagic{Fore.RESET}'.
 
 If you're a {Fore.CYAN}nerd{Fore.RESET} and would like to know more, type '{Fore.GREEN}help(MORE){Fore.RESET}'
 """
