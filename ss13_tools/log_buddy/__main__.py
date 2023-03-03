@@ -17,10 +17,18 @@ from ss13_tools.log_buddy.constants import HELP_LINK
 _Helper.__repr__ = lambda self: f"""Welcome to {Fore.CYAN}LogBuddy{Fore.RESET}!
 {Fore.YELLOW}Use right click to copy something, CTRL + C will terminate the program.{Fore.RESET}
 
-Please see the latest documentation at {Fore.BLUE}{HELP_LINK}{Fore.RESET}
-To get started, type '{Fore.GREEN}LogFile.from_file("game.txt"){Fore.RESET}' (if there is a file named game.txt in the same
-directory) or '{Fore.GREEN}LogFile.from_folder("logs"){Fore.RESET}' (if your game.txt, attack.txt...are stored in a
-folder named logs)
+Please see the latest documentation at {Fore.BLUE}{HELP_LINK}{Fore.RESET}.
+The above link should be more than enough! If you are unsure about a command, just append or
+prepend it with '?'. For example: '%download?' or '?%download'
+
+If you're a nerd and would like to know more, type 'help(MORE)'
+"""
+
+MORE = type("anon", (), {
+    '__str__': lambda self: "What are you doing here... stop snooping around!",
+    '__repr__': lambda self: str(self)  # pylint: disable=unnecessary-lambda
+})()
+MORE.__doc__ = f"""Welcome to help for nerds. This is copy-pasted from the old help text, and goes more in-depth.
 
 Type '{Fore.GREEN}help(Log){Fore.RESET}' for information about the log, and '{Fore.GREEN}help(LogFile){Fore.RESET}' for
 information about log files. Type '{Fore.GREEN}functions(object){Fore.RESET}' for a list of all defined functions and
@@ -36,7 +44,8 @@ by simply pressing {Fore.YELLOW}→{Fore.RESET}. Clear the current line by press
 You can exit by typing '{Fore.GREEN}exit{Fore.RESET}' or pressing {Fore.YELLOW}CTRL + D{Fore.RESET}.
 
 For Python's interactive help, type '{Fore.GREEN}help(){Fore.RESET}', or '{Fore.GREEN}help(object){Fore.RESET}' for help
-about object (for example: '{Fore.GREEN}help(LogFile){Fore.RESET}')."""
+about object (for example: '{Fore.GREEN}help(LogFile){Fore.RESET}').
+"""
 
 
 def functions(cls: object) -> list[tuple[str, Any]]:
