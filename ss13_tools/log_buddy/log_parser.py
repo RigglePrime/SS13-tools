@@ -317,7 +317,7 @@ class LogFile:
         self.logs = self.unfiltered_logs
 
     def _get_only_heard(self, ckey: str, logs_we_care_about: Union[list[LogType],
-                       Literal["ALL"]] = "ALL", walking_error: int = 4) -> list[Log]:
+                        Literal["ALL"]] = "ALL", walking_error: int = 4) -> list[Log]:
         """Removes all log entries which could not have been heard by the specified ckey (very much in alpha).
         Uses logs from `self.work_set`
 
