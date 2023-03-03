@@ -142,7 +142,7 @@ class LogMagics(Magics):
         if not parameter_s:
             raise UsageError(f"Add a ckey! Usage:\n{self.heard.__doc__}")
         print("Filtering heard on ckey", parameter_s)
-        self.shell.user_ns[LOGS_VARIABLE_NAME].get_only_heard(parameter_s)
+        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_heard(parameter_s)
 
     @line_magic
     def conversation(self, parameter_s=''):

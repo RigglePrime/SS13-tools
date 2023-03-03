@@ -285,7 +285,7 @@ class LogFile:
         Example call: `my_logs.filter_heard("ckey")`
 
         Returns `None`"""
-        self.logs = self.get_only_heard(ckey, walking_error=walking_error)
+        self.logs = self._get_only_heard(ckey, walking_error=walking_error)
 
     def filter_conversation(self, *ckeys: str, walking_error: int = 4) -> None:  # TODO: hide lines not in conversation
         """Tries to get a conversation between multiple parties, excluding what they would and would not hear.
@@ -301,7 +301,7 @@ class LogFile:
         self.filter_ckeys(*ckeys, source_only=True)
         final = []
         for ckey in ckeys:
-            final.extend(self.get_only_heard(ckey, walking_error=walking_error))
+            final.extend(self._get_only_heard(ckey, walking_error=walking_error))
 
         if not final:
             print("Operation completed with empty set. Aborting.")
@@ -316,7 +316,7 @@ class LogFile:
         Example call: my_logs.reset_work_set()"""
         self.logs = self.unfiltered_logs
 
-    def get_only_heard(self, ckey: str, logs_we_care_about: Union[list[LogType],
+    def _get_only_heard(self, ckey: str, logs_we_care_about: Union[list[LogType],
                        Literal["ALL"]] = "ALL", walking_error: int = 4) -> list[Log]:
         """Removes all log entries which could not have been heard by the specified ckey (very much in alpha).
         Uses logs from `self.work_set`
