@@ -67,7 +67,7 @@ class RoundSingleItem(MenuItem):
 
 class RoundAndSlurItem(MenuItem):
     name = "round slur detector"
-    description = "Run slur detector on a range of rouds"
+    description = "Run slur detection on a range of rouds"
 
     def run(self):
         downloader = RoundLogDownloader.interactive()
