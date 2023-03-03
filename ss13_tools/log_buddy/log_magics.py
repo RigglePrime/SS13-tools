@@ -95,6 +95,7 @@ class LogMagics(Magics):
             raise UsageError(f"Add some ckeys! Usage:\n{self.search_ckey.__doc__}")
         parameter_s = (x.strip() for x in re.split(r'[, ]', parameter_s) if x)
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_ckeys(*parameter_s, source_only=False)
+        print("Looked for", ', '.join(parameter_s))
 
     @line_magic
     def search_string(self, parameter_s=''):
@@ -126,18 +127,22 @@ class LogMagics(Magics):
             return
         args = parse_quoted_string(args)
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(*args, case_sensitive=case_s, additive=additive)
+        print("Searched for strings", ', '.join(args))
+        print("Append was", "ON," if additive else "OFF,", "case sensitive mode was",
+              "ON" if case_s else "OFF,", "and raw mode was", "ON" if additive else "OFF")
 
     @line_magic
     def heard(self, parameter_s=''):
         """Gets only what the person could have heard
 
-        Usage:
+        Example:
             - `%heard WindowSmasher86`
             - `%heard ckey1 ckey2 ...`
         """
         if not parameter_s:
             raise UsageError(f"Add a ckey! Usage:\n{self.heard.__doc__}")
         self.shell.user_ns[LOGS_VARIABLE_NAME].get_only_heard(parameter_s)
+        print("Filtered heard on ckey", parameter_s)
 
     @line_magic
     def conversation(self, parameter_s=''):
@@ -152,6 +157,7 @@ class LogMagics(Magics):
             return
         parameter_s = (x.strip() for x in re.split(r'[, ]', parameter_s) if x)
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_conversation(*parameter_s)
+        print("Filtered conversation on ckeys", ', '.join(parameter_s))
 
     @line_magic
     def reset(self, parameter_s=''):
@@ -168,8 +174,8 @@ class LogMagics(Magics):
         """
         if not parameter_s:
             raise UsageError(f"Add some ckeys! Usage:\n{self.location.__doc__}")
-        parameter_s = (x.strip() for x in re.split(r'[, ]', parameter_s) if x)
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_location_name(*parameter_s)
+        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_location_name(parameter_s)
+        print("Filtered for", parameter_s)
 
     @line_magic
     def radius(self, parameter_s=''):
@@ -188,6 +194,7 @@ class LogMagics(Magics):
         except ValueError as ex:
             raise UsageError("Could not convert to an integer") from ex
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_radius((x, y, z), radius)
+        print(f"Filtered by x={x}, y={y}, z={z}, r={radius}")
 
     @line_magic
     def type(self, parameter_s=''):
@@ -203,6 +210,9 @@ class LogMagics(Magics):
             print(f"Example exclude: %{self.type.__name__} !SILICON")
             return
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_type(include=include, exclude=exclude)
+        print("Filtered by the following rules:")
+        print("Including:", ', '.join(include))
+        print("Excluding:", ', '.join(exclude))
 
     @line_magic
     def print_logs(self, parameter_s=''):
@@ -250,6 +260,7 @@ class LogMagics(Magics):
             print("Enter a file name!")
         if not os.path.exists(parameter_s):
             raise UsageError("File does not exist")
+        print("Loading from", parameter_s)
         self.shell.user_ns[LOGS_VARIABLE_NAME].collate(LogFile.from_file(parameter_s))
 
 
