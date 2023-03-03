@@ -6,7 +6,10 @@ def main():
     try:
         print("Paste ckeys to search for, one per line (press CTRL + C to stop)\n")
         while True:
-            key = input()
+            key = input('> ')
+            if not key:
+                print("Enter a ckey, or CTRL+C to stop")
+                continue
             ban_data = get_one(key)
 
             print(f"{key}:\n")
