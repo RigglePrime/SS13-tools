@@ -7,6 +7,7 @@ from enum import Enum
 import traceback
 from typing import Annotated, Iterable, Union, Literal
 from html import unescape as html_unescape
+from itertools import repeat, chain
 
 from tqdm import tqdm
 
@@ -131,7 +132,7 @@ class LogFile:
                 file.write("If you see this, please share it with Riggle.\n")
                 file.write(__version__)
                 file.write("\n\n")
-                file.writelines(errored)
+                file.writelines(chain.from_iterable(zip(errored, repeat("\n"))))
 
     def __parse_one_line(self, line: str):
         if line.startswith("-censored"):
