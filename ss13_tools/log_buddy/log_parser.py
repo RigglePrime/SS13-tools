@@ -11,7 +11,7 @@ from html import unescape as html_unescape
 from tqdm import tqdm
 
 from .log import Log, LogType
-from .constants import ALL_LOGS_WE_PARSE
+from .constants import ALL_LOGS_WE_PARSE, ERRORED_FILE
 from ..__version__ import __version__
 from ..log_downloader import RoundLogDownloader, RoundListLogDownloader, CkeyLogDownloader
 from ..scrubby import get_round_source_url
@@ -110,6 +110,7 @@ class LogFile:
         self.logs = self.unfiltered_logs
 
     def __parse_logs(self, logs: Iterable[str], verbose: bool = False, quiet: bool = False):
+        errored = []
         pbar = tqdm(logs)
         for line in pbar:
             line = line.strip()
@@ -118,12 +119,16 @@ class LogFile:
             try:
                 self.__parse_one_line(line)
             except Exception as exception:  # pylint: disable=broad-exception-caught
+                errored.append(line)
                 pbar.clear()
                 if not quiet:
                     print(f"Could not be parsed: '{line}', with the reason:", exception)
                 if verbose:
                     traceback.print_exc()
                 pbar.display()
+        if errored:
+            with open(ERRORED_FILE, 'a+', encoding="utf-8") as file:
+                file.writelines(errored)
 
     def __parse_one_line(self, line: str):
         if line.startswith("-censored"):
