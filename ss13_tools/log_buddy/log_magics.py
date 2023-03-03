@@ -215,8 +215,8 @@ class LogMagics(Magics):
             print(f"Example exclude: %{self.type.__name__} !SILICON")
             return
         print("Filtering by the following rules:")
-        print("Including:", ', '.join(include))
-        print("Excluding:", ', '.join(exclude))
+        print("Including:", ', '.join(str(x) for x in include))
+        print("Excluding:", ', '.join(str(x) for x in exclude))
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_type(include=include, exclude=exclude)
 
     @line_magic
