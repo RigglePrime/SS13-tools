@@ -58,7 +58,7 @@ class CkeyAndSlurItem(MenuItem):
 class RoundSingleItem(MenuItem):
     weight = 4
     name = "round log downloader"
-    description = "Download logs from a range of rouds"
+    description = "Download logs from a range of rounds"
 
     def run(self):
         downloader = RoundLogDownloader.interactive()
