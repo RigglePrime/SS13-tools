@@ -113,7 +113,8 @@ to have the number right next to the character (r). Doing `-rc10` would assign 1
   - `%length`
   - `%l`
 - `%search_ckey` (alias `%ckey`): searches the logs for the ckeys. This is not the same
-as CTRL+F, as it looks at who commited the action
+as CTRL+F, as it looks at who commited the action. Remember to use ckeys and not keys! Ckeys
+are the ones without spaces or special symbols, the ones you see in TGDB and such.
   - `%ckey WindowSmasher86` (only logs `WindowSmasher86` was included in)
   - `%search_ckey WindowSmasher86` (same as above)
   - `%search_ckey ckey1 ckey2` (union, or better known as logs from both people)
