@@ -224,9 +224,17 @@ class Log:
     def parse_game(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `GAME:` onwards (GAME: should not be included)"""
         other = log
+        if other.startswith("Gold Slime chemical mob spawn reaction occuring at"):
+            agent = other.split("with last fingerprint ", 1)[-1]
+            self.agent = Player(agent.strip(), None)
+            loc_start = self.__parse_and_set_location(other)
+            other, location_name = other[:loc_start].split("occuring at ", 1)
+            self.location_name = location_name.strip()
+            self.text = other.strip()
+            return
         if " relic used by " in other:
             self.admin_log_type = AdminLogType.OTHER
-            agent, other = other.split(" relic used by ", 1)[1].rsplit(" in ", 1)
+            agent, other = other.split(" relic used by ", 1)[-1].rsplit(" in ", 1)
             self.agent = Player.parse_player(agent)
             self.text = other.strip()
             loc_start = self.__parse_and_set_location(other)
@@ -246,6 +254,13 @@ class Log:
             self.location_name = location[:loc_start].strip()
             self.text = other.strip()
             return
+        if "rune activated by " in other:
+            agent, location = other.split("rune activated by ", 1)[-1].split(" at ", 1)
+            self.agent = Player(None, agent.strip())
+            loc_start = self.__parse_and_set_location(location)
+            self.location_name = location[:loc_start].strip()
+            self.text = other.strip()
+            return
         loc_start = self.__parse_and_set_location(other)
         if loc_start > 0:
             if "emitter turned " in other:
@@ -254,21 +269,23 @@ class Log:
                 self.agent = Player.parse_player(player_and_loc[0])
                 self.location_name = player_and_loc[1].split(" (")[0].strip()
             elif "emitter lost power" in other:
-                self.location_name = other[:loc_start].split(" in ", 1)[1].strip()
+                self.location_name = other[:loc_start].split(" in ", 1)[-1].strip()
             elif other.startswith("A grenade detonated") or \
                     other.startswith("An explosion has triggered a gibtonite deposit") or \
                     other.startswith("Reagent explosion reaction occurred") or \
-                    (" at " in other and " (" not in other):
-                self.location_name = other[:loc_start].split(" at ")[1].strip()
-            elif " in " in other and " (" not in other:
-                self.location_name = other[:loc_start].split(" in ")[1].strip()
+                    (" at " in other and " (" not in other[:loc_start]):
+                self.location_name = other[:loc_start].split(" at ")[-1].strip()
+            elif " in " in other and " (" not in other[:loc_start]:
+                self.location_name = other[:loc_start].split(" in ")[-1].strip()
             elif " on fire with " in other:
                 agent, patient = other.split(") set ", 1)
                 self.agent = Player.parse_player(agent.strip())
                 self.patient = Player.parse_player(patient.split(" on fire with ", 1)[0])
-                self.location_name = other.rsplit(" at ", 1)[0].strip()
+                self.location_name = other[:loc_start].split(" at ", 1)[-1].strip()
                 self.text = other.strip()
                 return
+            elif " fired a cannon in " in other:
+                self.location_name = other[:loc_start].split(" fired a cannon in ", 1)[-1]
             else:
                 self.location_name = other[:loc_start].rsplit(" (", 1)[-1].strip()
         if "Last fingerprints: " in other:
@@ -294,7 +311,7 @@ class Log:
 
     def parse_topic(self, log: str) -> None:
         """Parses a game log entry from `TOPIC:` onwards (TOPIC: should not be included)"""
-        self.text = log
+        self.text = log.strip()
 
     def parse_access(self, log: str) -> None:
         """Parses a game log entry from `ACCESS:` onwards (ACCESS: should not be included)"""
@@ -310,7 +327,7 @@ class Log:
                 self.agent = Player.parse_player(log[8:])
             else:
                 self.agent = Player(log[8:], None)
-        self.text = log
+        self.text = log.strip()
 
     # Another one of those overly-complex functions, but what can you do...
     def parse_admin(self, log: str) -> None:  # noqa: C901
@@ -334,7 +351,7 @@ class Log:
             self.agent = Player.parse_player(agent)
             patient, other = other.split(") : ", 1)
             self.patient = Player.parse_player(patient)
-            self.text = other
+            self.text = other.strip()
             return
         if other.startswith("Build Mode: "):
             self.admin_log_type = AdminLogType.BUILD_MODE
@@ -344,17 +361,20 @@ class Log:
             loc_start = self.__parse_and_set_location(other)
             if loc_start > 0:
                 if "modified the " in other:
-                    self.text = other
+                    self.text = other.strip()
                     return
-                self.location_name = other[:loc_start].rsplit("(", 1)[-1].strip()
-                other = other[:loc_start].replace(self.location_name, "").strip(" (")
-                if " at " in other:
-                    other, location_name = other.split(" at ", 1)
+                if " at " in other and not other.startswith("threw the"):
+                    other, location_name = other[:loc_start].split(" at ", 1)
                     self.location_name = location_name.strip()
+                elif "filled the region from" in other:
+                    self.location_name = other[:loc_start].rsplit(" through ", 1)[-1].strip()
+                else:
+                    self.location_name = other[:loc_start].rsplit("(", 1)[-1].strip()
+                    other = other[:loc_start].replace(self.location_name, "").strip(" (")
             self.text = other.strip()
             return
         if other.startswith("Starting query #"):
-            self.text = other
+            self.text = other.strip()
             return
         if other.startswith("DirectNarrate: "):
             self.admin_log_type = AdminLogType.DIRECT_NARRATE
@@ -370,7 +390,7 @@ class Log:
             agent, other = other.split(match[0])
             self.agent = Player(agent.strip(), None)
             other = match[0] + other.rstrip('.')
-            self.text = other
+            self.text = other.strip()
             return
         if other.startswith("DSAY: "):
             self.__generic_say_parse(log[6:])
@@ -378,14 +398,14 @@ class Log:
         # If we're here, the line probably starts with our agent
         # Except when it doesn't
         if " exploit " in other and "attempted" in other:
-            self.text = other
+            self.text = other.strip()
             return
         if other.endswith(" is trying to join, but needs to verify their ckey."):
             if "/(" in other:
                 self.agent = Player.parse_player(other.split(") ", 1)[0].strip())
             else:
                 self.agent = Player(other.split(" ", 1)[0].strip(), None)
-            self.text = other
+            self.text = other.strip()
             return
         if " custom away mission" in other:
             other = other.replace("Admin ", "", 1)  # Because WHY WOULD IT BE UNIFORM
@@ -400,7 +420,7 @@ class Log:
             self.admin_log_type = AdminLogType.OBJECT_SAY
             self.patient = Player(None, match[1])
             self.location_name = match[2].strip()
-            self.text = match[3]
+            self.text = match[3].strip()
             self.__parse_and_set_location(other)
             return
         elif other.startswith("has created a command report: "):
@@ -484,7 +504,7 @@ class Log:
         """Parses a game log entry from `ADMINPRIVATE:` onwards
         (ADMINPRIVATE: should not be included)"""
         # TODO: add better parsing for tickets
-        self.text = log
+        self.text = log.strip()
 
     def parse_ooc(self, log: str) -> None:
         """Parses a game log entry from `OOC:` onwards (OOC: should not be included)"""
@@ -667,7 +687,7 @@ class Log:
         if self.silicon_log_type == SiliconLogType.LAW and other.startswith("used "):
             agent = other.split(" on ", 1)[1].split(") ", 1)[0]
             self.agent = Player.parse_player(agent)
-        self.text = other
+        self.text = other.strip()
         # NOTE: someone PLEASE fix logging this is getting ridiculous
         # NOTE: there is no reliable way of getting the second key here
 
@@ -797,7 +817,7 @@ class Log:
 
         # Set text to 'Empty' if other is empty, since we're expecting
         # extra data (newlines will get appended)
-        self.text = other or "Empty"
+        self.text = other.strip() or "Empty"
 
     def __parse_and_set_location(self, log: str) -> int:
         """Finds and parses a location entry. (location name (x, y, z)). Can parse a raw line.
@@ -810,7 +830,7 @@ class Log:
         if not match:
             return -1
         # Get location of last match
-        loc = log.index(match[-1])
+        loc = log.rindex(match[-1])
         # Take the last result from the regex, remove the first and last character,
         # and turn into a list
         match = match[-1][1:-1].split(",")
