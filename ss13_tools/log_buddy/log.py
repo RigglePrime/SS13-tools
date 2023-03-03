@@ -685,8 +685,8 @@ class Log:
         self.agent = Player.parse_player(agent)
 
         if self.silicon_log_type == SiliconLogType.LAW and other.startswith("used "):
-            agent = other.split(" on ", 1)[1].split(") ", 1)[0]
-            self.agent = Player.parse_player(agent)
+            patient = other.split(" on ", 1)[1].split(") ", 1)[0]
+            self.patient = Player.parse_player(patient)
         self.text = other.strip()
         # NOTE: someone PLEASE fix logging this is getting ridiculous
         # NOTE: there is no reliable way of getting the second key here
