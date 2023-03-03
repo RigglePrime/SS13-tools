@@ -601,7 +601,7 @@ class LogFile:
         if not logs_we_care_about:
             logs_we_care_about = ALL_LOGS_WE_PARSE.copy()
 
-        downloader = RoundLogDownloader(round_id, round_id, f"{round_id}.txt")
+        downloader = RoundLogDownloader(round_id, round_id, f"{round_id}.log")
         downloader.output_only_log_line = True
         downloader.files = logs_we_care_about
         downloader.try_authenticate_interactive()
