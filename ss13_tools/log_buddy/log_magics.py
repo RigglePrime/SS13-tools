@@ -167,14 +167,19 @@ class LogMagics(Magics):
 
     @line_magic
     def location(self, parameter_s=''):
-        """Filters by exact location name. Search for strings if you want a more fuzzy search
+        """Filters by location name.
+
+        Options:
+            - e: filter for exact name
 
         Example:
-            - %location Medbay Central
+            - %location Medbay
+            - %location -e Medbay Central
         """
         if not parameter_s:
             raise UsageError(f"Add some ckeys! Usage:\n{self.location.__doc__}")
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_location_name(parameter_s)
+        opts, args = self.parse_options(parameter_s, 'e')
+        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_location_name(args, exact='e' in opts)
         print("Filtered for", parameter_s)
 
     @line_magic

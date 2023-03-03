@@ -146,8 +146,11 @@ use `\'` to escape them.
   - `%reset`
 - `%location` (alias `%loc`): filters by location. For example, you can get all logs that happened
 in the bar.
+  - Options:
+    - e: exact mode (name must match exactly)
   - `%location Bar`
-  - `%location Medbay Central` (you must provide the whole name)
+  - `%location -e Medbay Central` (you must provide the whole name)
+  - `%location Medbay`
 - `%radius`: sorts the logs by time. You don't need to call this as they're automatically sorted
   - `%radius 50 62 2 10` (x=50, y=60, z=2, radius=10)
 - `%type`: filters by log type. To get all types, type `LogType.list()`. `%` mandatory

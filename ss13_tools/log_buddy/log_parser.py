@@ -387,7 +387,7 @@ class LogFile:
         for log in self.logs:
             if not log.location_name:
                 continue
-            if (exact and location_name in log.location_name.casefold()) or \
+            if (not exact and location_name in log.location_name.casefold()) or \
                (location_name == log.location_name.casefold()):
                 filtered.append(log)
         if not filtered:
