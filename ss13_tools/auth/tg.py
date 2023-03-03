@@ -51,8 +51,8 @@ class Passport():
             print(err)
             return
         self.rawlogs_passport = passport_response["rawlogs_passport"]
-        self.expires_at = datetime.fromtimestamp(passport_response["expires_at"])
-        self.current_server_time = datetime.fromtimestamp(passport_response["current_server_time"])
+        self.expires_at = datetime.utcfromtimestamp(passport_response["expires_at"])
+        self.current_server_time = datetime.utcfromtimestamp(passport_response["current_server_time"])
 
     def seconds_left(self) -> float:
         """The number of seconds this token has left before impending death. Now including fractions!"""
