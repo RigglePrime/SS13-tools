@@ -9,4 +9,4 @@ ALL_LOGS_WE_PARSE = [
     "uplink.txt",
     "shuttle.txt"
 ]
-HELP_LINK = "https://github.com/RigglePrime/SS13-tools/blob/logbuddy/ss13_tools/log_buddy/README.md"
+HELP_LINK = "https://github.com/RigglePrime/SS13-tools/blob/master/ss13_tools/log_buddy/README.md"
