@@ -21,6 +21,7 @@ from colorama import Fore, Style
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
 import requests as req
+from pyperclip import copy, paste
 
 from ..constants import USER_AGENT
 from .constants import PASSPORT_FILE_LOCATION, PASSPORT_FILE_NAME, PASSPORT_FILE_HEADER, AUTH_TEST_URL,\
@@ -177,12 +178,17 @@ def interactive():
           f"in this software, so please store it somewhere safe.\nWith it, anyone could access raw logs, {Fore.CYAN}" +
           f"treat it as you would treat a password{Fore.RESET}! {Fore.RED}If you accidentally leak this, change your " +
           f"password immediately{Fore.RESET} to invalidate it.")
+    copy(TOKEN_URL)
+    print(f"{Fore.CYAN}Link copied to clipboard!{Fore.RESET} If you leave the field {Fore.CYAN}empty{Fore.RESET}, " +
+          f"the program will {Fore.CYAN}auto-paste{Fore.RESET} for you.")
     print(f"If you are having trouble copy-pasting the link, select it with your mouse and {Fore.CYAN}right click" +
           f"{Fore.RESET}. That should copy it.")
     print("Right clicking will also paste the contents of your clipboard if nothing is selected.")
     while True:
         token = input("Token: ").strip()
-        if not token.endswith(".fin"):
+        if not token:
+            token = paste()
+        if not token.endswith(".fin") and token.count('.') == 3:
             print("What you pasted does not appear to be the token. Copy only what comes after '=>'")
             continue
         new_passport = Passport(token=token)
