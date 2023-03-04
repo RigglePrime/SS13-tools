@@ -115,7 +115,8 @@ class LogFile:
         pbar = tqdm(logs)
         for line in pbar:
             line = line.strip()
-            if not line or line == "- -------------------------" or line == '-' or "] Starting up round ID " in line:
+            if not line or line == "- -------------------------" or line == '-' \
+                    or "] Starting up round ID " in line or line.startswith("##"):
                 continue
             try:
                 self.__parse_one_line(line)
@@ -151,8 +152,8 @@ class LogFile:
             self.unfiltered_logs.pop()
         log = Log(line)
         self.unfiltered_logs.append(log)
-        if log.agent and log.agent.ckey and log.agent.ckey.replace("[DC]", "") not in self.who:
-            self.who.append(log.agent.ckey.replace("[DC]", ""))
+        if log.agent and log.agent.ckey and log.agent.ckey not in self.who:
+            self.who.append(log.agent.ckey)
 
     def add_log(self, log: Log, reset_workset: bool = True, sort: bool = True) -> None:
         """Appends a log entry to the end.
@@ -523,9 +524,9 @@ class LogFile:
         with open(filename, "w", encoding="utf-8") as file:
             for log in self.logs:
                 file.write(str(log) + "\n")
-            file.write(f"Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n")
+            file.write(f"## Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n")
             if self.log_source:
-                file.write(f"Logs acquired from {self.log_source}")
+                file.write(f"## Logs acquired from {self.log_source}")
 
     def __len__(self) -> int:
         """Returns the length of the logs array"""
@@ -609,8 +610,8 @@ class LogFile:
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
         # Sort the logs
-        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = get_round_source_url(round_id=round_id)
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         return log_collection
 
     @staticmethod
@@ -637,8 +638,8 @@ class LogFile:
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
-        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = f"{start_round_id}-{end_round_id}"
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         return log_collection
 
     @staticmethod
@@ -664,8 +665,8 @@ class LogFile:
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
-        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = "rounds " + ', '.join(str(x) for x in rounds)
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         return log_collection
 
     @staticmethod
@@ -693,8 +694,8 @@ class LogFile:
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)
         log_collection.log_type = LogFileType.COLLATED
-        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         log_collection.log_source = f"{rounds} latest rounds that {ckey} played in"
+        log_collection.write_working_to_file(downloader.output_path, force_overwrite=True)
         return log_collection
 
 
