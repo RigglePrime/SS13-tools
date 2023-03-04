@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import time
 import os
+import getpass
 import platform
 import locale
 import pickle
@@ -21,7 +22,8 @@ from colorama import Fore, Style
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
 import requests as req
-from pyperclip import copy, paste
+from requests.exceptions import ReadTimeout
+from pyperclip import copy, paste, PyperclipException
 
 from ..constants import USER_AGENT
 from .constants import PASSPORT_FILE_LOCATION, PASSPORT_FILE_NAME, PASSPORT_FILE_HEADER, AUTH_TEST_URL,\
@@ -130,7 +132,7 @@ def generate_key() -> bytes:
     """
     bits, linkage = platform.architecture()
     loc, encoding = locale.getlocale()
-    key: str = platform.node() + os.getlogin() + bits + linkage + time.tzname[0] + loc + encoding
+    key: str = platform.node() + getpass.getuser() + bits + linkage + time.tzname[0] + loc + encoding
     sha = SHA256.new()
     sha.update(key.encode())
     return sha.digest()
@@ -144,10 +146,18 @@ def save_passport() -> None:
 def load_passport() -> None:
     """Loads the passport into the auth module"""
     global PASSPORT  # pylint: disable=global-statement
+    passport_file_path = PASSPORT_FILE_LOCATION + PASSPORT_FILE_NAME
     try:
-        PASSPORT = Passport.load_from_file()
+        PASSPORT = Passport.load_from_file(path=passport_file_path)
     except FileNotFoundError:
         pass
+    # I'd love to catch a specific exception but struct.unpact just says... error
+    except Exception:  # pylint: disable=broad-exception-caught
+        print(f"The passport file at {passport_file_path} is malformed, trying to remove")
+        try:
+            os.remove(passport_file_path)
+        except Exception:  # pylint: disable=broad-exception-caught
+            print("The file could not be removed.")
 
 
 def create_from_token(token: str, override_old: bool = False) -> bool:
@@ -164,7 +174,7 @@ def create_from_token(token: str, override_old: bool = False) -> bool:
     return True
 
 
-def interactive():
+def interactive():  # noqa: C901
     """Interactively authenticate. Calls functions to load and test the passport before asking the user"""
     global PASSPORT  # pylint: disable=global-statement
     print("Authenticating...", end='')
@@ -178,26 +188,36 @@ def interactive():
           f"in this software, so please store it somewhere safe.\nWith it, anyone could access raw logs, {Fore.CYAN}" +
           f"treat it as you would treat a password{Fore.RESET}! {Fore.RED}If you accidentally leak this, change your " +
           f"password immediately{Fore.RESET} to invalidate it.")
-    copy(TOKEN_URL)
-    print(f"{Fore.CYAN}Link copied to clipboard!{Fore.RESET} If you leave the field {Fore.CYAN}empty{Fore.RESET}, " +
-          f"the program will {Fore.CYAN}auto-paste{Fore.RESET} for you.")
+    try:
+        copy(TOKEN_URL)
+        print(f"{Fore.CYAN}Link copied to clipboard!{Fore.RESET} If you leave the field {Fore.CYAN}empty{Fore.RESET}, " +
+              f"the program will {Fore.CYAN}auto-paste{Fore.RESET} for you.")
+    except PyperclipException:
+        pass
     print(f"If you are having trouble copy-pasting the link, select it with your mouse and {Fore.CYAN}right click" +
           f"{Fore.RESET}. That should copy it.")
     print("Right clicking will also paste the contents of your clipboard if nothing is selected.")
     while True:
         token = input("Token: ").strip()
         if not token:
-            token = paste()
+            try:
+                token = paste()
+            except PyperclipException:
+                print("Could not paste from clipboard, please paste the token manually.")
+                continue
         if not token.endswith(".fin") and token.count('.') == 3:
             print("What you pasted does not appear to be the token. Copy only what comes after '=>'")
             continue
-        new_passport = Passport(token=token)
-        if new_passport.test():
-            valid_for = new_passport.expires_at - new_passport.current_server_time
-            print(f"{Fore.GREEN}Authenticated.{Fore.RESET} Valid for {valid_for} from now")
-            PASSPORT = new_passport
-            save_passport()
-            return True
+        try:
+            new_passport = Passport(token=token)
+            if new_passport.test():
+                valid_for = new_passport.expires_at - new_passport.current_server_time
+                print(f"{Fore.GREEN}Authenticated.{Fore.RESET} Valid for {valid_for} from now")
+                PASSPORT = new_passport
+                save_passport()
+                return True
+        except ReadTimeout:
+            print("Read timeout")
         print(f"{Fore.RED}Something went wrong, please try again.{Fore.RESET}")
 
 

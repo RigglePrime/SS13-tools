@@ -171,3 +171,24 @@ class RoundListDownloaderItem(MenuItem):
     def run(self):
         downloader = RoundListLogDownloader.interactive()
         asyncio.run(downloader.process_and_write())
+
+
+class SuspiciousAccessDownloaderItem(MenuItem):
+    name = "Suspicious downloader"
+    description = "Downloads a range of suspicious access logs"
+
+    def run(self):
+        from .auth.tg import interactive
+        print("Input boundry rounds, separated by a space: ")
+        while True:
+            rounds = input("> ").split(' ', 1)
+            if len(rounds) != 2:
+                print("Please input two rounds.")
+                continue
+            if rounds[0].isnumeric() and rounds[1].isnumeric():
+                break
+            print("Those don't seem to be numbers, please try again")
+        downloader = RoundLogDownloader(int(rounds[0]), int(rounds[1]))
+        downloader.files = ["suspicious_logins.log"]
+        interactive()
+        asyncio.run(downloader.process_and_write())
