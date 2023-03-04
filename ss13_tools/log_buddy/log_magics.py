@@ -6,6 +6,7 @@ from functools import wraps
 
 from IPython.terminal.magics import Magics, magics_class, line_magic
 from IPython.core.error import UsageError, StdinNotImplementedError
+from pyperclip import copy
 
 from ..byond import canonicalize
 from .log_parser import LogFile
@@ -316,6 +317,12 @@ class LogMagics(Magics):
         self.actions.clear()
         self.actions = actions
         print("Restored")
+
+    @line_magic
+    def clip(self, parameter_s=''):
+        """Copy the current filtered logs to your clipboard"""
+        copy('\n'.join(log.raw_line for log in self.shell.user_ns[LOGS_VARIABLE_NAME].logs))
+        print("Copied to clipboard!")
 
 
 def register_aliases(shell):

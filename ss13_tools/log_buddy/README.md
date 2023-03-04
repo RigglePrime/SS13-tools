@@ -159,7 +159,8 @@ in the bar.
 - `%print_logs` (alias `%p`): prints the logs
   - `%print_logs`
   - `%p`
-- `%head`: pritns the first few logs
+- `%clip`: copy current logs to clipboard
+- `%head`: prints the first few logs
   - `%head`
   - `%head 20` (print 20 instead of the default)
 - `%tail`: same as head, but from the other side
@@ -173,6 +174,9 @@ going back.
 - `%sort`: sorts the logs by time. You don't need to call this as they're automatically sorted
   - `%sort`
 - `%lsmagic`: list all commands available. A lot are built in, so be careful!
+- `%alias`: depending on your system, some commands will get an alias. For example, `%dir` will
+be available on Windows system (list directory), while `%cat` is avaiable on POSIX systems. This
+command will print out all your current aliases (and can be used to set new ones)
 
 ## How it works (for nerds)
 
