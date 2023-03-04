@@ -474,7 +474,7 @@ class LogFile:
             print("Working set empty")
             return
         for log in self.logs:
-            print(log.raw_line)
+            print(log.pretty())
 
     def head(self, number: int = 10) -> None:
         """Prints the first few lines of the working set to the console.
@@ -489,7 +489,7 @@ class LogFile:
             print("Working set empty")
             return
         for log in self.logs[:number]:
-            print(log.raw_line)
+            print(log.pretty())
 
     def tail(self, number: int = 10) -> None:
         """Prints the last few lines of the working set to the console.
@@ -504,7 +504,7 @@ class LogFile:
             print("Working set empty")
             return
         for log in self.logs[-number:]:
-            print(log.raw_line)
+            print(log.pretty())
 
     def write_working_to_file(self, filename: str, force_overwrite: bool = False) -> None:
         """Writes current `self.work_set` to the desired file.

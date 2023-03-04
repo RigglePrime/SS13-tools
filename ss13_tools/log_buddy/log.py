@@ -946,6 +946,11 @@ class Log:
         self.__parse_and_set_location(coords)
         self.location_name = location.strip()
 
+    def pretty(self):
+        """Return, but with ANSI colour!"""
+        return self.raw_line.replace("[", "[\033[38;5;71m", 1).replace("]", "\033[0m]\033[38;5;33m", 1)\
+                            .replace(": ", "\033[0m: ", 1)
+
     def __str__(self):
         """String representation"""
         return self.raw_line
