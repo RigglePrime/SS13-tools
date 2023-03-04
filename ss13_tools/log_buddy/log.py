@@ -522,7 +522,7 @@ class Log:
         #     print("\u001b[33m[*]\u001b[0m", log)
         self.text = other.strip()
 
-    def parse_adminprivate(self, log: str) -> None:
+    def parse_adminprivate(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `ADMINPRIVATE:` onwards
         (ADMINPRIVATE: should not be included)"""
         other = log
