@@ -178,7 +178,7 @@ class SuspiciousAccessDownloaderItem(MenuItem):
     description = "Downloads a range of suspicious access logs"
 
     def run(self):
-        from .auth.tg import interactive
+        from .auth.tg import interactive as interactive_auth
         print("Input boundry rounds, separated by a space: ")
         while True:
             rounds = input("> ").split(' ', 1)
@@ -190,5 +190,6 @@ class SuspiciousAccessDownloaderItem(MenuItem):
             print("Those don't seem to be numbers, please try again")
         downloader = RoundLogDownloader(int(rounds[0]), int(rounds[1]))
         downloader.files = ["suspicious_logins.log"]
-        interactive()
+        downloader.silent = True
+        interactive_auth()
         asyncio.run(downloader.process_and_write())

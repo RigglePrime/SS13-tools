@@ -25,6 +25,7 @@ class LogDownloader(ABC):
     rounds: Annotated[list[RoundData], "The list of rounds to download"] = []
     files: Annotated[list[str], "Which files do we want to dowload?"] = DEFAULT_FILES.copy()
     output_only_log_line: Annotated[bool, "Should we format our line or not?"] = False
+    silent: Annotated[bool, "Should we be quiet?"] = False
 
     def authenticate(self, token: str, override_old: bool) -> bool:
         """Tries to authenticate against the TG forums"""
@@ -133,13 +134,13 @@ class LogDownloader(ABC):
                 logs: list[bytes]
 
                 pbar.set_description(f"Getting ID {round_data.roundID} on {round_data.server}")
-                if not logs:
+                if not logs and not self.silent:
                     pbar.clear()
                     print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not get a file from round " +
                           f"{round_data.roundID} on {round_data.server}")
                     pbar.display()
                     continue
-                if round_data.roundStartSuicide:
+                if round_data.roundStartSuicide and not self.silent:
                     pbar.clear()
                     print(f"{Fore.MAGENTA}WARNING:{Fore.RESET} round start suicide " +
                           f"in round {round_data.roundID} on {round_data.server}")
