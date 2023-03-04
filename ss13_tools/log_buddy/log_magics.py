@@ -263,7 +263,7 @@ class LogMagics(Magics):
     def clear(self, parameter_s=''):
         """Clears the logs, freeing memory"""
         try:
-            response = self.shell.ask_yes_no("Are you sure you want to remove all logs? [y/N] ", default='n')
+            response = self.shell.ask_yes_no("Are you sure you want to remove all logs? [y/N]", default='n')
         except StdinNotImplementedError:
             print("Logs will not be removed.")
             return
