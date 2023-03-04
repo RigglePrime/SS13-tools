@@ -165,6 +165,9 @@ in the bar.
 - `%tail`: same as head, but from the other side
   - `%tail`
   - `%tail 20`
+- `%undo`: undoes your last command
+  - `%undo`
+  - `%undo 2`: undoes your last TWO commands, how fancy!
 - `%clear`: USE WITH CAUTION: **deletes** currently stored logs. After using this, there's no
 going back.
 - `%sort`: sorts the logs by time. You don't need to call this as they're automatically sorted

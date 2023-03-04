@@ -294,17 +294,6 @@ class LogMagics(Magics):
     actions = []
 
     @line_magic
-    def debug_undo(self, parameter_s=''):
-        """Debug!"""
-        print(self.actions)
-
-    @_undoable
-    @line_magic
-    def debugme(self, parameter_s=''):
-        """Debug!"""
-        print("Debugging!", parameter_s)
-
-    @line_magic
     def undo(self, parameter_s=''):
         """Undo an action! Provide a number to undo multiple times"""
         if not self.actions:
