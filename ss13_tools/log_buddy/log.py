@@ -10,7 +10,7 @@ from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
 from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
-    GAME_BOMB_HORRIBLE_HREF, GAME_I_LOVE_BOMBS
+    HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN
 
 
 class LogType(Enum):
@@ -104,6 +104,18 @@ class AdminLogType(Enum):
     TELEPORT = "teleport"
 
 
+class AdminprivateLogType(Enum):
+    """What type of adminprivate is it? (enum)"""
+    OTHER = "other"
+    TICKET = "pm"
+    ASAY = "asay"
+    ERROR = "err"
+    FILTER = "filter"
+    INTERVIEW = "interview"
+    NOTE = "note"
+    BAN = "ban"
+
+
 class Player:
     """This class holds methods for parsing ckey strings ('ckey/(name)')"""
     ckey: Optional[str]
@@ -118,6 +130,9 @@ class Player:
                 self.ckey = self.ckey[:-4]
             self.ckey = canonicalize(self.ckey)
         self.mob_name = mob_name
+        # We usually strip the closing bracket, what's one more string concat?
+        if self.mob_name and '(' in self.mob_name:
+            self.mob_name += ')'
 
     def __str__(self) -> str:
         return f"{self.ckey}/({self.mob_name})"
@@ -221,6 +236,10 @@ class Log:
     # Admin specific
     admin_log_type: Annotated[AdminLogType, "Sores what kind of admin log it is (None if not an admin log)"]
 
+    # Adminprivate specific
+    adminprivate_log_type: Annotated[AdminprivateLogType, "Sores what kind of admin log it is (None if not an admin log)"]
+    ticket_number: Annotated[int, "Stores the ticket number, if this log is a ticket"]
+
     def parse_game(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `GAME:` onwards (GAME: should not be included)"""
         other = log
@@ -300,7 +319,7 @@ class Log:
                 self.agent = Player(fingerprints, None)
         if log.startswith("Bomb valve opened"):
             agent = log.split("- Last touched by: ")[1]
-            match = re.match(GAME_BOMB_HORRIBLE_HREF, agent)
+            match = re.match(HORRIBLE_HREF, agent)
             self.agent = Player(match[1], match[2])
         elif log.startswith("Lesser Gold Slime chemical mob spawn"):
             agent = log.split(" carried by ", 1)[1].rsplit(" with last ", 1)[0]
@@ -506,7 +525,66 @@ class Log:
     def parse_adminprivate(self, log: str) -> None:
         """Parses a game log entry from `ADMINPRIVATE:` onwards
         (ADMINPRIVATE: should not be included)"""
-        # TODO: add better parsing for tickets
+        other = log
+        self.adminprivate_log_type = AdminprivateLogType.OTHER
+        if other.startswith("ASAY: "):
+            self.adminprivate_log_type = AdminprivateLogType.ASAY
+            agent, other = other[6:].split(' "', 1)
+            self.agent = Player.parse_player(agent.strip())
+            other, location = other.split('" (', 1)
+            loc_start = self.__parse_and_set_location(location)
+            self.location_name = location[:loc_start].strip()
+            self.text = html_unescape(other.strip())
+            return
+        if other.startswith("Ticket #"):
+            self.adminprivate_log_type = AdminprivateLogType.TICKET
+            ticketno, agent, other = other[8:].split(": ", 2)
+            self.ticket_number = int(ticketno)
+            self.agent = Player.parse_player(agent)
+            self.text = other.strip()
+            return
+        if other.startswith("PM: "):
+            if other.startswith("Ticket #"):
+                # len("PM: Ticket #") == 12
+                ticketno, other = other[12:].split(": ", 1)
+                self.ticket_number = int(ticketno)
+            agent, other = other.split(")->", 1)
+            self.agent = Player.parse_player(agent)
+            patient, other = other.split("): ", 1)
+            self.patient = Player.parse_player(patient)
+            self.text = other.strip()
+            return
+        if other.startswith("Ticket <A HREF"):
+            end_of_ticket_id = other.index("</A> ")
+            self.ticket_number = int(other[other.index("'>#")+3:end_of_ticket_id])
+            start_of_agent = other.index(" by <")
+            match = re.match(HORRIBLE_HREF, other[start_of_agent+4:])
+            self.agent = Player(match[1], match[2])
+            self.text = other[end_of_ticket_id + 5:start_of_agent]
+            return
+        if other.startswith("New interview created for "):
+            self.adminprivate_log_type = AdminprivateLogType.INTERVIEW
+            # Strip the startswith content and last dot
+            self.agent = Player.parse_player(other[26:-1])
+        if "has passed the" in other and "filter" in other:
+            self.adminprivate_log_type = AdminprivateLogType.FILTER
+            self.agent = Player.parse_player(other[:other.index(" has passed")])
+        elif match := re.match(ADMINPRIVATE_NOTE, other):
+            self.adminprivate_log_type = AdminprivateLogType.NOTE
+            self.agent = Player.parse_player(match[1].strip())
+            self.patient = Player(match[4], None)
+            self.text = f"{match[2]} a {match[3]}: {match[5]}"
+            return
+        elif match := re.match(ADMINPRIVATE_BAN, other):
+            self.adminprivate_log_type = AdminprivateLogType.BAN
+            self.agent = Player.parse_player(match[1].strip())
+            self.patient = Player(match[3], None)
+            self.text = match[2].strip() + " from " + match[4]
+            return
+        elif other.startswith("Notice: Connecting player "):
+            self.agent = Player(other[26:].split(" has the same", 1)[0], None)
+        elif other.startswith("ERROR: "):
+            self.adminprivate_log_type = AdminprivateLogType.ERROR
         self.text = log.strip()
 
     def parse_ooc(self, log: str) -> None:
