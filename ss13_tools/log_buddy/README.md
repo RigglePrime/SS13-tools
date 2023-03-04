@@ -64,11 +64,12 @@ use `%load_logs`
 Now let's filter them. Let's say our friend `lootgoblin614` got into a fight. They claim to have been
 insulted by someone, so it would be useful to see who they spoke with.
 
-`%heard lootgoblin614` should display only logs they heard. `%p` to print the logs, `%s` to save and
-we're done! Doesn't work? First, let's reset the filter with `%reset`. If we know they fought in
-the bar, we can try `%location Bar` (use full location names), and printing that out. We could also
-just filter for ckeys with `%ckey lootgoblin614 barenjoyer999` to get logs from only those two.
-For the full list of commands, see [available commands](#available-commands-cheat-sheet)
+`%heard lootgoblin614` should display only logs they heard. `%p` to print the logs, `%s` to save or
+`%clip` to copy to clipboard and we're done! If you make a mistake just `%undo`. Doesn't work?
+First, let's reset the filter with `%reset`. If we know they fought in the bar, we can try
+`%location Bar` (use full location names), and printing that out. We could also just filter for
+ckeys with `%ckey lootgoblin614 barenjoyer999` to get logs from only those two. For the full list
+of commands, see [available commands](#available-commands-cheat-sheet)
 
 **Caution:** before using ckey search, verify nothing broke by typing `logs.who`. If you see strange
 ckeys, something probably broke and this might be unreliable. You can still use it normally if your
