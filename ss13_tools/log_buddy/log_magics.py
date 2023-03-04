@@ -30,6 +30,15 @@ class LogMagics(Magics):
             self.actions.append((func.__name__, arg))  # pylint: disable=no-member
         return decorator_undoable
 
+    @property
+    def logs_var(self) -> LogFile:
+        """Stores the logs (main LogFile) variable"""
+        return self.shell.user_ns[LOGS_VARIABLE_NAME]
+
+    @logs_var.setter
+    def logs_var(self, new_value) -> None:
+        self.logs_var = new_value
+
     @line_magic
     def download(self, parameter_s=''):
         """Downloads logs from a round ID (or ckey) and stores it in `logs`
@@ -63,7 +72,7 @@ class LogMagics(Magics):
                 first, last = (int(x) for x in args)
             except ValueError as ex:
                 raise UsageError("One of these is not a number, try again") from ex
-            self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_round_range(first, last)
+            self.logs_var = LogFile.from_round_range(first, last)
             return
         if 'c' not in opts and ' ' in args or ',' in args:
             # Split with spaces and commas
@@ -73,25 +82,25 @@ class LogMagics(Magics):
                 round_ids = (int(x) for x in args if x)
             except ValueError as ex:
                 raise UsageError("One of those is not a number, please try again") from ex
-            self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_round_collection(*round_ids)
+            self.logs_var = LogFile.from_round_collection(*round_ids)
             return
         if 'c' not in opts and args.isnumeric():
-            self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_round_id(int(args))
+            self.logs_var = LogFile.from_round_id(int(args))
         else:
             rounds = int(opts['r'].lstrip('=')) if 'r' in opts else 50
             only_played = 'p' in opts
             args = canonicalize(args)
-            self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile.from_ckey(args, rounds=rounds, only_played=only_played)
+            self.logs_var = LogFile.from_ckey(args, rounds=rounds, only_played=only_played)
 
     @line_magic
     def length(self, parameter_s=''):
         """Prints how many logs we have"""
-        print("Current number of logs is", len(self.shell.user_ns[LOGS_VARIABLE_NAME]))
+        print("Current number of logs is", len(self.logs_var))
 
     @line_magic
     def sort(self, parameter_s=''):
         """Sorts our logs"""
-        self.shell.user_ns[LOGS_VARIABLE_NAME].sort()
+        self.logs_var.sort()
         print("Logs sorted!")
 
     @_undoable
@@ -107,7 +116,7 @@ class LogMagics(Magics):
             raise UsageError(f"Add some ckeys! Usage:\n{self.search_ckey.__doc__}")
         parameter_s = tuple(x.strip() for x in re.split(r'[, ]', parameter_s) if x)
         print("Looking for", ', '.join(parameter_s))
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_ckeys(*parameter_s, source_only=False)
+        self.logs_var.filter_ckeys(*parameter_s, source_only=False)
 
     @_undoable
     @line_magic
@@ -136,13 +145,13 @@ class LogMagics(Magics):
         additive = 'a' in opts
         case_s = 'c' in opts
         if 'r' in opts:
-            self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(args, case_sensitive=case_s, additive=additive)
+            self.logs_var.filter_strings(args, case_sensitive=case_s, additive=additive)
             return
         args = parse_quoted_string(args)
         print("Searching for strings", ', '.join(args))
         print("Append is", "ON," if additive else "OFF,", "case sensitive mode is",
               "ON" if case_s else "OFF,", "and raw mode is", "ON" if additive else "OFF")
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(*args, case_sensitive=case_s, additive=additive)
+        self.logs_var.filter_strings(*args, case_sensitive=case_s, additive=additive)
 
     @_undoable
     @line_magic
@@ -156,7 +165,7 @@ class LogMagics(Magics):
         if not parameter_s:
             raise UsageError(f"Add a ckey! Usage:\n{self.heard.__doc__}")
         print("Filtering heard on ckey", parameter_s)
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_heard(parameter_s)
+        self.logs_var.filter_heard(parameter_s)
 
     @_undoable
     @line_magic
@@ -172,12 +181,12 @@ class LogMagics(Magics):
             return
         parameter_s = (x.strip() for x in re.split(r'[, ]', parameter_s) if x)
         print("Filtering conversation on ckeys", ', '.join(parameter_s))
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_conversation(*parameter_s)
+        self.logs_var.filter_conversation(*parameter_s)
 
     @line_magic
     def reset(self, parameter_s=''):
         """Resets the work set"""
-        self.shell.user_ns[LOGS_VARIABLE_NAME].reset_work_set()
+        self.logs_var.reset_work_set()
         self.actions.clear()
         print("Filters reset!")
 
@@ -197,7 +206,7 @@ class LogMagics(Magics):
             raise UsageError(f"Add some ckeys! Usage:\n{self.location.__doc__}")
         opts, args = self.parse_options(parameter_s, 'e')
         print("Filtering for", parameter_s)
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_location_name(args, exact='e' in opts)
+        self.logs_var.filter_by_location_name(args, exact='e' in opts)
 
     @_undoable
     @line_magic
@@ -217,7 +226,7 @@ class LogMagics(Magics):
         except ValueError as ex:
             raise UsageError("Could not convert to an integer") from ex
         print(f"Filtering by x={x}, y={y}, z={z}, r={radius}")
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_radius((x, y, z), radius)
+        self.logs_var.filter_by_radius((x, y, z), radius)
 
     @_undoable
     @line_magic
@@ -236,28 +245,28 @@ class LogMagics(Magics):
         print("Filtering by the following rules:")
         print("Including:", ', '.join(str(x) for x in include))
         print("Excluding:", ', '.join(str(x) for x in exclude))
-        self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_type(include=include, exclude=exclude)
+        self.logs_var.filter_by_type(include=include, exclude=exclude)
 
     @line_magic
     def print_logs(self, parameter_s=''):
         """Prints our filtered logs"""
-        self.shell.user_ns[LOGS_VARIABLE_NAME].print_working()
+        self.logs_var.print_working()
 
     @line_magic
     def head(self, parameter_s=''):
         """Prints our filtered logs, but only the head"""
         try:
-            self.shell.user_ns[LOGS_VARIABLE_NAME].head(int(parameter_s))
+            self.logs_var.head(int(parameter_s))
         except ValueError:
-            self.shell.user_ns[LOGS_VARIABLE_NAME].head()
+            self.logs_var.head()
 
     @line_magic
     def tail(self, parameter_s=''):
         """Prints our filtered logs, but only the tail"""
         try:
-            self.shell.user_ns[LOGS_VARIABLE_NAME].tail(int(parameter_s))
+            self.logs_var.tail(int(parameter_s))
         except ValueError:
-            self.shell.user_ns[LOGS_VARIABLE_NAME].tail()
+            self.logs_var.tail()
 
     @line_magic
     def clear(self, parameter_s=''):
@@ -270,7 +279,7 @@ class LogMagics(Magics):
         if not response:
             print("Cancelled")
             return
-        self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile()
+        self.logs_var = LogFile()
         self.actions.clear()
         print("Logs cleared!")
 
@@ -280,7 +289,7 @@ class LogMagics(Magics):
         if not parameter_s:
             parameter_s = "logs.log"
         print(f"Writing to file {parameter_s}")
-        self.shell.user_ns[LOGS_VARIABLE_NAME].write_working_to_file(parameter_s)
+        self.logs_var.write_working_to_file(parameter_s)
 
     @line_magic
     def load_logs(self, parameter_s=''):
@@ -290,7 +299,7 @@ class LogMagics(Magics):
         if not os.path.exists(parameter_s):
             raise UsageError("File does not exist")
         print("Loading from", parameter_s)
-        self.shell.user_ns[LOGS_VARIABLE_NAME].collate(LogFile.from_file(parameter_s))
+        self.logs_var.collate(LogFile.from_file(parameter_s))
 
     actions = []
 
@@ -310,7 +319,7 @@ class LogMagics(Magics):
         actions = self.actions.copy()[:-undo_times]
 
         print("Rewinding...")
-        self.shell.user_ns[LOGS_VARIABLE_NAME].reset_work_set()
+        self.logs_var.reset_work_set()
         for magic, params in actions:
             print(f"Running %{magic} with params: {params}")
             self.shell.run_line_magic(magic, params)
@@ -321,7 +330,7 @@ class LogMagics(Magics):
     @line_magic
     def clip(self, parameter_s=''):
         """Copy the current filtered logs to your clipboard"""
-        copy('\n'.join(log.raw_line for log in self.shell.user_ns[LOGS_VARIABLE_NAME].logs))
+        copy('\n'.join(log.raw_line for log in self.logs_var.logs))
         print("Copied to clipboard!")
 
 
