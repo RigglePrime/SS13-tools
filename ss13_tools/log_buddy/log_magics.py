@@ -37,7 +37,7 @@ class LogMagics(Magics):
 
     @logs_var.setter
     def logs_var(self, new_value) -> None:
-        self.logs_var = new_value
+        self.shell.user_ns[LOGS_VARIABLE_NAME] = new_value
 
     @line_magic
     def download(self, parameter_s=''):
