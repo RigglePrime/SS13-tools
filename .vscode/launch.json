@@ -1,12 +1,19 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: Module",
-            "type": "python",
-            "request": "launch",
-            "module": "ss13_tools",
-            "justMyCode": true
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: SS13Tools",
+      "type": "python",
+      "request": "launch",
+      "module": "ss13_tools",
+      "justMyCode": true
+    },
+    {
+        "name": "Python: LogBuddy",
+        "type": "python",
+        "request": "launch",
+        "module": "ss13_tools.log_buddy",
+        "justMyCode": true
+    }
+  ]
 }
