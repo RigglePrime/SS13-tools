@@ -2,9 +2,10 @@
 # pylint: disable=unused-argument
 import re
 import os
+from functools import wraps
 
 from IPython.terminal.magics import Magics, magics_class, line_magic
-from IPython.core.error import UsageError
+from IPython.core.error import UsageError, StdinNotImplementedError
 
 from ..byond import canonicalize
 from .log_parser import LogFile
@@ -18,6 +19,15 @@ LOGS_VARIABLE_NAME = 'logs'
 @magics_class
 class LogMagics(Magics):
     """Stores our custom log magics for ease of use"""
+
+    def _undoable(func):  # pylint: disable=no-self-argument
+        """Marks a function as being able to be undone. Apply to magics that modify the logs"""
+        @wraps(func)
+        def decorator_undoable(self, arg):
+            """You should not be seeing this"""
+            func(self, arg)  # pylint: disable=not-callable
+            self.actions.append((func.__name__, arg))  # pylint: disable=no-member
+        return decorator_undoable
 
     @line_magic
     def download(self, parameter_s=''):
@@ -83,6 +93,7 @@ class LogMagics(Magics):
         self.shell.user_ns[LOGS_VARIABLE_NAME].sort()
         print("Logs sorted!")
 
+    @_undoable
     @line_magic
     def search_ckey(self, parameter_s=''):
         """Excludes logs that do not contain any of the ckeys
@@ -93,10 +104,11 @@ class LogMagics(Magics):
         """
         if not parameter_s:
             raise UsageError(f"Add some ckeys! Usage:\n{self.search_ckey.__doc__}")
-        parameter_s = (x.strip() for x in re.split(r'[, ]', parameter_s) if x)
+        parameter_s = tuple(x.strip() for x in re.split(r'[, ]', parameter_s) if x)
         print("Looking for", ', '.join(parameter_s))
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_ckeys(*parameter_s, source_only=False)
 
+    @_undoable
     @line_magic
     def search_string(self, parameter_s=''):
         """Works just like bookmarking in Notepad++, or CTRL+F multiple times. Case insensitive
@@ -131,6 +143,7 @@ class LogMagics(Magics):
               "ON" if case_s else "OFF,", "and raw mode is", "ON" if additive else "OFF")
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_strings(*args, case_sensitive=case_s, additive=additive)
 
+    @_undoable
     @line_magic
     def heard(self, parameter_s=''):
         """Gets only what the person could have heard
@@ -144,6 +157,7 @@ class LogMagics(Magics):
         print("Filtering heard on ckey", parameter_s)
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_heard(parameter_s)
 
+    @_undoable
     @line_magic
     def conversation(self, parameter_s=''):
         """Tries to reconstruct a conversation between parties
@@ -163,8 +177,10 @@ class LogMagics(Magics):
     def reset(self, parameter_s=''):
         """Resets the work set"""
         self.shell.user_ns[LOGS_VARIABLE_NAME].reset_work_set()
+        self.actions.clear()
         print("Filters reset!")
 
+    @_undoable
     @line_magic
     def location(self, parameter_s=''):
         """Filters by location name.
@@ -182,6 +198,7 @@ class LogMagics(Magics):
         print("Filtering for", parameter_s)
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_location_name(args, exact='e' in opts)
 
+    @_undoable
     @line_magic
     def radius(self, parameter_s=''):
         """Tries to reconstruct a conversation between parties
@@ -201,6 +218,7 @@ class LogMagics(Magics):
         print(f"Filtering by x={x}, y={y}, z={z}, r={radius}")
         self.shell.user_ns[LOGS_VARIABLE_NAME].filter_by_radius((x, y, z), radius)
 
+    @_undoable
     @line_magic
     def type(self, parameter_s=''):
         """Filters by log type"""
@@ -243,11 +261,16 @@ class LogMagics(Magics):
     @line_magic
     def clear(self, parameter_s=''):
         """Clears the logs, freeing memory"""
-        print("Are you sure you want to remove all logs? [y/N] ", end="")
-        if input().strip().lower() != 'y':
+        try:
+            response = self.shell.ask_yes_no("Are you sure you want to remove all logs? [y/N] ", default='n')
+        except StdinNotImplementedError:
+            print("Logs will not be removed.")
+            return
+        if not response:
             print("Cancelled")
             return
         self.shell.user_ns[LOGS_VARIABLE_NAME] = LogFile()
+        self.actions.clear()
         print("Logs cleared!")
 
     @line_magic
@@ -267,6 +290,43 @@ class LogMagics(Magics):
             raise UsageError("File does not exist")
         print("Loading from", parameter_s)
         self.shell.user_ns[LOGS_VARIABLE_NAME].collate(LogFile.from_file(parameter_s))
+
+    actions = []
+
+    @line_magic
+    def debug_undo(self, parameter_s=''):
+        """Debug!"""
+        print(self.actions)
+
+    @_undoable
+    @line_magic
+    def debugme(self, parameter_s=''):
+        """Debug!"""
+        print("Debugging!", parameter_s)
+
+    @line_magic
+    def undo(self, parameter_s=''):
+        """Undo an action! Provide a number to undo multiple times"""
+        if not self.actions:
+            print("Nothing to undo!")
+            return
+        if parameter_s and not parameter_s.isnumeric():
+            raise UsageError("That's not a number! Run it without one, or provide a number please")
+        undo_times = int(parameter_s) if parameter_s else 1
+        if undo_times < 1:
+            raise UsageError("What the hell? I can't undo less than 1 time...")
+        if len(self.actions) < undo_times:
+            raise UsageError("Cannot undo that many times!")
+        actions = self.actions.copy()[:-undo_times]
+
+        print("Rewinding...")
+        self.shell.user_ns[LOGS_VARIABLE_NAME].reset_work_set()
+        for magic, params in actions:
+            print(f"Running %{magic} with params: {params}")
+            self.shell.run_line_magic(magic, params)
+        self.actions.clear()
+        self.actions = actions
+        print("Restored")
 
 
 def register_aliases(shell):
