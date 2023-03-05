@@ -5,12 +5,15 @@ from enum import Enum
 from typing import Annotated, Tuple, Optional
 import re
 from html import unescape as html_unescape
+from colorama import init
 
 from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
 from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
     HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN
+from .constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD, LOG_COLOUR_PERIWINKLE,\
+    LOG_COLOUR_PINK, LOG_COLOUR_GRAY
 
 
 class LogType(Enum):
@@ -74,6 +77,7 @@ class SiliconLogType(Enum):
     MISC = 0
     CYBORG = 1
     LAW = 2
+    EMAG = 3
 
 
 class AdminLogType(Enum):
@@ -948,8 +952,28 @@ class Log:
 
     def pretty(self):
         """Return, but with ANSI colour!"""
-        return self.raw_line.replace("[", "[\033[38;5;71m", 1).replace("]", "\033[0m]\033[38;5;33m", 1)\
-                            .replace(": ", "\033[0m: ", 1)
+        return self.raw_line.replace("[", "\033[38;5;240m[", 1).replace("]", "]\033[0m", 1)\
+                            .replace("ACCESS:", f"\033[38;5;{LOG_COLOUR_GRAY}mACCESS:\033[0m", 1)\
+                            .replace("ASSET:", f"\033[38;5;{LOG_COLOUR_GRAY}mASSET:\033[0m", 1)\
+                            \
+                            .replace("ADMIN:", f"\033[38;5;{LOG_COLOUR_PINK}mADMIN:\033[0m", 1)\
+                            .replace("ADMINPRIVATE:", f"\033[38;5;{LOG_COLOUR_PINK}mADMINPRIVATE:\033[0m", 1)\
+                            \
+                            .replace("ATTACK:", f"\033[38;5;{LOG_COLOUR_RED}mATTACK:\033[0m", 1)\
+                            \
+                            .replace("GAME:", f"\033[38;5;{LOG_COLOUR_EMERALD}mGAME:\033[0m", 1)\
+                            \
+                            .replace("TRAITOR:", f"\033[38;5;{LOG_COLOUR_SCARLET}mTRAITOR:\033[0m", 1)\
+                            .replace("UPLINK:", f"\033[38;5;{LOG_COLOUR_SCARLET}mUPLINK:\033[0m", 1)\
+                            .replace("MALF UPGRADE:", f"\033[38;5;{LOG_COLOUR_SCARLET}mMALF UPGRADE:\033[0m", 1)\
+                            .replace("CHANGELING:", f"\033[38;5;{LOG_COLOUR_SCARLET}mCHANGELING:\033[0m", 1)\
+                            .replace("HERETIC RESEARCH:", f"\033[38;5;{LOG_COLOUR_SCARLET}mHERETIC RESEARCH:\033[0m", 1)\
+                            .replace("SPELLBOOK:", f"\033[38;5;{LOG_COLOUR_SCARLET}mSPELLBOOK:\033[0m", 1)\
+                            \
+                            .replace("SAY:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mSAY:\033[0m", 1)\
+                            .replace("EMOTE:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mEMOTE:\033[0m", 1)\
+                            .replace("WHISPER:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mWHISPER:\033[0m", 1)\
+                            .replace("OOC:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mOOC:\033[0m", 1)
 
     def __str__(self):
         """String representation"""
@@ -962,5 +986,6 @@ class Log:
 
 if __name__ == "__main__":
     single_log = Log(input())
+    init()
     print(single_log)
     print(single_log.__dict__)
