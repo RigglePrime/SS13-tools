@@ -11,9 +11,11 @@ from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
 from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
-    HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN
+    HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN,\
+    LOG_PRETTY_LOC, LOG_PRETTY_STR, LOG_PRETTY_PATH
 from ss13_tools.log_buddy.constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD,\
-    LOG_COLOUR_PERIWINKLE, LOG_COLOUR_PINK, LOG_COLOUR_GRAY
+    LOG_COLOUR_PERIWINKLE, LOG_COLOUR_PINK, LOG_COLOUR_GRAY, LOG_COLOUR_PASTEL_CYAN, LOG_COLOUR_SUNSET,\
+    LOG_COLOUR_PASTEL_ORANGE, LOG_COLOUR_AMETHYST, LOG_COLOUR_OCEAN
 
 
 class LogType(Enum):
@@ -123,9 +125,11 @@ class AdminprivateLogType(Enum):
 class Player:
     """This class holds methods for parsing ckey strings ('ckey/(name)')"""
     ckey: Optional[str]
+    key: Optional[str]
     mob_name: Optional[str]
 
     def __init__(self, ckey: str, mob_name: str) -> None:
+        self.key = ckey
         self.ckey = None if ckey == "*no key*" else ckey
         if self.ckey:
             if self.ckey.startswith('@'):
@@ -139,10 +143,10 @@ class Player:
             self.mob_name += ')'
 
     def __str__(self) -> str:
-        return f"{self.ckey}/({self.mob_name})"
+        return f"{self.key}/({self.mob_name})"
 
     def __repr__(self) -> str:
-        return f"{self.ckey}/({self.mob_name})"
+        return f"{self.key}/({self.mob_name})"
 
     @staticmethod
     def parse_player(string: str):
@@ -174,6 +178,7 @@ class Log:
 
     Examples:
     log = `Log("log line here")` # NOTE: must be a valid log entry"""
+
     def __init__(self, line: Optional[str] = None) -> None:
         if not line or line[0] != "[":
             raise UnknownLogException("Does not start with [")
@@ -673,8 +678,14 @@ class Log:
         if other.startswith("injected"):
             other_temp = other.split(" ", 1)[1]
             parse_key = True
+        elif other.startswith("attacked ") and other[9] != "[":
+            other_temp = other[9:]
+            parse_key = True
+        elif other.startswith("shot ") and other[5] != "[":
+            other_temp = other[5:]
+            parse_key = True
         # NOTE: Performance? Not sure if it helps go check yourself, I am too lazy
-        elif not other.startswith(("has", "was", "is", "started")):
+        elif not other.startswith(("has", "was", "is", "started", "fired at")):
             # I love the logs. I love spaghetti.
             if "is being stripped of" in other or \
                     "has been stripped of" in other or \
@@ -701,7 +712,7 @@ class Log:
             "has places",  # Do NOT fix this typo, I will have to add another damn startswith
             # "has hit", # I don't think this is ever used against players, so I'll leave it out
             # Another typo... feel free to fix for free GBP since we already have "kicked"
-            "has kicks"
+            "has kicks", "fired at"
         )):
             other_temp = other.split(" ", 2)[2].replace("(CQC) ", "")
             parse_key = True
@@ -773,7 +784,8 @@ class Log:
             self.text = log.strip()
             loc_start = self.__parse_and_set_location(log)
             if loc_start > 0:
-                self.location_name = log.split('" (', 1)[1][:loc_start].strip()
+                self.location_name = log[:loc_start].rsplit('(', 1)[1].strip()
+            return
         else:
             self.silicon_log_type = SiliconLogType.MISC
         agent, other = log.split(") ", 1)
@@ -781,7 +793,8 @@ class Log:
 
         if self.silicon_log_type == SiliconLogType.LAW and other.startswith("used "):
             patient = other.split(" on ", 1)[1].split(") ", 1)[0]
-            self.patient = Player.parse_player(patient)
+            if not patient.startswith("*null*"):
+                self.patient = Player.parse_player(patient)
         self.text = other.strip()
         # NOTE: someone PLEASE fix logging this is getting ridiculous
         # NOTE: there is no reliable way of getting the second key here
@@ -792,7 +805,8 @@ class Log:
         self.agent = Player.parse_player(agent)
         # Sending a message with the message monitor console adds a "sent " FOR NO PARTICULAR REASON
         # It gets better... it also moves " to "...
-        if "PDA: message monitor console" in other or "Tablet: message monitor console" in other:
+        if "PDA: message monitor console" in other or "Tablet: message monitor console" in other or\
+                "PDA: Citation Server" in other:
             _pda_type, other = other.split(') sent "')
             if '" to ' not in other:
                 self.text = html_unescape(other.strip())
@@ -963,11 +977,22 @@ class Log:
         self.__parse_and_set_location(coords)
         self.location_name = location.strip()
 
+    def __re_pretty_htmlescaped(self, colour):
+        return lambda match: f"\033[38;5;{colour}m{html_unescape(match.group(0))}\033[0m"
+
+    def __re_pretty(self, colour):
+        return lambda match: f"\033[38;5;{colour}m{match.group(0)}\033[0m"
+
     def pretty(self):
         """Return, but with ANSI colour!"""
-        return self.raw_line.replace("[", "\033[38;5;240m[", 1).replace("]", "]\033[0m", 1)\
+        to_be_printed = self.raw_line
+        to_be_printed = re.sub(LOG_PRETTY_STR, self.__re_pretty_htmlescaped(LOG_COLOUR_SUNSET), to_be_printed, 1)
+        to_be_printed = re.sub(LOG_PRETTY_LOC, self.__re_pretty(LOG_COLOUR_PASTEL_CYAN), to_be_printed, 1)
+        to_be_printed = re.sub(LOG_PRETTY_PATH, self.__re_pretty(LOG_COLOUR_PASTEL_ORANGE), to_be_printed)
+        return to_be_printed.replace("[", "\033[38;5;240m[", 1).replace("]", "]\033[0m", 1)\
                             .replace("ACCESS:", f"\033[38;5;{LOG_COLOUR_GRAY}mACCESS:\033[0m", 1)\
                             .replace("ASSET:", f"\033[38;5;{LOG_COLOUR_GRAY}mASSET:\033[0m", 1)\
+                            .replace("TOPIC:", f"\033[38;5;{LOG_COLOUR_GRAY}mTOPIC:\033[0m", 1)\
                             \
                             .replace("ADMIN:", f"\033[38;5;{LOG_COLOUR_PINK}mADMIN:\033[0m", 1)\
                             .replace("ADMINPRIVATE:", f"\033[38;5;{LOG_COLOUR_PINK}mADMINPRIVATE:\033[0m", 1)\
@@ -986,7 +1011,15 @@ class Log:
                             .replace("SAY:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mSAY:\033[0m", 1)\
                             .replace("EMOTE:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mEMOTE:\033[0m", 1)\
                             .replace("WHISPER:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mWHISPER:\033[0m", 1)\
-                            .replace("OOC:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mOOC:\033[0m", 1)
+                            .replace("OOC:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mOOC:\033[0m", 1)\
+                            .replace("PDA:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mPDA:\033[0m", 1)\
+                            \
+                            .replace("SILICON:", f"\033[38;5;{LOG_COLOUR_OCEAN}mSILICON:\033[0m", 1)\
+                            \
+                            .replace(str(self.agent), f"\033[38;5;{LOG_COLOUR_AMETHYST}m{str(self.agent)}\033[0m")\
+                            .replace(str(self.patient), f"\033[38;5;{LOG_COLOUR_AMETHYST}m{str(self.patient)}\033[0m")\
+                            .replace(str(self.location_name),
+                                     f"\033[38;5;{LOG_COLOUR_PASTEL_CYAN}m{str(self.location_name)}\033[0m")
 
     def __str__(self):
         """String representation"""
