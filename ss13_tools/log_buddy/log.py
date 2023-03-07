@@ -638,10 +638,16 @@ class Log:
     # I have decided that we will all just have to bear with it.
     def parse_attack(self, log: str) -> None:  # noqa: C901
         """Parses a game log entry from `ATTACK:` onwards (ATTACK: should not be included)"""
-        if ") " in log:
+        player_agent = ") " in log
+        object_agent = "] " in log
+        if player_agent and object_agent:
+            # Why must the logs do this to us
+            if log.index("] ") < log.index(") "):
+                player_agent = False
+        if player_agent:
             agent, other = log.split(") ", 1)
             self.agent = Player.parse_player(agent)
-        elif "] " in log:
+        elif object_agent:
             agent, other = log.split("] ", 1)
             # Remove [, since the name usually looks like "[frag grenade] has ..."
             self.agent = Player(None, agent[1:])
@@ -683,6 +689,9 @@ class Log:
             parse_key = True
         elif other.startswith("shot ") and other[5] != "[":
             other_temp = other[5:]
+            parse_key = True
+        elif other.startswith("electrocuted ") and other[13] != "[":
+            other_temp = other[13:]
             parse_key = True
         # NOTE: Performance? Not sure if it helps go check yourself, I am too lazy
         elif not other.startswith(("has", "was", "is", "started", "fired at")):
@@ -987,7 +996,7 @@ class Log:
         """Return, but with ANSI colour!"""
         to_be_printed = self.raw_line
         to_be_printed = re.sub(LOG_PRETTY_STR, self.__re_pretty_htmlescaped(LOG_COLOUR_SUNSET), to_be_printed, 1)
-        to_be_printed = re.sub(LOG_PRETTY_LOC, self.__re_pretty(LOG_COLOUR_PASTEL_CYAN), to_be_printed, 1)
+        to_be_printed = re.sub(LOG_PRETTY_LOC, self.__re_pretty(LOG_COLOUR_PASTEL_CYAN), to_be_printed)
         to_be_printed = re.sub(LOG_PRETTY_PATH, self.__re_pretty(LOG_COLOUR_PASTEL_ORANGE), to_be_printed)
         return to_be_printed.replace("[", "\033[38;5;240m[", 1).replace("]", "]\033[0m", 1)\
                             .replace("ACCESS:", f"\033[38;5;{LOG_COLOUR_GRAY}mACCESS:\033[0m", 1)\
