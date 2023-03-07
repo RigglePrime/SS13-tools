@@ -160,12 +160,11 @@ class LogMagics(Magics):
 
         Example:
             - `%heard WindowSmasher86`
-            - `%heard ckey1 ckey2 ...`
         """
         if not parameter_s:
             raise UsageError(f"Add a ckey! Usage:\n{self.heard.__doc__}")
         print("Filtering heard on ckey", parameter_s)
-        self.logs_var.filter_heard(parameter_s)
+        self.logs_var.filter_heard(canonicalize(parameter_s))
 
     @_undoable
     @line_magic
