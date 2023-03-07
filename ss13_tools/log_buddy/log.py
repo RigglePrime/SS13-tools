@@ -684,14 +684,8 @@ class Log:
         if other.startswith("injected"):
             other_temp = other.split(" ", 1)[1]
             parse_key = True
-        elif other.startswith("attacked ") and other[9] != "[":
-            other_temp = other[9:]
-            parse_key = True
-        elif other.startswith("shot ") and other[5] != "[":
-            other_temp = other[5:]
-            parse_key = True
-        elif other.startswith("electrocuted ") and other[13] != "[":
-            other_temp = other[13:]
+        elif other.startswith(("attacked ", "shot ", "electrocuted ", "crushed ")) and other[9] != "[":
+            other_temp = other.split(" ", 1)[1]
             parse_key = True
         # NOTE: Performance? Not sure if it helps go check yourself, I am too lazy
         elif not other.startswith(("has", "was", "is", "started", "fired at")):
