@@ -116,6 +116,9 @@ class LogMagics(Magics):
             raise UsageError(f"Add some ckeys! Usage:\n{self.search_ckey.__doc__}")
         parameter_s = tuple(canonicalize(x) for x in re.split(r'[, ]', parameter_s) if x)
         print("Looking for", ', '.join(parameter_s))
+        for ckey in parameter_s:
+            if ckey not in self.logs_var.who:
+                print(f"{ckey} not found! Ignoring!")
         self.logs_var.filter_ckeys(*parameter_s, source_only=False)
 
     @_undoable
@@ -164,6 +167,9 @@ class LogMagics(Magics):
         if not parameter_s:
             raise UsageError(f"Add a ckey! Usage:\n{self.heard.__doc__}")
         print("Filtering heard on ckey", parameter_s)
+        if parameter_s not in self.logs_var.who:
+            print(f"{parameter_s} not found! Ignoring!")
+            return
         self.logs_var.filter_heard(canonicalize(parameter_s))
 
     @_undoable
@@ -178,8 +184,11 @@ class LogMagics(Magics):
         if not parameter_s:
             print(f"Add some ckeys! Usage:\n{self.conversation.__doc__}")
             return
-        parameter_s = (x.strip() for x in re.split(r'[, ]', parameter_s) if x)
+        parameter_s = (canonicalize(x) for x in re.split(r'[, ]', parameter_s) if x)
         print("Filtering conversation on ckeys", ', '.join(parameter_s))
+        for ckey in parameter_s:
+            if ckey not in self.logs_var.who:
+                print(f"{ckey} not found! Ignoring!")
         self.logs_var.filter_conversation(*parameter_s)
 
     @line_magic
