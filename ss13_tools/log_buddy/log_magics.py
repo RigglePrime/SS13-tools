@@ -166,11 +166,12 @@ class LogMagics(Magics):
         """
         if not parameter_s:
             raise UsageError(f"Add a ckey! Usage:\n{self.heard.__doc__}")
+        parameter_s = canonicalize(parameter_s)
         print("Filtering heard on ckey", parameter_s)
         if parameter_s not in self.logs_var.who:
             print(f"{parameter_s} not found! Ignoring!")
             return
-        self.logs_var.filter_heard(canonicalize(parameter_s))
+        self.logs_var.filter_heard(parameter_s)
 
     @_undoable
     @line_magic
