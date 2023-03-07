@@ -12,8 +12,8 @@ from dateutil.parser import isoparse
 from ss13_tools.byond import canonicalize
 from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
     HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN
-from .constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD, LOG_COLOUR_PERIWINKLE,\
-    LOG_COLOUR_PINK, LOG_COLOUR_GRAY
+from ss13_tools.log_buddy.constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD,\
+    LOG_COLOUR_PERIWINKLE, LOG_COLOUR_PINK, LOG_COLOUR_GRAY
 
 
 class LogType(Enum):
@@ -326,8 +326,11 @@ class Log:
             match = re.match(HORRIBLE_HREF, agent)
             self.agent = Player(match[1], match[2])
         elif log.startswith("Lesser Gold Slime chemical mob spawn"):
-            agent = log.split(" carried by ", 1)[1].rsplit(" with last ", 1)[0]
-            self.agent = Player.parse_player(agent)
+            agent = log.split(" carried by ", 1)[1]
+            if agent.startswith("*null*"):
+                self.agent = Player(agent, None)
+            else:
+                self.agent = Player.parse_player(agent)
         elif "/(" in other and ") " in other:
             self.agent = Player.parse_player(other.split(") ", 1)[0])
         self.text = other.strip()
@@ -357,7 +360,7 @@ class Log:
         """Parses a game log entry from `ADMIN:` onwards (ADMIN: should not be included)"""
         # A yandere dev looking function. I'd do a regex but this runs faster
         # I'm calling this current implementation good enough. It's not the best, but it will do
-        # TODO: improve
+        # TODO: improve. Consider finite state machines
         self.admin_log_type = AdminLogType.OTHER
         other = log
         if other.startswith("Announce: "):
@@ -437,6 +440,13 @@ class Log:
             other = other.replace("Admin ", "", 1)  # Because WHY WOULD IT BE UNIFORM
             agent, other = other.split(") ", 1)
             self.agent = Player.parse_player(agent)
+            return
+        if other.startswith("*null*"):
+            self.text = other.strip()
+            return
+        if " has no jobs enabled, " in other:
+            self.agent = Player(other.split(" has no jobs enabled, ")[0], None)
+            self.text = other.strip()
             return
         agent, other = other.split(") ", 1)
         self.agent = Player.parse_player(agent)
@@ -784,6 +794,9 @@ class Log:
         # It gets better... it also moves " to "...
         if "PDA: message monitor console" in other or "Tablet: message monitor console" in other:
             _pda_type, other = other.split(') sent "')
+            if '" to ' not in other:
+                self.text = html_unescape(other.strip())
+                return
             text, other = other.split('" to ', 1)
             loc_start = self.__parse_and_set_location(other)
             self.location_name = other[:loc_start].split("(")[-1].strip()
@@ -987,5 +1000,5 @@ class Log:
 if __name__ == "__main__":
     single_log = Log(input())
     init()
-    print(single_log)
+    print(single_log.pretty())
     print(single_log.__dict__)
