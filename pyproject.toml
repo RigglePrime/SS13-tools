@@ -22,6 +22,7 @@ pyperclip = "^1.8.2"
 flake8 = "^6.0.0"
 pylint = "^2.15.8"
 pyinstaller = "^5.8.0"
+autopep8 = "^2.0.2"
 
 [tool.poetry.scripts]
 ss13tools = "ss13_tools.cli:main"
