@@ -15,7 +15,7 @@ import platform
 import locale
 import pickle
 import struct
-from datetime import datetime, timezone
+from datetime import timedelta
 from typing import Optional
 
 from colorama import Fore, Style
@@ -25,7 +25,7 @@ import requests as req
 from requests.exceptions import ReadTimeout
 from pyperclip import copy, paste, PyperclipException
 
-from ..constants import USER_AGENT
+from ..constants import USER_AGENT, __version__
 from .constants import PASSPORT_FILE_LOCATION, PASSPORT_FILE_NAME, PASSPORT_FILE_HEADER, AUTH_TEST_URL,\
                        TOKEN_URL, PASSPORT_URL
 
@@ -36,11 +36,14 @@ PASSPORT: Passport = None
 class Passport():
     """Passport class"""
 
-    rawlogs_passport: str
-    expires_at: datetime
-    current_server_time: datetime
+    rawlogs_passport: str = ""
+    expires_at: float = 0
+    current_server_time: float = 0
+    local_time_delta: float = 0
 
     def __init__(self, token: str) -> None:
+        if not token:
+            return
         # Request a new passport to be issued
         passport_response = req.get(PASSPORT_URL,
                                     headers={"User-Agent": USER_AGENT, "Authorization": f"Bearer {token}"},
@@ -54,20 +57,29 @@ class Passport():
             print(err)
             return
         self.rawlogs_passport = passport_response["rawlogs_passport"]
-        self.expires_at = datetime.fromtimestamp(passport_response["expires_at"], tz=timezone.utc)
-        self.current_server_time = datetime.fromtimestamp(passport_response["current_server_time"], tz=timezone.utc)
+        self.expires_at = float(passport_response["expires_at"])
+        self.current_server_time = float(passport_response["current_server_time"])
+        self.local_time_delta = time.time() - self.current_server_time
 
     def seconds_left(self) -> float:
         """The number of seconds this token has left before impending death. Now including fractions!"""
-        return self.expires_at.timestamp() - datetime.utcnow().timestamp()
+        return self.expires_at - time.time() + self.local_time_delta
 
     def test(self) -> bool:
         """Tests the passport for validity"""
         return bool(self.rawlogs_passport) and\
-            self.expires_at > datetime.utcnow() and\
+            self.expires_at > time.time() + self.local_time_delta and\
             req.get(AUTH_TEST_URL,
                     headers={"User-Agent": USER_AGENT, "Authorization": f"Bearer {self.rawlogs_passport}"},
                     timeout=10).ok
+
+    def __getstate__(self):
+        return (__version__, self.__dict__)
+
+    def __setstate__(self, state: tuple):
+        if state[0] != __version__:
+            return
+        self.__dict__ = state[1]
 
     def save_to_file(self, path: str = PASSPORT_FILE_LOCATION + PASSPORT_FILE_NAME) -> None:
         """Saves the passport to a file"""
@@ -180,38 +192,43 @@ def interactive():  # noqa: C901
     print("Authenticating...", end='')
     if is_authenticated():
         print(Fore.GREEN, "passport valid", Fore.RESET)
-        valid_for = PASSPORT.expires_at - datetime.utcnow()
+        valid_for = timedelta(seconds=seconds_left())
         print(f"The token has {valid_for} left.")
         return True
     print(Fore.RED, "not authenticated!", Fore.RESET)
-    print(f"Please go to {Style.BRIGHT}{TOKEN_URL}{Style.NORMAL} and obtain a token. The token will NOT be saved " +
+    copied = ""
+    token = ""
+    try:
+        # Copy and paste can throw, make sure they don't crash everything
+        token = paste()
+        copy(TOKEN_URL)
+        copied = f"{Fore.CYAN}Link copied to clipboard!{Fore.RESET} If you leave the field {Fore.CYAN}empty{Fore.RESET}, " +\
+                 f"the program will {Fore.CYAN}auto-paste{Fore.RESET} for you. "
+    except PyperclipException:
+        pass
+    print(f"Please go to {Style.BRIGHT}{TOKEN_URL}{Style.NORMAL} and obtain a token. {copied}The token will NOT be saved " +
           f"in this software, so please store it somewhere safe.\nWith it, anyone could access raw logs, {Fore.CYAN}" +
           f"treat it as you would treat a password{Fore.RESET}! {Fore.RED}If you accidentally leak this, change your " +
           f"password immediately{Fore.RESET} to invalidate it.")
-    try:
-        copy(TOKEN_URL)
-        print(f"{Fore.CYAN}Link copied to clipboard!{Fore.RESET} If you leave the field {Fore.CYAN}empty{Fore.RESET}, " +
-              f"the program will {Fore.CYAN}auto-paste{Fore.RESET} for you.")
-    except PyperclipException:
-        pass
     print(f"If you are having trouble copy-pasting the link, select it with your mouse and {Fore.CYAN}right click" +
           f"{Fore.RESET}. That should copy it.")
     print("Right clicking will also paste the contents of your clipboard if nothing is selected.")
     while True:
-        token = input("Token: ").strip()
+        if not verify_token_format(token):
+            token = input("Token: ").strip()
         if not token:
             try:
                 token = paste()
             except PyperclipException:
                 print("Could not paste from clipboard, please paste the token manually.")
                 continue
-        if not token.endswith(".fin") and token.count('.') == 3:
+        if not verify_token_format(token):
             print("What you pasted does not appear to be the token. Copy only what comes after '=>'")
             continue
         try:
             new_passport = Passport(token=token)
             if new_passport.test():
-                valid_for = new_passport.expires_at - new_passport.current_server_time
+                valid_for = timedelta(seconds=new_passport.seconds_left())
                 print(f"{Fore.GREEN}Authenticated.{Fore.RESET} Valid for {valid_for} from now")
                 PASSPORT = new_passport
                 save_passport()
@@ -219,6 +236,11 @@ def interactive():  # noqa: C901
         except ReadTimeout:
             print("Read timeout")
         print(f"{Fore.RED}Something went wrong, please try again.{Fore.RESET}")
+
+
+def verify_token_format(token: str) -> bool:
+    """Checks if the string is in token format"""
+    return token.endswith(".fin") and token.count('.') == 3
 
 
 # This gets called a lot, I should probably change how test works some day, but right now it's fine
