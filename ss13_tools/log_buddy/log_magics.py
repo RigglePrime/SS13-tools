@@ -114,7 +114,7 @@ class LogMagics(Magics):
         """
         if not parameter_s:
             raise UsageError(f"Add some ckeys! Usage:\n{self.search_ckey.__doc__}")
-        parameter_s = tuple(x.strip() for x in re.split(r'[, ]', parameter_s) if x)
+        parameter_s = tuple(canonicalize(x) for x in re.split(r'[, ]', parameter_s) if x)
         print("Looking for", ', '.join(parameter_s))
         self.logs_var.filter_ckeys(*parameter_s, source_only=False)
 
@@ -202,7 +202,7 @@ class LogMagics(Magics):
             - %location -e Medbay Central
         """
         if not parameter_s:
-            raise UsageError(f"Add some ckeys! Usage:\n{self.location.__doc__}")
+            raise UsageError(f"Add a location! Usage:\n{self.location.__doc__}")
         opts, args = self.parse_options(parameter_s, 'e')
         print("Filtering for", parameter_s)
         self.logs_var.filter_by_location_name(args, exact='e' in opts)
@@ -218,7 +218,7 @@ class LogMagics(Magics):
         """
         parameter_s = parameter_s.split(' ')
         if len(parameter_s) != 4:
-            print(f"Add some ckeys! Usage:\n{self.radius.__doc__}")
+            print(f"Add some arguments! Usage:\n{self.radius.__doc__}")
             return
         try:
             x, y, z, radius = (int(x) for x in parameter_s)  # pylint: disable=invalid-name
