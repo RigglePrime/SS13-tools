@@ -79,7 +79,7 @@ class LogMagics(Magics):
             args = re.split(r'[, ]', args)
             try:
                 # Prase ints and get rid of empty strings
-                round_ids = (int(x) for x in args if x)
+                round_ids = tuple(int(x) for x in args if x)
             except ValueError as ex:
                 raise UsageError("One of those is not a number, please try again") from ex
             self.logs_var = LogFile.from_round_collection(*round_ids)
@@ -185,7 +185,7 @@ class LogMagics(Magics):
         if not parameter_s:
             print(f"Add some ckeys! Usage:\n{self.conversation.__doc__}")
             return
-        parameter_s = (canonicalize(x) for x in re.split(r'[, ]', parameter_s) if x)
+        parameter_s = tuple(canonicalize(x) for x in re.split(r'[, ]', parameter_s) if x)
         print("Filtering conversation on ckeys", ', '.join(parameter_s))
         for ckey in parameter_s:
             if ckey not in self.logs_var.who:

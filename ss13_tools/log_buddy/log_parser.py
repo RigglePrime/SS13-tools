@@ -295,7 +295,8 @@ class LogFile:
         Example call: `my_logs.filter_heard("ckey")`
 
         Returns `None`"""
-        self.logs = self._get_only_heard(ckey, walking_error=walking_error)
+        self.logs = list(self._get_only_heard(ckey, walking_error=walking_error))
+        self.sort()
 
     def filter_conversation(self, *ckeys: str, walking_error: int = 4) -> None:  # TODO: hide lines not in conversation
         """Tries to get a conversation between multiple parties, excluding what they would and would not hear.
@@ -308,17 +309,16 @@ class LogFile:
         Example call: `my_logs.filter_conversation("ckey1", "ckey2", "ckey3")` (as many or little ckeys as you want)
 
         Returns None"""
-        self.filter_ckeys(*ckeys, source_only=True)
-        final = []
-        for ckey in ckeys:
-            final.extend(self._get_only_heard(ckey, walking_error=walking_error))
+        self.filter_ckeys(*ckeys, source_only=False)
+        final = self._get_only_heard(ckeys[0], walking_error=walking_error)
+        for ckey in ckeys[1:]:
+            final.intersection_update(self._get_only_heard(ckey, walking_error=walking_error))
 
         if not final:
             print("Operation completed with empty set. Aborting.")
             return
-        final = list(set(final))
-        final.sort(key=lambda log: log.time)
-        self.logs = final
+        self.logs = list(final)
+        self.sort()
 
     def reset_work_set(self):
         """Removes all filters; sets the working set to be equal to all logs
@@ -327,7 +327,7 @@ class LogFile:
         self.logs = self.unfiltered_logs
 
     def _get_only_heard(self, ckey: str, logs_we_care_about: Union[list[LogType],
-                        Literal["ALL"]] = "ALL", walking_error: int = 4) -> list[Log]:
+                        Literal["ALL"]] = "ALL", walking_error: int = 4) -> set[Log]:
         """Removes all log entries which could not have been heard by the specified ckey (very much in alpha).
         Uses logs from `self.work_set`
 
@@ -340,14 +340,14 @@ class LogFile:
         `my_logs.get_only_heard("ckey", "ALL")`
         `my_logs.get_only_heard("ckey", [LogType.SAY, LogType.WHISPER])`
 
-        Returns `list[Log]`"""
+        Returns `set[Log]`"""
         self.sort()
         # Adjust for error created by lack of logs
         hearing_range = HEARING_RANGE + walking_error
-        filtered = []
+        filtered = set()
         cur_loc = (0, 0, 0)
         last_loc = cur_loc
-        for log in self.logs:
+        for log in self.unfiltered_logs:
             # Check for ckey. If our target was included in the action we can safely assume they saw it
             if (log.agent and ckey == log.agent.ckey) or\
                (log.patient and ckey == log.patient.ckey) or\
@@ -356,7 +356,7 @@ class LogFile:
                 if log.location:
                     last_loc = cur_loc
                     cur_loc = log.location
-                filtered.append(log)
+                filtered.add(log)
                 continue
             # If our target didn't participate, we need to check how far away it happened
 
@@ -374,12 +374,12 @@ class LogFile:
             # Calculate distance
             # if sqrt(pow(cur_loc[0] - log.location[0], 2) + pow(cur_loc[1] - log.location[1], 2)) - hearing_range < 0:
             if abs(cur_loc[0] - log.location[0]) - hearing_range < 0 and abs(cur_loc[1] - log.location[1]) - hearing_range < 0:
-                filtered.append(log)
+                filtered.add(log)
             # You (almost) always hear tcomms
             elif log.log_type == LogType.TCOMMS:
-                filtered.append(log)
+                filtered.add(log)
 
-        return filtered
+        return filtered & set(self.logs)
 
     def filter_by_location_name(self, location_name: str, exact: bool = False) -> None:
         """Removes all logs that did not happen in the specified location,
