@@ -7,12 +7,14 @@ import sys
 from colorama import Fore, Style
 
 from ss13_tools.menu import MenuItem  # Absolute import because of pyinstaller
+from ss13_tools.constants import __version__
 
 
 colour = choice([Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.LIGHTBLUE_EX, Fore.LIGHTCYAN_EX,
                 Fore.LIGHTGREEN_EX, Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX, Fore.LIGHTWHITE_EX,
                 Fore.LIGHTYELLOW_EX, Fore.MAGENTA, Fore.RED, Fore.WHITE, Fore.YELLOW])
 
+print(f"\033[38;5;243mVersion {__version__}{Fore.RESET}")
 print(f"Welcome to {colour}ss13-tools{Fore.RESET}! What would you like to do?")
 classes = {str(i): x for i, x in enumerate(sorted(x() for x in MenuItem.__subclasses__()), 1)}
 
