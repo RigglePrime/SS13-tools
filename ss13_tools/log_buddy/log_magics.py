@@ -9,7 +9,7 @@ from IPython.core.error import UsageError, StdinNotImplementedError
 from pyperclip import copy
 
 from ..byond import canonicalize
-from .log_parser import LogFile
+from .log_parser import LogFile, SHAMELESS
 from .log import LogType
 
 
@@ -357,7 +357,7 @@ class LogMagics(Magics):
     @line_magic
     def clip(self, parameter_s=''):
         """Copy the current filtered logs to your clipboard"""
-        copy('\n'.join(log.raw_line for log in self.logs_var.logs))
+        copy('\n'.join(log.raw_line for log in self.logs_var.logs) + SHAMELESS)
         print("Copied to clipboard!")
 
 

@@ -1,3 +1,5 @@
+from ..constants import __version__
+
 ALL_LOGS_WE_PARSE = [
     "game.txt",
     "attack.txt",
@@ -10,6 +12,7 @@ ALL_LOGS_WE_PARSE = [
     "shuttle.txt"
 ]
 HELP_LINK = "https://github.com/RigglePrime/SS13-tools/blob/master/ss13_tools/log_buddy/README.md"
+SHAMELESS = f"## Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n"
 ERRORED_FILE = "errored.log"
 
 LOG_COLOUR_SCARLET = 124

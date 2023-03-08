@@ -12,7 +12,7 @@ from itertools import repeat, chain
 from tqdm import tqdm
 
 from .log import Log, LogType
-from .constants import ALL_LOGS_WE_PARSE, ERRORED_FILE
+from .constants import ALL_LOGS_WE_PARSE, ERRORED_FILE, SHAMELESS
 from ..__version__ import __version__
 from ..log_downloader import RoundLogDownloader, RoundListLogDownloader, CkeyLogDownloader
 from ..scrubby import get_round_source_url
@@ -526,7 +526,7 @@ class LogFile:
         with open(filename, "w", encoding="utf-8") as file:
             for log in self.logs:
                 file.write(str(log) + "\n")
-            file.write(f"## Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n")
+            file.write(SHAMELESS)
             if self.log_source:
                 file.write(f"## Logs acquired from {self.log_source}")
 
