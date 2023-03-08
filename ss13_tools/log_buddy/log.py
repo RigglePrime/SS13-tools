@@ -627,7 +627,7 @@ class Log:
             return
         action, location, coords = other.rsplit(' (', 2)
         self.text = action
-        self.__parse_and_set_location(coords)
+        self.__parse_and_set_location('(' + coords)
         self.location_name = location.strip()
 
     def parse_radioemote(self, log: str) -> None:
@@ -977,7 +977,7 @@ class Log:
         if "(DEAD)" in text:
             text = text.replace("(DEAD) ", "", 1)
             self.is_dead = True
-        self.__parse_and_set_location(coords)
+        self.__parse_and_set_location('(' + coords)
         self.location_name = location.strip()
 
     def __re_pretty_htmlescaped(self, colour):
