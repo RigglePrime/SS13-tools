@@ -142,9 +142,10 @@ use `\'` to escape them.
     - Running these would produce the same result: `%string string1 string2` or `%string string1`, `%string -a string2`
   - `%string -c 'Case Sensitive'`: enable case sensitive mode
   - `%string -ar Case Sensitive`: same as above (you can group options)
-- `%heard`: tries to exclude the logs that the person provided couldn't have heard
+- `%heard`: tries to exclude the logs that the people provided couldn't have heard. Just like conversation but it's a union
   - `%heard WindowSmasher86`
-- `%conversation`: tries to reconstruct a "conversation". It's like heard but for multiple people
+  - `%heard ckey1 ckey2`
+- `%conversation`: tries to reconstruct a "conversation". Like heard but an intersection instead
   - `%conversation ckey`
   - `%conversation ckey1 ckey2`
   - You can do similar things as with `%search_ckey`

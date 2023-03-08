@@ -284,22 +284,25 @@ class LogFile:
         """Shorter for `filter_strings(*strings, case_sensitive = True)`"""
         self.filter_strings(*strings, case_sensitive=True)
 
-    def filter_heard(self, ckey: str, walking_error: int = 4) -> None:
-        """Removes all log entries which could not have been heard by the specified ckey
+    def filter_heard(self, *ckeys: str, walking_error: int = 4) -> None:
+        """Removes all log entries which could not have been heard by the specified ckey(s)
         (very much in alpha) and stores the remaining lines in `self.work_set`
 
         Parameters:
-        `ckey` (str): desired ckey
+        `ckeys` (tuple[str, ...]): desired ckey(s)
         `walking_error` (int): added to hearing range to account for the lack of logs
 
         Example call: `my_logs.filter_heard("ckey")`
 
         Returns `None`"""
-        self.logs = list(self._get_only_heard(ckey, walking_error=walking_error))
+        final = set()
+        for ckey in ckeys:
+            final.update(self._get_only_heard(ckey, walking_error=walking_error))
+        self.logs = list(final)
         self.sort()
 
-    def filter_conversation(self, *ckeys: str, walking_error: int = 4) -> None:  # TODO: hide lines not in conversation
-        """Tries to get a conversation between multiple parties, excluding what they would and would not hear.
+    def filter_conversation(self, *ckeys: str, walking_error: int = 4) -> None:
+        """Tries to get a conversation between multiple parties, excluding what they would and would not hear as a group.
         Saves the result in `self.work_set`
 
         Parameters:

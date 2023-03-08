@@ -160,24 +160,25 @@ class LogMagics(Magics):
     @_undoable
     @line_magic
     def heard(self, parameter_s=''):
-        """Gets only what the person could have heard
+        """Gets only what the people could have heard (conversation but it's a union)
 
         Example:
             - `%heard WindowSmasher86`
+            - `%heard ckey1, ckey2`
         """
         if not parameter_s:
-            raise UsageError(f"Add a ckey! Usage:\n{self.heard.__doc__}")
-        parameter_s = canonicalize(parameter_s)
-        print("Filtering heard on ckey", parameter_s)
-        if parameter_s not in self.logs_var.who:
-            print(f"{parameter_s} not found! Ignoring!")
-            return
-        self.logs_var.filter_heard(parameter_s)
+            raise UsageError(f"Add some ckeys! Usage:\n{self.heard.__doc__}")
+        parameter_s = tuple(canonicalize(x) for x in re.split(r'[, ]', parameter_s) if x)
+        print("Looking for", ', '.join(parameter_s))
+        for ckey in parameter_s:
+            if ckey not in self.logs_var.who:
+                print(f"{ckey} not found! Ignoring!")
+        self.logs_var.filter_heard(*parameter_s)
 
     @_undoable
     @line_magic
     def conversation(self, parameter_s=''):
-        """Tries to reconstruct a conversation between parties
+        """Tries to reconstruct a conversation between parties (like heard but an intersection instead)
 
         Example:
             - `%conversation ckey`
