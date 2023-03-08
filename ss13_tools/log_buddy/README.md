@@ -113,8 +113,8 @@ to have the number right next to the character (r). Doing `-rc10` would assign 1
 - `%length` (alias `%l`): prints the amount of log lines we loaded into memory
   - `%length`
   - `%l`
-- `%search_ckey` (alias `%ckey`): searches the logs for the ckeys. This is not the same
-as CTRL+F, as it looks at who commited the action. Remember to use ckeys and not keys! Ckeys
+- `%search_ckey` (alias `%ckey`): searches the logs for the ckeys. This is almost the same
+as CTRL+F, but it tries to be smart about it. Remember to use ckeys and not keys! Ckeys
 are the ones without spaces or special symbols, the ones you see in TGDB and such.
   - `%ckey WindowSmasher86` (only logs `WindowSmasher86` was included in)
   - `%search_ckey WindowSmasher86` (same as above)
@@ -152,6 +152,10 @@ in the bar.
   - `%location Bar`
   - `%location -e Medbay Central` (you must provide the whole name)
   - `%location Medbay`
+- `%list_locations`: lists all of the different possible locations in our current filtered logs
+  - `%list_locations`
+- `%who`: lists all connected ckeys, recognised by the logs
+  - `%who`
 - `%radius`: sorts the logs by time. You don't need to call this as they're automatically sorted
   - `%radius 50 62 2 10` (x=50, y=60, z=2, radius=10)
 - `%type`: filters by log type. To get all types, type `LogType.list()`. `%` mandatory

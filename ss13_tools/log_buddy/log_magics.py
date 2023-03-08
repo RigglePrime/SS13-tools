@@ -193,6 +193,24 @@ class LogMagics(Magics):
         self.logs_var.filter_conversation(*parameter_s)
 
     @line_magic
+    def who(self, parameter_s=''):
+        """List all ckeys present in the round
+
+        Example:
+            - `%who`
+        """
+        print(self.logs_var.who)
+
+    @line_magic
+    def list_locations(self, parameter_s=''):
+        """Gets all of the different locations in our current working set
+
+        Example:
+            - `%list_locations`
+        """
+        print({x.location_name for x in self.logs_var.logs})
+
+    @line_magic
     def reset(self, parameter_s=''):
         """Resets the work set"""
         self.logs_var.reset_work_set()
