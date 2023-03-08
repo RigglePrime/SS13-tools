@@ -177,6 +177,8 @@ in the bar.
 - `%undo`: undoes your last command
   - `%undo`
   - `%undo 2`: undoes your last TWO commands, how fancy!
+- `%cls`: build in command that clears the screen
+  - `%cls`
 - `%clear`: USE WITH CAUTION: **deletes** currently stored logs. After using this, there's no
 going back.
 - `%sort`: sorts the logs by time. You don't need to call this as they're automatically sorted

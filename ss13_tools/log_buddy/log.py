@@ -684,7 +684,8 @@ class Log:
         if other.startswith("injected"):
             other_temp = other.split(" ", 1)[1]
             parse_key = True
-        elif other.startswith(("attacked ", "shot ", "electrocuted ", "crushed ")) and other[9] != "[":
+        elif other.startswith(("attacked ", "shot ", "electrocuted ", "crushed ",
+                               "shoved ", "grabbed ", "shaken ")) and other[9] != "[":
             other_temp = other.split(" ", 1)[1]
             parse_key = True
         # NOTE: Performance? Not sure if it helps go check yourself, I am too lazy
