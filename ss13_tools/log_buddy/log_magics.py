@@ -357,7 +357,7 @@ class LogMagics(Magics):
     @line_magic
     def clip(self, parameter_s=''):
         """Copy the current filtered logs to your clipboard"""
-        copy('\n'.join(log.raw_line for log in self.logs_var.logs) + SHAMELESS)
+        copy('\n'.join(log.raw_line for log in self.logs_var.logs) + '\n\n' + SHAMELESS)
         print("Copied to clipboard!")
 
 
