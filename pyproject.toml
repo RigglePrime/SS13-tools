@@ -25,7 +25,7 @@ pyinstaller = "^5.8.0"
 autopep8 = "^2.0.2"
 
 [tool.poetry.scripts]
-ss13tools = "ss13_tools.cli:main"
+ss13tools = "ss13_tools.cli:run"
 logbuddy = "ss13_tools.cli:log_buddy"
 centcom = "ss13_tools.cli:centcom"
 
