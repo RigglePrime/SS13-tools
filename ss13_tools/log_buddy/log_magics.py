@@ -280,7 +280,7 @@ class LogMagics(Magics):
         """Prints our filtered logs"""
         if len(self.logs_var.logs) > 200:
             page("Too many logs, opening pager. Press q to quit, enter to advance one line, space to advance a screen\n" +
-                  '\n'.join(log.pretty() for log in self.logs_var.logs) + '\n')
+                 '\n'.join(log.pretty() for log in self.logs_var.logs) + '\n')
         else:
             self.logs_var.print_working()
 
