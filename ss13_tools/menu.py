@@ -193,3 +193,42 @@ class SuspiciousAccessDownloaderItem(MenuItem):
         downloader.silent = True
         interactive_auth()
         asyncio.run(downloader.process_and_write())
+
+
+class JobCounterItem(MenuItem):
+    name = "Job counter"
+    description = "Display what jobs someone played"
+
+    def run(self):
+        from .scrubby import GetReceipts, ScrubbyException
+        ckey = input("Ckey: ")
+        while True:
+            try:
+                number_of_rounds = int(input("How many rounds? "))
+                break
+            except ValueError:
+                print("That doesn't seem to be a number...")
+        try:
+            receipts = asyncio.run(GetReceipts(ckey, number_of_rounds, True))
+        except ScrubbyException:
+            print("Seems like that ckey couldn't be found! Check your spelling and try again")
+            return
+
+        print("Calculating...")
+        from collections import Counter
+        number_of_rounds = len(receipts)
+        print(f"Out of {Fore.GREEN}{number_of_rounds}{Fore.RESET} last round{'s' if number_of_rounds != 1 else ''} " +
+              f"{Fore.GREEN}{ckey}{Fore.RESET} played in, they played the following jobs:\n")
+        for job, count in Counter(x.job for x in receipts).items():
+            print(f"{job:>24}:    {count / number_of_rounds * 100:05.2f}% ({count})")
+        antag = sum(x.antagonist for x in receipts)
+        suicide = sum(x.roundStartSuicide for x in receipts)
+        # roller = sum(x.roundStartSuicide and x.antagonist for x in receipts)
+        print(f"\nOut of those, they were an antagonist {antag / number_of_rounds * 100:.2f}% " +
+              f"of the time ({antag} round{'s' if antag != 1 else ''}), and round-start suicided " +
+              f"{suicide} time{'s' if suicide != 1 else ''}.")
+        # if roller:
+        #     print(f"{Fore.RED}Out of those {suicide} suicides, they got an antagonist " +
+        #           f"{roller} time{'s' if suicide != 1 else ''}!{Fore.RESET}")
+        # else:
+        #     print(f"{Fore.GREEN}They never round-start suicided and got antagonist.{Fore.RESET}")
