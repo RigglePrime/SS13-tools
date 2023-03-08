@@ -347,6 +347,7 @@ class LogFile:
         filtered = set()
         cur_loc = (0, 0, 0)
         last_loc = cur_loc
+        # Iterate through unfiltered logs to actually get the data we want
         for log in self.unfiltered_logs:
             # Check for ckey. If our target was included in the action we can safely assume they saw it
             if (log.agent and ckey == log.agent.ckey) or\
@@ -379,6 +380,7 @@ class LogFile:
             elif log.log_type == LogType.TCOMMS:
                 filtered.add(log)
 
+        # Intersect with currently filtered logs so we don't reset filters
         return filtered & set(self.logs)
 
     def filter_by_location_name(self, location_name: str, exact: bool = False) -> None:
