@@ -685,17 +685,21 @@ class Log:
             other_temp = other.split(" ", 1)[1]
             parse_key = True
         elif other.startswith(("attacked ", "shot ", "electrocuted ", "crushed ",
-                               "shoved ", "grabbed ", "shaken ")) and other[9] != "[":
+                               "shoved ", "grabbed ", "shaken ", "thrown ", "kicks ",
+                               "kicked")) and other[9] != "[":
             other_temp = other.split(" ", 1)[1]
             parse_key = True
         # NOTE: Performance? Not sure if it helps go check yourself, I am too lazy
-        elif not other.startswith(("has", "was", "is", "started", "fired at")):
+        elif not other.startswith(("has", "was", "is", "started", "fired at", "stun attacked")):
             # I love the logs. I love spaghetti.
             if "is being stripped of" in other or \
                     "has been stripped of" in other or \
                     "is being pickpocketed of" in other or \
                     "is having the" in other:
                 patient = other.split(") ", 1)[0]
+                self.patient = Player.parse_player(patient)
+            elif other.startswith("surgically removed") and "from" in other:
+                patient = other.split(" from ", 1)[1].split(") ", 1)[0]
                 self.patient = Player.parse_player(patient)
         # A large tuple... there is no better way, I thought for a long time
         # If you think of a better way, please PR it or make an issue report
@@ -716,7 +720,8 @@ class Log:
             "has places",  # Do NOT fix this typo, I will have to add another damn startswith
             # "has hit", # I don't think this is ever used against players, so I'll leave it out
             # Another typo... feel free to fix for free GBP since we already have "kicked"
-            "has kicks", "fired at"
+            "has kicks", "fired at", "has stripped", "has thrown", "stun attacked",
+            "is stripping"
         )):
             other_temp = other.split(" ", 2)[2].replace("(CQC) ", "")
             parse_key = True
@@ -990,9 +995,9 @@ class Log:
     def pretty(self):
         """Return, but with ANSI colour!"""
         to_be_printed = self.raw_line
-        to_be_printed = re.sub(LOG_PRETTY_STR, self.__re_pretty_htmlescaped(LOG_COLOUR_SUNSET), to_be_printed, 1)
         to_be_printed = re.sub(LOG_PRETTY_LOC, self.__re_pretty(LOG_COLOUR_PASTEL_CYAN), to_be_printed)
         to_be_printed = re.sub(LOG_PRETTY_PATH, self.__re_pretty(LOG_COLOUR_PASTEL_ORANGE), to_be_printed)
+        to_be_printed = re.sub(LOG_PRETTY_STR, self.__re_pretty_htmlescaped(LOG_COLOUR_SUNSET), to_be_printed, 1)
         return to_be_printed.replace("[", "\033[38;5;240m[", 1).replace("]", "]\033[0m", 1)\
                             .replace("ACCESS:", f"\033[38;5;{LOG_COLOUR_GRAY}mACCESS:\033[0m", 1)\
                             .replace("ASSET:", f"\033[38;5;{LOG_COLOUR_GRAY}mASSET:\033[0m", 1)\
