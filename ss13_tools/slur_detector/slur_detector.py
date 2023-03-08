@@ -70,4 +70,4 @@ class SlurDetector:
     def from_file(target_file: str) -> SlurDetector:
         """Opens the path and scans the contents with a new SlurDetector"""
         with open(target_file, "r", encoding="utf-8") as file:
-            return SlurDetector(file.readlines())
+            return SlurDetector(file)
