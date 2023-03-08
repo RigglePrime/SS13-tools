@@ -47,6 +47,9 @@ everything.
 
 As everything is happening in the console you can't CTRL+C to copy. Instead select what you want to copy
 with your mouse, and just right click anywhere. To paste, make sure nothing is selected and right click.
+You can browse your command history with the up and down key, tab shows suggestions and autocompletes,
+holding control will advance the position by a word instead of a letter. If you see greyed out suggestions,
+pressing the right arrow (or CTRL+→) will automatically enter new characters.
 
 ### Quick start (for real this time)
 
