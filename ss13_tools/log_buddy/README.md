@@ -166,7 +166,7 @@ in the bar.
 - `%type`: filters by log type. To get all types, type `LogType.list()`. `%` mandatory
   - `%type GAME ATTACK` (inclusion)
   - `%type !SILICON` (exclusion, just append `!`)
-- `%print_logs` (alias `%p`): prints the logs
+- `%print_logs` (alias `%p`): prints the logs. If there are more than 200 lines, opens a pager. To move in the pager press enter or space to advance a screen, or q to quit.
   - `%print_logs`
   - `%p`
 - `%clip`: copy current logs to clipboard

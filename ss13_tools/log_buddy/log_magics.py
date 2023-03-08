@@ -4,6 +4,7 @@ import re
 import os
 from functools import wraps
 
+from IPython.core.page import page
 from IPython.terminal.magics import Magics, magics_class, line_magic
 from IPython.core.error import UsageError, StdinNotImplementedError
 from pyperclip import copy
@@ -277,7 +278,11 @@ class LogMagics(Magics):
     @line_magic
     def print_logs(self, parameter_s=''):
         """Prints our filtered logs"""
-        self.logs_var.print_working()
+        if len(self.logs_var.logs) > 200:
+            page("Too many logs, opening pager. Press q to quit, enter to advance one line, space to advance a screen\n" +
+                  '\n'.join(log.pretty() for log in self.logs_var.logs) + '\n')
+        else:
+            self.logs_var.print_working()
 
     @line_magic
     def head(self, parameter_s=''):
