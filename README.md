@@ -28,6 +28,8 @@ Remember, if you ever screw an input up try pressing the up arrow.
 - scrubby: scrubby tools
 - slur_detector: what it says on the tin
 
+For examples on how to use please see [this file](ss13_tools/menu.py)
+
 ## Downloading
 
 For compiled versions, see [this link](https://github.com/RigglePrime/admin-tools/releases).
