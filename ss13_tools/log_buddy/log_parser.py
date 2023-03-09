@@ -675,7 +675,7 @@ class LogFile:
         return log_collection
 
     @staticmethod
-    def from_ckey(ckey: str, rounds: int = 50, only_played: bool = False, logs_we_care_about: list[str] = None) -> LogFile:
+    def from_ckey(ckey: str, rounds: int = 20, only_played: bool = False, logs_we_care_about: list[str] = None) -> LogFile:
         """Downloads multiple rounds worth of data, where the specified ckey was present.
 
         Parameters:
