@@ -143,6 +143,8 @@ class Player:
             self.mob_name += ')'
 
     def __str__(self) -> str:
+        if not self.mob_name:
+            return self.key
         return f"{self.key}/({self.mob_name})"
 
     def __repr__(self) -> str:
@@ -308,6 +310,7 @@ class Log:
             elif other.startswith("A grenade detonated") or \
                     other.startswith("An explosion has triggered a gibtonite deposit") or \
                     other.startswith("Reagent explosion reaction occurred") or \
+                    other.startswith("Life (") or \
                     (" at " in other and " (" not in other[:loc_start]):
                 self.location_name = other[:loc_start].split(" at ")[-1].strip()
             elif " in " in other and " (" not in other[:loc_start]:
@@ -317,6 +320,11 @@ class Log:
                 self.agent = Player.parse_player(agent.strip())
                 self.patient = Player.parse_player(patient.split(" on fire with ", 1)[0])
                 self.location_name = other[:loc_start].split(" at ", 1)[-1].strip()
+                self.text = other.strip()
+                return
+            elif log.startswith("A projectile "):
+                other, agent = log.split(" held by ")
+                self.agent = Player.parse_player(agent.split(" at ")[0])
                 self.text = other.strip()
                 return
             elif " fired a cannon in " in other:
@@ -337,12 +345,17 @@ class Log:
             agent = log.split("- Last touched by: ")[1]
             match = re.match(HORRIBLE_HREF, agent)
             self.agent = Player(match[1], match[2])
-        elif log.startswith("Lesser Gold Slime chemical mob spawn"):
-            agent = log.split(" carried by ", 1)[1]
+        elif log.startswith("Lesser Gold Slime chemical mob spawn") or \
+                log.startswith("Friendly Gold Slime chemical mob spawn") or \
+                log.startswith("Life (hostile) chemical mob spawn reaction") or \
+                log.startswith("Life (friendly) chemical mob spawn reaction"):
+            agent, fingerprints = log.split(" carried by ", 1)[1].split(" with last fingerprint ")
             if agent.startswith("*null*"):
-                self.agent = Player(agent, None)
+                self.agent = Player(fingerprints, None)
             else:
                 self.agent = Player.parse_player(agent)
+        elif "ignited in" in other and " by " in other:
+            self.agent = Player.parse_player(other.split(" by ")[1].strip())
         elif "/(" in other and ") " in other:
             self.agent = Player.parse_player(other.split(") ", 1)[0])
         self.text = other.strip()
@@ -359,7 +372,11 @@ class Log:
             else:
                 self.agent = Player(log[7:].split(" from ")[0], None)
         elif log.startswith("Mob Login: "):
-            self.agent = Player.parse_player(log[11:].split(" was assigned to")[0])
+            agent = log[11:].split(" was assigned to")[0]
+            if "/(" in log:
+                self.agent = Player.parse_player(agent)
+            else:
+                self.agent = Player(agent, None)
         elif log.startswith("Logout: "):
             if "/(" in log:
                 self.agent = Player.parse_player(log[8:])
@@ -417,6 +434,9 @@ class Log:
         if other.startswith("Starting query #"):
             self.text = other.strip()
             return
+        if other.startswith("CIRCUIT: "):
+            self.text = other.strip()
+            return
         if other.startswith("DirectNarrate: "):
             self.admin_log_type = AdminLogType.DIRECT_NARRATE
             agent, other = other[15:].split(" to ", 1)
@@ -460,8 +480,9 @@ class Log:
             self.agent = Player(other.split(" has no jobs enabled, ")[0], None)
             self.text = other.strip()
             return
-        agent, other = other.split(") ", 1)
-        self.agent = Player.parse_player(agent)
+        if ") " in other:
+            agent, other = other.split(") ", 1)
+            self.agent = Player.parse_player(agent)
         if re.search(ADMIN_BUILD_MODE, other):
             self.admin_log_type = AdminLogType.BUILD_MODE
         elif match := re.search(ADMIN_OSAY_EXP, other):
@@ -513,6 +534,10 @@ class Log:
         elif other.startswith("teleported "):
             self.admin_log_type = AdminLogType.TELEPORT
             # len("teleported ") == 11
+            if " to " not in other:
+                self.patient = Player.parse_player(other[11:])
+                self.text = log.strip()
+                return
             patient, location = other[11:].split(" to ", 1)
             self.patient = Player.parse_player(patient)
             loc_start = self.__parse_and_set_location(location)
@@ -976,11 +1001,20 @@ class Log:
         agent, other = log.split(") ", 1)  # Ensure that we didn't get a name with spaces
         self.agent = Player.parse_player(agent)
         # Priority announcements, yet another exception
-        if other.startswith(("(priority announcement)", "(message to the other server)")) and '" ' not in other:
+        if other.startswith(("(priority announcement)", "(message to the other server)",
+                             "(message to CentCom)", "has requested the nuclear codes"))\
+                and '" ' not in other:  # This indentation is a bit confusing IMO but flake8 insists...
             self.text = html_unescape(other.strip())
             return
-        text, other = other.split('" ', 1)
+        if other.startswith("(Personality Commune"):
+            patient = other[24:-1]
+            if not patient != "*null*":
+                self.patient = Player(patient, None)
+            other += ' '
+        text, other = other.split('" ', 1)  # Do not change this
         self.text = html_unescape(text.strip('"').replace('"', '| '))
+        if other.startswith("FORCED by AI Controller") or not other:
+            return
         other, location, coords = other.rsplit('(', 2)
         other = other.strip()
         if other:
