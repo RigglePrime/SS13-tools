@@ -232,3 +232,52 @@ class JobCounterItem(MenuItem):
         #           f"{roller} time{'s' if suicide != 1 else ''}!{Fore.RESET}")
         # else:
         #     print(f"{Fore.GREEN}They never round-start suicided and got antagonist.{Fore.RESET}")
+
+
+# Commented out because it sucked too much.
+# class TextSimilarityItem(MenuItem):
+#     name = "Text similarity"
+#     description = "Determine how similarly two people tend to type"
+
+#     def run(self):
+#         from .util import jaccard_similarity
+#         from .byond import user_exists, canonicalize
+#         print(f"{Fore.YELLOW}This uses a metric called Jaccard similarity. Results may vary.{Fore.RESET}")
+#         while True:
+#             ckey1 = canonicalize(input("Ckey 1: "))
+#             if user_exists(ckey1):
+#                 break
+#             print(f"{ckey1} does not seem to exist, try again?")
+#         while True:
+#             ckey2 = canonicalize(input("Ckey 2: "))
+#             if user_exists(ckey2):
+#                 break
+#             print(f"{ckey2} does not seem to exist, try again?")
+#         from .log_buddy import LogFile, LogType
+#         downloader = CkeyLogDownloader(ckey1, only_played=True, number_of_rounds=20)
+#         downloader.files = ["game.txt"]
+#         downloader.filter_logs = True
+#         downloader.output_only_log_line = True
+#         asyncio.run(downloader.process_and_write())
+#         log_file = LogFile.from_file(downloader.output_path)
+#         log_file.filter_ckeys(ckey1)
+#         log_file.filter_by_type([LogType.SAY])
+#         person1_words = []
+#         for log in log_file.logs:
+#             person1_words.extend(log.text.split())
+#         downloader = CkeyLogDownloader(ckey2, only_played=True, number_of_rounds=20)
+#         downloader.files = ["game.txt"]
+#         downloader.filter_logs = True
+#         downloader.output_only_log_line = True
+#         asyncio.run(downloader.process_and_write())
+#         log_file = LogFile.from_file(downloader.output_path)
+#         log_file.filter_ckeys(ckey2)
+#         log_file.filter_by_type([LogType.SAY])
+#         person2_words = []
+#         for log in log_file.logs:
+#             person2_words.extend(log.text.split())
+#         del log_file
+
+#         print(f"\n{Fore.GREEN}Jaccard similarity index:",
+#               jaccard_similarity(person1_words, person2_words),
+#               Fore.RESET)
