@@ -289,6 +289,13 @@ class Log:
             self.location_name = location[:loc_start].strip()
             self.text = other.strip()
             return
+        if other.startswith("The station self-destruct terminal was armed"):
+            other, location = other.split(" at (", 1)
+            location, agent = location.split(") by ")
+            self.agent = Player.parse_player(agent.strip(". "))
+            loc_start = self.__parse_and_set_location(location)
+            self.location_name = location[:loc_start]
+            return
         loc_start = self.__parse_and_set_location(other)
         if loc_start > 0:
             if "emitter turned " in other:
