@@ -165,7 +165,7 @@ in the bar.
 - `%radius`: sorts the logs by time. You don't need to call this as they're automatically sorted
   - `%radius 50 62 2 10` (x=50, y=60, z=2, radius=10)
 - `%type`: filters by log type. To get all types, type `LogType.list()`. `%` mandatory
-  - `%type GAME ATTACK` (inclusion)
+  - `%type SAY ATTACK` (inclusion)
   - `%type !SILICON` (exclusion, just append `!`)
 - `%print_logs` (alias `%p`): prints the logs. If there are more than 200 lines, opens a pager. To move in the pager press enter or space to advance a screen, or q to quit.
   - `%print_logs`
@@ -190,6 +190,9 @@ going back.
 - `%alias`: depending on your system, some commands will get an alias. For example, `%dir` will
 be available on Windows system (list directory), while `%cat` is avaiable on POSIX systems. This
 command will print out all your current aliases (and can be used to set new ones)
+
+<font size="5">**You can stop reading now. Below is some information for nerds and developers.**</font>
+<hr />
 
 ## How it works (for nerds)
 
@@ -295,14 +298,18 @@ I strongly suggest running it with Windows Terminal, as it has MUCH nicer colour
 you may get an option to "open in Windows Terminal", if not use "`cd <directory>`, or `cd ..` to go back),
 and run the executable from there (type the name out).
 
-Using Python Poetry:
+Using pip:
 
-- `poetry install`
+- `pip install ss13-tools`
+- `logbuddy`
+
+If the above doesn't work, you might not have the scripts folder in your path. Try:
+
 - `python -m ss13_tools.log_buddy`
 
 Optionally:
 
-- `python -m ss13_tools.log_buddy logs`, where `./logs/` is a folder that contains logs (all will
+- `logbuddy logs`, where `./logs/` is a folder that contains logs (all will
 be parsed)
 
 I recommend creating a virtual environment, but it's not necessary. If you don't
