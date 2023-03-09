@@ -115,7 +115,9 @@ class LogDownloader(ABC):
     @staticmethod
     def _format_line_bytes(line: bytes, round_data: RoundResource) -> bytes:
         """Takes the raw line and formats it to `{server_name} {round_id} | {unmodified line}`"""
-        return round_data.server.capitalize().encode("utf-8") + \
+        if not line:
+            return b''
+        return round_data.server.capitalize().encode("utf-8").rjust(6, b' ') + \
             b" " + str(round_data.round_id).encode("utf-8") + b" | " + line + b"\n"
 
     @staticmethod
