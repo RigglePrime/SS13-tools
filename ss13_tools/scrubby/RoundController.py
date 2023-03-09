@@ -7,7 +7,7 @@ import requests as req
 from aiohttp import ClientSession
 
 from .constants import ROUND_SOURCE_URL
-from . import RoundData
+from . import RoundInfo
 from ..constants import USER_AGENT
 
 
@@ -50,14 +50,14 @@ async def get_multiple_round_source_urls(round_ids: Iterable[str]) -> Generator[
         yield rnd['baseURL']
 
 
-async def round_ids_to_round_data(round_ids: Iterable[str]) -> Generator[RoundData, None, None]:
-    """Contructs round data objects from round IDs"""
+async def get_round_info_from_ids(round_ids: Iterable[str]) -> Generator[RoundInfo, None, None]:
+    """Contructs round data resource from round IDs"""
     async for rnd in get_multiple_round_json(round_ids=round_ids):
         if not rnd:
             continue
         round_info = rnd['currentRound']
-        yield RoundData.should_not_be_used_this_way(
+        yield RoundInfo(
             round_id=round_info['id'],
             timestamp=round_info['startTime'],
-            server=round_info['server']
+            server=round_info['server'].lower().replace('bagil', 'basil').replace(' ', '-')
         )

@@ -5,7 +5,7 @@ from colorama import init as colorama_init
 
 from .ckey import CkeyLogDownloader
 from .round import RoundLogDownloader, RoundListLogDownloader
-from ..scrubby import RoundData
+from ..scrubby import PlayerRoundData
 
 colorama_init()
 
@@ -18,7 +18,7 @@ __all__ = [
     'CkeyLogDownloader',
     'RoundLogDownloader',
     'RoundListLogDownloader',
-    'RoundData',
+    'PlayerRoundData',
 ]
 
 del colorama_init

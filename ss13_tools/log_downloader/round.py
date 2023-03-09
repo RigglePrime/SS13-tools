@@ -1,8 +1,10 @@
 from typing import Annotated, Iterable
 
-from .abstract import LogDownloader
+from dateutil.parser import isoparse
+
+from .base import LogDownloader, RoundResource
 from .constants import DEFAULT_FILES, DEFAULT_ROUND_LIST_OUTPUT_PATH, DEFAULT_ROUND_OUTPUT_PATH
-from ..scrubby.RoundController import round_ids_to_round_data
+from ..scrubby.RoundController import get_round_info_from_ids
 
 
 class RoundLogDownloader(LogDownloader):
@@ -21,8 +23,15 @@ class RoundLogDownloader(LogDownloader):
             while i <= self.rbound:
                 yield i
                 i += 1
-        async for round_data in round_ids_to_round_data(round_list_generator()):
-            self.rounds.append(round_data)
+        async for round_info in get_round_info_from_ids(round_list_generator()):
+            round_info.timestamp = isoparse(round_info.timestamp)
+            for file_name in self.files:
+                self.round_resources.append(RoundResource(
+                    round_id=round_info.round_id,
+                    timestamp=round_info.timestamp,
+                    server=round_info.server,
+                    file_name=file_name
+                ))
 
     def _filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
         return logs
@@ -41,7 +50,8 @@ class RoundLogDownloader(LogDownloader):
                 break
             except ValueError:
                 print("Could not parse that as a number, please try again")
-        output_path = input(f"Where should I write the file? [{DEFAULT_ROUND_OUTPUT_PATH}] ")
+        output_path = input("Where should I write the file? " +
+                            f"[{DEFAULT_ROUND_OUTPUT_PATH.format(start=start, end=end)}] ")
         downloader = RoundLogDownloader(start, end, output_path)
         print("Which files do you want to download?")
         print("(separate the files with a comma, like so: attack.txt,game.txt,pda.txt)")
@@ -61,8 +71,14 @@ class RoundListLogDownloader(LogDownloader):
         self.output_path = output_path or DEFAULT_ROUND_LIST_OUTPUT_PATH
 
     async def _update_round_list(self) -> None:
-        async for round_data in round_ids_to_round_data(self.round_list):
-            self.rounds.append(round_data)
+        async for round_info in get_round_info_from_ids(self.round_list):
+            for file_name in self.files:
+                self.round_resources.append(RoundResource(
+                    round_id=round_info.round_id,
+                    timestamp=round_info.timestamp,
+                    server=round_info.server,
+                    file_name=file_name
+                ))
 
     def _filter_lines(self, logs: list[bytes]) -> Iterable[bytes]:
         return logs

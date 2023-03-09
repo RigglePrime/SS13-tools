@@ -5,7 +5,7 @@ from colorama import Fore
 
 from .constants import DEFAULT_ONLY_PLAYED, DEFAULT_CKEY_OUTPUT_PATH, DEFAULT_NUMBER_OF_ROUNDS
 from . import CkeyLogDownloader, RoundLogDownloader
-from .abstract import LogDownloader
+from .base import LogDownloader
 
 
 def make_ckey_downloader() -> LogDownloader:
