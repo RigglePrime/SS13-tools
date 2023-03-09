@@ -190,7 +190,6 @@ class SuspiciousAccessDownloaderItem(MenuItem):
             print("Those don't seem to be numbers, please try again")
         downloader = RoundLogDownloader(int(rounds[0]), int(rounds[1]))
         downloader.files = ["suspicious_logins.log"]
-        downloader.silent = True
         interactive_auth()
         asyncio.run(downloader.process_and_write())
 

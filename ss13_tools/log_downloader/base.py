@@ -143,11 +143,12 @@ class LogDownloader(ABC):
                 logs: list[bytes]
 
                 pbar.set_description(f"Getting ID {round_data.round_id} on {round_data.server.capitalize()}")
-                if not logs and not self.silent:
-                    pbar.clear()
-                    print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not get {round_data.file_name} from round " +
-                          f"{round_data.round_id} on {round_data.server.capitalize()}")
-                    pbar.display()
+                if not logs:
+                    if not self.silent:
+                        pbar.clear()
+                        print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Could not get {round_data.file_name} " +
+                              f"from round {round_data.round_id} on {round_data.server.capitalize()}")
+                        pbar.display()
                     continue
                 for line in self._filter_lines(logs):
                     file.write(formatter(line, round_data))
