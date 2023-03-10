@@ -2,7 +2,7 @@
 # pylint: disable=invalid-name
 from aiohttp import ClientSession
 
-from .round_data import RoundData
+from .round_data import PlayerRoundData
 from .constants import PLAYER_ROUNDS_URL
 from ..constants import USER_AGENT
 
@@ -11,7 +11,7 @@ class ScrubbyException(Exception):
     """Wuh oh, scrubby died"""
 
 
-async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[RoundData]:
+async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[PlayerRoundData]:
     """Calls the scrubby API and retrieves the specified number of rounds"""
     data = {
         "ckey": ckey,
@@ -27,11 +27,11 @@ async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = Fals
         if await resp.read() == b"[]":
             raise ScrubbyException("CKEY could not be found")
         if not only_played:
-            return await RoundData.from_scrubby_response_async(resp)
+            return await PlayerRoundData.from_scrubby_response_async(resp)
 
         played_in = []
         while True:
-            rounds = await RoundData.from_scrubby_response_async(resp)
+            rounds = await PlayerRoundData.from_scrubby_response_async(resp)
             if not rounds:
                 return played_in
             for round_data in rounds:

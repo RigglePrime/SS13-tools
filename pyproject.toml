@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "SS13-tools"
-version = "2.1.0"
+version = "2.2.0-beta2"
 description = "Python toolchain for SS13"
 authors = ["RigglePrime <27156122+RigglePrime@users.noreply.github.com>", "tattle <66640614+dragomagol@users.noreply.github.com>"]
 readme = "README.md"
@@ -15,11 +15,19 @@ tqdm = "^4.64.1"
 python-dateutil = "^2.8.2"
 aiohttp = "^3.8.3"
 pycryptodome = "^3.17"
+ipython = "^8.10.0"
+pyperclip = "^1.8.2"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.0.0"
 pylint = "^2.15.8"
 pyinstaller = "^5.8.0"
+autopep8 = "^2.0.2"
+
+[tool.poetry.scripts]
+ss13tools = "ss13_tools.cli:run"
+logbuddy = "ss13_tools.cli:log_buddy"
+centcom = "ss13_tools.cli:centcom"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

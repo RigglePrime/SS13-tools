@@ -4,8 +4,8 @@ import asyncio
 from colorama import init as colorama_init
 
 from .ckey import CkeyLogDownloader
-from .round import RoundLogDownloader
-from ..scrubby import RoundData
+from .round import RoundLogDownloader, RoundListLogDownloader
+from ..scrubby import PlayerRoundData
 
 colorama_init()
 
@@ -17,7 +17,8 @@ if sys.platform == "win32":
 __all__ = [
     'CkeyLogDownloader',
     'RoundLogDownloader',
-    'RoundData'
+    'RoundListLogDownloader',
+    'PlayerRoundData',
 ]
 
 del colorama_init

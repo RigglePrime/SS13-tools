@@ -1,6 +1,10 @@
+from colorama import init as colorama_init
+
 from .ban_types import BanData
 from .ban import get_one
-from .__main__ import main  # noqa: F401
+
+
+colorama_init()
 
 __all__ = [
     'get_one',

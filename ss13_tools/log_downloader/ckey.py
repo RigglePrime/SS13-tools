@@ -1,8 +1,9 @@
 from typing import Annotated, Iterable, Optional
 
 from colorama import Fore, Style
+from dateutil.parser import isoparse
 
-from .abstract import LogDownloader
+from .base import LogDownloader, RoundResource
 from .constants import DEFAULT_FILES, DEFAULT_NUMBER_OF_ROUNDS, DEFAULT_ONLY_PLAYED, DEFAULT_CKEY_OUTPUT_PATH
 from ..byond import canonicalize
 from .. import scrubby
@@ -27,12 +28,27 @@ class CkeyLogDownloader(LogDownloader):
         self.ckey = canonicalize(key) if key else None
         self.only_played = only_played
         self.number_of_rounds = number_of_rounds
+        output_path = output_path or DEFAULT_CKEY_OUTPUT_PATH
         self.output_path = output_path.format(ckey=self.ckey or "output")
 
-    async def update_round_list(self) -> None:
-        self.rounds = await scrubby.GetReceipts(self.ckey, self.number_of_rounds, self.only_played)
+    async def _update_round_list(self) -> None:
+        self.round_resources = []
+        for round_data in await scrubby.GetReceipts(self.ckey, self.number_of_rounds, self.only_played):
+            if round_data.roundStartSuicide and not self.silent:
+                print(f"{Fore.MAGENTA}WARNING:{Fore.RESET} round start suicide " +
+                      f"in round {round_data.roundID} on {round_data.server}")
+            round_data.timestamp = isoparse(round_data.timestamp)
+            # Grrrr
+            round_data.server = round_data.server.lower().replace('bagil', 'basil').replace(' ', '-')
+            for file in self.files:
+                self.round_resources.append(RoundResource(
+                    round_data.roundID,
+                    round_data.timestamp,
+                    round_data.server,
+                    file
+                ))
 
-    def filter_lines(self, logs: Iterable[bytes]) -> Iterable[bytes]:
+    def _filter_lines(self, logs: Iterable[bytes]) -> Iterable[bytes]:
         if not self.filter_logs:
             for log in logs:
                 yield log
@@ -58,7 +74,7 @@ class CkeyLogDownloader(LogDownloader):
                 print(f"{Fore.RED}Rounds should be an int in base 10 or 16{Fore.RESET}")
         print(f"Do you want to get only rounds in which they played? [y/{Style.BRIGHT}N{Style.RESET_ALL}] ", end="")
         only_played = input().lower() in POSITIVE_RESPONSES  # Input and colorama don't mix
-        output_path = input(f"Where should I write the file? [{DEFAULT_CKEY_OUTPUT_PATH}] ")
+        output_path = input(f"Where should I write the file? [{DEFAULT_CKEY_OUTPUT_PATH.format(ckey=ckey)}] ")
         output_path = output_path or DEFAULT_CKEY_OUTPUT_PATH.format(ckey=ckey)
         downloader = CkeyLogDownloader(key=ckey, only_played=only_played,
                                        number_of_rounds=number_of_rounds, output_path=output_path)
