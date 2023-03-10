@@ -58,6 +58,8 @@ pressing the right arrow (or CTRL+→) will automatically enter new characters.
 So you've got an annoying appeal with a lot of investigation? You've come to the right place! I'm hoping
 that at the end of this short section you'll know how to use LogBuddy pretty effectively.
 
+<font size="4">[**Click me for guides based on real world scenarios**](../../logbuddy_guides/README.md)</font>
+
 After starting it, the first thing you need to do is download some logs.
 
 `%dl 198563`
@@ -94,6 +96,7 @@ but you can skip it (automagic is on).
     - c: force the program to interpret your input as a ckey
     - p: only get the round the person played in? (applies only for ckeys)
     - r: the amount of rounds to download (applies only for ckeys)
+    - f: pre-emptively delete all logs without our target ckey (applies only for ckeys)
   - `%download 198563`: download round 198563
   - `%dl 198563`: same as above
   - `%download 199563-199999`: download rounds 199500 to 199600 (inclusive). Be careful with this,
@@ -102,6 +105,12 @@ but you can skip it (automagic is on).
   You can run this command with as many rounds as you want.
   - `%download -p coolckey123` downloads 50 (default) rounds that `coolckey123` played in
   - `%download -r10 coolckey123` downloads 10 rounds that `coolckey123` played in
+  - `%download -f coolckey123` downloads the default amout of rounds `coolckey123` was present in,
+and pre-emptively delete all logs without `coolckey123` in them. This is uesful for when you want a
+lot of rounds downloaded and analised, since it reduces processing time. Please be aware that the
+excluded rounds can't be recovered, you will have to download them again.
+  - `%download -fp coolckey123` downloads the default amount of rounds `coolckey123` played in, and
+filters them, as mentioned earlier
   - `%download -c 123123123` this option is useful, as `dl` would interpret numbers as a round ID.
   `-c` forces it to interpret it as a ckey
   - `%download -c -r=10 123123123` you can have more than one switch! The `=` is optional
@@ -193,6 +202,8 @@ command will print out all your current aliases (and can be used to set new ones
 
 <font size="5">**You can stop reading now. Below is some information for nerds and developers.**</font>
 <hr />
+<br />
+<br />
 
 ## How it works (for nerds)
 

@@ -675,12 +675,14 @@ class LogFile:
         return log_collection
 
     @staticmethod
-    def from_ckey(ckey: str, rounds: int = 20, only_played: bool = False, logs_we_care_about: list[str] = None) -> LogFile:
+    def from_ckey(ckey: str, rounds: int = 20, only_played: bool = False, filter_logs: bool = False,
+                  logs_we_care_about: list[str] = None) -> LogFile:
         """Downloads multiple rounds worth of data, where the specified ckey was present.
 
         Parameters:
         `ckey` (str): the ckey
         `rounds` (int): number of rounds
+        `filter` (bool): pre-emptively delete all logs not containing their ckey
         `logs_we_care_about` (list[str]): list of strings, containing the file names.
         For example: `["game.txt", "attack.txt"]`. This defaults to all supported files.
 
@@ -694,7 +696,7 @@ class LogFile:
         downloader = CkeyLogDownloader(ckey, only_played, rounds)
         downloader.output_only_log_line = True
         downloader.files = logs_we_care_about
-        downloader.filter_logs = False
+        downloader.filter_logs = filter_logs
         downloader.try_authenticate_interactive()
         asyncio.run(downloader.process_and_write())
         log_collection = LogFile.from_file(downloader.output_path)

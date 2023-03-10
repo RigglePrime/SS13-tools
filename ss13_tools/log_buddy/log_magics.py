@@ -48,6 +48,7 @@ class LogMagics(Magics):
             - c: force the program to interpret your input as a ckey
             - p: only get the round the person played in? (applies only for ckeys)
             - r: the amount of rounds to download (applies only for ckeys)
+            - f: pre-emptively delete all logs without our target ckey (applies only for ckeys)
         - `%download 198563`: download round 198563
         - `%dl 198563`: same as above
         - `%download 199563-199999`: download rounds 199500 to 199600 (inclusive). Be careful with this,
@@ -64,7 +65,7 @@ class LogMagics(Magics):
         """
         if not parameter_s:
             raise UsageError(f"No arguments! Usage:\n{self.download.__doc__}")
-        opts, args = self.parse_options(parameter_s, 'cpr:')
+        opts, args = self.parse_options(parameter_s, 'cpr:f')
         if 'c' not in opts and '-' in args:
             args = args.split('-')
             if len(args) != 2:
@@ -89,9 +90,10 @@ class LogMagics(Magics):
             self.logs_var = LogFile.from_round_id(int(args))
         else:
             rounds = int(opts['r'].lstrip('=')) if 'r' in opts else 50
+            filter_logs = 'f' in opts
             only_played = 'p' in opts
             args = canonicalize(args)
-            self.logs_var = LogFile.from_ckey(args, rounds=rounds, only_played=only_played)
+            self.logs_var = LogFile.from_ckey(args, rounds=rounds, only_played=only_played, filter_logs=filter_logs)
 
     @line_magic
     def length(self, parameter_s=''):
