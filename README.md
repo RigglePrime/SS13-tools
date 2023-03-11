@@ -12,7 +12,7 @@ Made for Python 3.9+
 
 ## How to run
 
-`pip install ss13-tools; ss13tools` (pip3 on Linux) or dowload the executable [here](https://github.com/RigglePrime/SS13-tools/releases/latest).
+`pip install ss13-tools; ss13tools` (pip3 on Linux) or dowload the executable [here](https://github.com/RigglePrime/SS13-tools/releases/latest) (Windows only).
 If the latter is giving you trouble, try the former. Python can be installed [here](https://www.python.org/downloads/)
 
 Remember, if you ever screw an input up try pressing the up arrow.
