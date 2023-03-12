@@ -10,7 +10,7 @@ from colorama import init
 from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
-from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_OSAY_EXP, ADMIN_STAT_CHANGE,\
+from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_STAT_CHANGE,\
     HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN,\
     LOG_PRETTY_LOC, LOG_PRETTY_STR, LOG_PRETTY_PATH
 from ss13_tools.log_buddy.constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD,\
@@ -485,12 +485,16 @@ class Log:
             self.agent = Player.parse_player(agent)
         if re.search(ADMIN_BUILD_MODE, other):
             self.admin_log_type = AdminLogType.BUILD_MODE
-        elif match := re.search(ADMIN_OSAY_EXP, other):
+        elif other.startswith("made the ") and ' say "' in other:
             self.admin_log_type = AdminLogType.OBJECT_SAY
-            self.patient = Player(None, match[1])
-            self.location_name = match[2].strip()
-            self.text = match[3].strip()
-            self.__parse_and_set_location(other)
+            patient, other = other[9:].split(' at ', 1)
+            self.patient = Player(None, patient)
+            location_name, other = other.split(' say "')
+            loc_start = self.__parse_and_set_location(location_name)
+            if loc_start > 0:
+                location_name = location_name[:loc_start]
+            self.location_name = location_name.strip()
+            self.text = other.rstrip('"')
             return
         elif other.startswith("has created a command report: "):
             self.admin_log_type = AdminLogType.COMMAND_REPORT
