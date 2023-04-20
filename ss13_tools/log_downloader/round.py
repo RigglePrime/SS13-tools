@@ -72,6 +72,7 @@ class RoundListLogDownloader(LogDownloader):
 
     async def _update_round_list(self) -> None:
         async for round_info in get_round_info_from_ids(self.round_list):
+            round_info.timestamp = isoparse(round_info.timestamp)
             for file_name in self.files:
                 self.round_resources.append(RoundResource(
                     round_id=round_info.round_id,
