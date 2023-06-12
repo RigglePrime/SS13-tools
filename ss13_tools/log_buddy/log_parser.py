@@ -130,7 +130,8 @@ class LogFile:
                 pbar.display()
         if errored:
             with open(ERRORED_FILE, 'a+', encoding="utf-8") as file:
-                file.write("If you see this, please share it with Riggle.\n")
+                file.write("## If you see this, please share it with Riggle.\n")
+                file.write("## ")
                 file.write(__version__)
                 file.write("\n\n")
                 file.writelines(chain.from_iterable(zip(errored, repeat("\n"))))

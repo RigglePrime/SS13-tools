@@ -14,6 +14,7 @@ ALL_LOGS_WE_PARSE = [
 HELP_LINK = "https://github.com/RigglePrime/SS13-tools/blob/master/ss13_tools/log_buddy/README.md"
 SHAMELESS = f"## Created using SS13-Tools LogBuddy {__version__} https://github.com/RigglePrime/SS13-Tools\n"
 ERRORED_FILE = "errored.log"
+MAX_SUPPORTED_LOG_VERSION = "1.0.0"
 
 LOG_COLOUR_SCARLET = 124
 LOG_COLOUR_RED = 167

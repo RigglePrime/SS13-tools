@@ -5,8 +5,9 @@ from enum import Enum
 from typing import Annotated, Tuple, Optional
 import re
 from html import unescape as html_unescape
-from colorama import init
+import json
 
+from colorama import init
 from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
@@ -15,7 +16,8 @@ from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_
     LOG_PRETTY_LOC, LOG_PRETTY_STR, LOG_PRETTY_PATH
 from ss13_tools.log_buddy.constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD,\
     LOG_COLOUR_PERIWINKLE, LOG_COLOUR_PINK, LOG_COLOUR_GRAY, LOG_COLOUR_PASTEL_CYAN, LOG_COLOUR_SUNSET,\
-    LOG_COLOUR_PASTEL_ORANGE, LOG_COLOUR_AMETHYST, LOG_COLOUR_OCEAN
+    LOG_COLOUR_PASTEL_ORANGE, LOG_COLOUR_AMETHYST, LOG_COLOUR_OCEAN,\
+    MAX_SUPPORTED_LOG_VERSION
 
 
 class LogType(Enum):
@@ -175,6 +177,10 @@ class UnknownLogException(Exception):
     """Thrown when a log type is not known. (so unexpected!)"""
 
 
+class UnsupportedSchemaVersionException(Exception):
+    """Thrown when a JSON log schema isn't supported. (so unexpected!)"""
+
+
 class Log:
     """Represents one log entry
 
@@ -182,9 +188,10 @@ class Log:
     log = `Log("log line here")` # NOTE: must be a valid log entry"""
 
     def __init__(self, line: Optional[str] = None) -> None:
-        if not line or line[0] != "[":
-            raise UnknownLogException("Does not start with [")
+        if not line:
+            raise UnknownLogException("Log line empty!")
 
+        self.json_schema = None
         self.time = None
         self.agent = None
         self.patient = None
@@ -192,8 +199,17 @@ class Log:
         self.location_name = None
         self.text = None
         self.is_dead = None
-
         self.raw_line = line
+
+        if line[0] == "{":
+            self.__json_parse()
+            return
+        if line[0] == "[":
+            self.__parse_old_log()
+            return
+        raise UnknownLogException("Unsupported log")
+
+    def __parse_old_log(self):
         date_time, other = self.raw_line.split("] ", 1)
         self.time = isoparse(date_time[1:])  # Remove starting [
         if other.endswith("VOTE:"):
@@ -213,12 +229,31 @@ class Log:
             self.parse_tgui(other)
             return
         log_type, other = other.split(": ", 1)
-        self.log_type = LogType.parse_log_type(log_type)
+        self.log_type = LogType.parse_log_type(log_type.replace("GAME-", "", 1))
         # Python go brrrrrrr
         parsing_function = getattr(self, f"parse_{self.log_type.name.lower()}", None)
         if parsing_function:
             parsing_function(other)
 
+    def __json_parse(self):
+        log = json.loads(self.raw_line)
+        if not log['s-ver'].count('.') == 2:
+            raise UnknownLogException("Schema version corrupted")
+        max_supported = tuple(int(x) for x in MAX_SUPPORTED_LOG_VERSION.split('.'))
+        schema_version = tuple(int(x) for x in log['s-ver'].split('.'))
+        for i in range(len(max_supported)):  # pylint: disable=consider-using-enumerate
+            if max_supported[i] > schema_version[i]:
+                break
+            if max_supported[i] < schema_version[i]:
+                raise UnsupportedSchemaVersionException(f"Unsupported schema: {log['s-ver']}")
+        self.json_schema = log['s-ver']
+        self.time = isoparse(log['ts'])
+        self.log_type = LogType.parse_log_type(log['cat'].replace("game-", "", 1))
+        parsing_function = getattr(self, f"parse_{self.log_type.name.lower()}", None)
+        if parsing_function:
+            parsing_function(log['msg'])
+
+    json_schema = Annotated[str, "JSON schema version. None if not a JSON log"]      
     time: Annotated[datetime, "Time of logging"]
     agent: Annotated[Optional[Player], "Player performing the action"]
     patient: Annotated[Optional[Player], "Player receiving the action"]
@@ -1039,6 +1074,8 @@ class Log:
 
     def pretty(self):
         """Return, but with ANSI colour!"""
+        if self.raw_line[0] == "{":
+            return self.__pretty_json()
         to_be_printed = self.raw_line
         to_be_printed = re.sub(LOG_PRETTY_LOC, self.__re_pretty(LOG_COLOUR_PASTEL_CYAN), to_be_printed)
         to_be_printed = re.sub(LOG_PRETTY_PATH, self.__re_pretty(LOG_COLOUR_PASTEL_ORANGE), to_be_printed)
@@ -1074,6 +1111,9 @@ class Log:
                             .replace(str(self.patient), f"\033[38;5;{LOG_COLOUR_AMETHYST}m{str(self.patient)}\033[0m")\
                             .replace(str(self.location_name),
                                      f"\033[38;5;{LOG_COLOUR_PASTEL_CYAN}m{str(self.location_name)}\033[0m")
+
+    def __pretty_json(self):
+        return self.raw_line
 
     def __str__(self):
         """String representation"""
