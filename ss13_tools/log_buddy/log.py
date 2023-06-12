@@ -253,7 +253,7 @@ class Log:
         if parsing_function:
             parsing_function(log['msg'])
 
-    json_schema = Annotated[str, "JSON schema version. None if not a JSON log"]      
+    json_schema = Annotated[str, "JSON schema version. None if not a JSON log"]
     time: Annotated[datetime, "Time of logging"]
     agent: Annotated[Optional[Player], "Player performing the action"]
     patient: Annotated[Optional[Player], "Player receiving the action"]
