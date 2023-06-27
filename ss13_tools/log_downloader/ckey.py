@@ -16,6 +16,7 @@ class CkeyLogDownloaderException(Exception):
 
 class CkeyLogDownloader(LogDownloader):
     """Downloads logs in which a ckey was present"""
+    key: Annotated[Optional[str], "User's key, can be None"]
     ckey: Annotated[Optional[str], "Canonical form of user's key, can be None"]
     only_played: Annotated[bool, "If ckey is set dictates if the log downloader only counts player rounds"]\
         = DEFAULT_ONLY_PLAYED
@@ -25,7 +26,8 @@ class CkeyLogDownloader(LogDownloader):
 
     def __init__(self, key: str = None, only_played: bool = DEFAULT_ONLY_PLAYED,
                  number_of_rounds: int = DEFAULT_NUMBER_OF_ROUNDS, output_path: str = None) -> None:
-        self.ckey = canonicalize(key) if key else None
+        self.key = key
+        self.ckey = canonicalize(key) if self.key else None
         self.only_played = only_played
         self.number_of_rounds = number_of_rounds
         output_path = output_path or DEFAULT_CKEY_OUTPUT_PATH
@@ -54,9 +56,11 @@ class CkeyLogDownloader(LogDownloader):
                 yield log
         if not self.ckey:
             raise CkeyLogDownloaderException("Ckey was empty")
+        key = self.key.lower().encode('utf-8')
         ckey = self.ckey.lower().encode('utf-8')
         for log in logs:
-            if ckey in log.lower():
+            log = log.lower()
+            if key in log or ckey in log:
                 yield log
 
     @staticmethod
