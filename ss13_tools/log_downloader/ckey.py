@@ -59,8 +59,8 @@ class CkeyLogDownloader(LogDownloader):
         key = self.key.lower().encode('utf-8')
         ckey = self.ckey.lower().encode('utf-8')
         for log in logs:
-            log = log.lower()
-            if key in log or ckey in log:
+            log_lower = log.lower()
+            if key in log_lower or ckey in log_lower:
                 yield log
 
     @staticmethod
