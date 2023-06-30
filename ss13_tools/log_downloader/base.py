@@ -40,13 +40,22 @@ class LogDownloader(ABC):
     """Log downloader object. For downloading logs.
     Either pass the arguments in the constructor or call `interactive()`"""
 
-    user_agent: Annotated[str, "User agent so people know who keeps spamming requests (and for raw logs)"] = USER_AGENT
-    output_path: Annotated[str, "Where should we write the file to?"] = DEFAULT_OUTPUT_PATH
-    round_resources: Annotated[list[RoundResource], "The list of round resoruces to download"] = []
-    files: Annotated[list[str], "Which files do we want to dowload?"] = DEFAULT_FILES.copy()
-    output_only_log_line: Annotated[bool, "Should we format our line or not?"] = False
-    silent: Annotated[bool, "Should we be quiet?"] = False
-    __authed = False
+    user_agent: Annotated[str, "User agent so people know who keeps spamming requests (and for raw logs)"]
+    output_path: Annotated[str, "Where should we write the file to?"]
+    round_resources: Annotated[list[RoundResource], "The list of round resoruces to download"]
+    files: Annotated[list[str], "Which files do we want to dowload?"]
+    output_only_log_line: Annotated[bool, "Should we format our line or not?"]
+    silent: Annotated[bool, "Should we be quiet?"]
+    __authed: Annotated[bool, "Are we authenticated?"]
+
+    def __init__(self) -> None:
+        self.user_agent = USER_AGENT
+        self.output_path = DEFAULT_OUTPUT_PATH
+        self.round_resources = []
+        self.files = DEFAULT_FILES.copy()
+        self.output_only_log_line = False
+        self.silent = False
+        self.__authed = False
 
     def authenticate(self, token: str, override_old: bool) -> bool:
         """Tries to authenticate against the TG forums"""

@@ -13,6 +13,7 @@ class RoundLogDownloader(LogDownloader):
     rbound: Annotated[int, "Right boundary"]
 
     def __init__(self, start_round: int, end_round: int, output_path: str = None) -> None:
+        super().__init__()
         self.lbound = min(start_round, end_round)
         self.rbound = max(start_round, end_round)
         self.output_path = output_path or DEFAULT_ROUND_OUTPUT_PATH.format(start=self.lbound, end=self.rbound)
@@ -67,6 +68,7 @@ class RoundListLogDownloader(LogDownloader):
     round_list: Annotated[list[int], "List of rounds to get"]
 
     def __init__(self, round_list, output_path: str = None) -> None:
+        super().__init__()
         self.round_list = round_list
         self.output_path = output_path or DEFAULT_ROUND_LIST_OUTPUT_PATH
 

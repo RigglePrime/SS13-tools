@@ -26,6 +26,7 @@ class CkeyLogDownloader(LogDownloader):
 
     def __init__(self, key: str = None, only_played: bool = DEFAULT_ONLY_PLAYED,
                  number_of_rounds: int = DEFAULT_NUMBER_OF_ROUNDS, output_path: str = None) -> None:
+        super().__init__()
         self.key = key
         self.ckey = canonicalize(key) if self.key else None
         self.only_played = only_played
