@@ -103,7 +103,7 @@ class LogDownloader(ABC):
             async def fetch(round_resource: RoundResource):
                 # Edge case warning: if we go beyond the year 2017 or so, the logs path changes.
                 # I don't expect anyone to go that far so I won't be doing anything about it
-                async with session.get(round_resource.get_round_url(url_format)) as rsp:
+                async with session.get(round_resource.get_round_url(url_format=url_format)) as rsp:
                     if not rsp.ok:
                         return round_resource, None
                     return round_resource, await rsp.read()
