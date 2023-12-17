@@ -172,7 +172,7 @@ def load_passport() -> None:
             print("The file could not be removed.")
 
 
-def create_from_token(token: str, override_old: bool = False) -> bool:
+def create_from_token(token: str, override_old: bool = False) -> Optional[Passport]:
     """Creates a new passport from a token. Tests the token before setting it, retuning if the token is valid or not
 
     If override_old is not true, the new token won't be used if the old one is still valid"""
@@ -181,9 +181,9 @@ def create_from_token(token: str, override_old: bool = False) -> bool:
     global PASSPORT  # pylint: disable=global-statement
     new_passport = Passport(token=token)
     if not new_passport.test():
-        return False
+        return None
     PASSPORT = new_passport
-    return True
+    return new_passport
 
 
 def interactive():  # noqa: C901
