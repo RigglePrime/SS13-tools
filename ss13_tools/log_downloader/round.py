@@ -65,9 +65,9 @@ class RoundLogDownloader(LogDownloader):
 
 class RoundListLogDownloader(LogDownloader):
     """Downloads a span of rounds"""
-    round_list: Annotated[list[int], "List of rounds to get"]
+    round_list: Annotated[Iterable[int], "List of rounds to get"]
 
-    def __init__(self, round_list, output_path: str = None) -> None:
+    def __init__(self, round_list: Iterable[int], output_path: str = None) -> None:
         super().__init__()
         self.round_list = round_list
         self.output_path = output_path or DEFAULT_ROUND_LIST_OUTPUT_PATH
