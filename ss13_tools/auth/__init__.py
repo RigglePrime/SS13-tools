@@ -1,6 +1,6 @@
 from colorama import init as colorama_init
 
-from .tg import Passport, interactive, is_authenticated, save_passport,\
+from .tg import Passport, interactive, is_authenticated, save_passport, \
                   load_passport, create_from_token, get_auth_headers, seconds_left
 
 

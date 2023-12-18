@@ -26,7 +26,7 @@ from requests.exceptions import ReadTimeout
 from pyperclip import copy, paste, PyperclipException
 
 from ..constants import USER_AGENT, __version__
-from .constants import PASSPORT_FILE_LOCATION, PASSPORT_FILE_NAME, PASSPORT_FILE_HEADER, AUTH_TEST_URL,\
+from .constants import PASSPORT_FILE_LOCATION, PASSPORT_FILE_NAME, PASSPORT_FILE_HEADER, AUTH_TEST_URL, \
                        TOKEN_URL, PASSPORT_URL
 
 
