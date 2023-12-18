@@ -57,7 +57,7 @@ class LogDownloader(ABC):
         self.silent = False
         self.__authed = False
 
-    def authenticate(self, token: str, override_old: bool) -> bool:
+    def authenticate(self, token: str, override_old: bool = False) -> bool:
         """Tries to authenticate against the TG forums"""
         if is_authenticated():
             return True
@@ -134,11 +134,15 @@ class LogDownloader(ABC):
         """Returns the line right back"""
         return line + b"\n"
 
-    async def process_and_write(self, output_path: str = None):
-        """Processes the data, downloads the logs and saves them to a file"""
-        output_path = output_path or self.output_path
-        formatter = self._output_raw_line if self.output_only_log_line else self._format_line_bytes
-        if not self.round_resources:
+    async def get_log_async_iterator_async(self, force_resource_update: bool = False):
+        """This is a generator that yields a tuple of the `RoundData` and list of round logs, for all rounds in `rounds`
+
+        Parameters:
+        `force_resource_update` (bool): should we force an updated round resource list? This is not necessary
+        unless the round data changed since last time we processed it
+
+        On 404, the logs will be None instead"""
+        if force_resource_update or not self.round_resources:
             if is_authenticated():
                 self.__authed = True
                 self.files = [file.replace(".txt", ".log") for file in self.files]
@@ -146,8 +150,26 @@ class LogDownloader(ABC):
                 self.__authed = False
                 self.files = [file.replace(".log", ".txt") for file in self.files]
             await self._update_round_list()
+        return self.__get_logs_async()
+
+    async def get_logs_list_async(self, force_resource_update: bool = False):
+        """This is a generator that yields a tuple of the `RoundData` and list of round logs, for all rounds in `rounds`
+
+        Parameters:
+        `force_resource_update` (bool): should we force an updated round resource list? This is not necessary
+        unless the round data changed since last time we processed it
+
+        On 404, the round file will be skipped"""
+        return [(round_data, logs) async for round_data, logs
+                in await self.get_log_async_iterator_async(force_resource_update=force_resource_update) if logs]
+
+    async def process_and_write(self, output_path: str = None):
+        """Processes the data, downloads the logs and saves them to a file"""
+        output_path = output_path or self.output_path
+        formatter = self._output_raw_line if self.output_only_log_line else self._format_line_bytes
+
         with open(output_path, 'wb') as file:
-            pbar = tqdm(self.__get_logs_async(), total=len(self.round_resources))
+            pbar = tqdm(await self.get_log_async_iterator_async(), total=len(self.round_resources))
             async for round_data, logs in pbar:
                 # Type hints
                 round_data: RoundResource
