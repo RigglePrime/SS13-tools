@@ -12,7 +12,13 @@ class ScrubbyException(Exception):
 
 
 async def GetReceipts(ckey: str, number_of_rounds: int, only_played: bool = False) -> list[PlayerRoundData]:
-    """Calls the scrubby API and retrieves the specified number of rounds"""
+    """Calls the scrubby API and retrieves the specified number of rounds
+
+    Parameters:
+    `ckey` (str): ckey to find
+    `number_of_rounds` (int): number of rounds to get
+    `only_played` (bool): do we only want rounds this player played in? False includes observer rounds
+    """
     data = {
         "ckey": ckey,
         "startingRound": 999999,  # that's how scrubby does it, sue Bobbah, not me
