@@ -12,8 +12,37 @@ Made for Python 3.9+
 
 ## How to run
 
-`pip install ss13-tools; ss13tools` (pip3 on Linux) or dowload the executable [here](https://github.com/RigglePrime/SS13-tools/releases/latest) (Windows only).
+### Github Codespaces
+
+Click the following button to open a codespace with ss13tools in your browser:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/RigglePrime/SS13-tools)
+
+### Windows
+
+Download the executable [here](https://github.com/RigglePrime/SS13-tools/releases/latest)
+
+### pip
+
+`pip install ss13-tools; ss13tools` (or pip3 on some linux distributions)
+
 If the latter is giving you trouble, try the former. Python can be installed [here](https://www.python.org/downloads/)
+
+### Docker
+
+```bash
+docker run --rm -it ghcr.io/riggleprime/ss13tools
+
+# Or to run a specific command (for example, logbuddy)
+
+docker run --rm -it ghcr.io/riggleprime/ss13tools logbuddy
+
+# If you need access to any local files, you'll want to mount a volume as well
+
+docker run --rm -it -v ./directory:/directory ghcr.io/riggleprime/ss13tools logbuddy
+```
+
+Alternatively, you can open the `devcontainer.json` with your code editor of choice, if supported (namely, Visual Studio Code)
 
 Remember, if you ever screw an input up try pressing the up arrow.
 
