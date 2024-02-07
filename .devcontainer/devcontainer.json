@@ -1,0 +1,5 @@
+// For format details, see https://aka.ms/devcontainer.json.
+{
+	"name": "ss13tools shell",
+	"image": "ghcr.io/riggleprime/ss13tools"
+}
