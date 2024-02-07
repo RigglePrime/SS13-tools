@@ -6,7 +6,7 @@
 
 A set of tools to help with automating tasks for the /tg/ branch of SS13.
 
-If you're looking for LogBuddy help, click [here](./ss13_tools/log_buddy/README.md)
+If you're looking for LogBuddy help, click [here](https://github.com/RigglePrime/SS13-tools/tree/master/ss13_tools/log_buddy/README.md)
 
 Made for Python 3.9+
 
@@ -53,11 +53,11 @@ Remember, if you ever screw an input up try pressing the up arrow.
 - byond: tools for working with BYOND, such as checking if a ckey exists
 - [centcom](https://centcom.melonmesa.com/), comes as a script `centcom`
 - log_downloader: downloads logs from tg's [parsed logs](https://tgstation13.org/parsed-logs)
-- [LogBuddy](./ss13_tools/log_buddy/README.md), comes as a script `logbuddy`
+- [LogBuddy](https://github.com/RigglePrime/SS13-tools/tree/master/ss13_tools/log_buddy/README.md), comes as a script `logbuddy`
 - scrubby: scrubby tools
 - slur_detector: what it says on the tin
 
-For examples on how to use please see [this file](ss13_tools/menu.py)
+For examples on how to use please see [this file](https://github.com/RigglePrime/SS13-tools/tree/master/ss13_tools/menu.py)
 
 ## Downloading
 
