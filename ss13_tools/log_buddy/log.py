@@ -3,7 +3,6 @@
 from datetime import datetime
 from enum import Enum
 from typing import Annotated, Tuple, Optional
-import re
 from html import unescape as html_unescape
 import json
 
