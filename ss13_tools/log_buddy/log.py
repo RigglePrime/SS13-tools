@@ -1040,8 +1040,11 @@ class Log:
         agent, other = log.split(") ", 1)  # Ensure that we didn't get a name with spaces
         self.agent = Player.parse_player(agent)
         # Priority announcements, yet another exception
+        if other.startswith("(mob"):
+            _, other = other.split(" ", 1)
         if other.startswith(("(priority announcement)", "(message to the other server)",
-                             "(message to CentCom)", "has requested the nuclear codes"))\
+                             "(message to CentCom)", "has requested the nuclear codes",
+                             "(station announcement", "(message to"))\
                 and '" ' not in other:  # This indentation is a bit confusing IMO but flake8 insists...
             self.text = html_unescape(other.strip())
             return
