@@ -11,9 +11,10 @@ from colorama import init
 from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
-from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_STAT_CHANGE, \
-    HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN, LOG_PRETTY_LOC, \
-    LOG_PRETTY_STR, LOG_PRETTY_PATH, VIRUS_CULTURE_PRINT, VIRUS_INFECTED_OR_CURED
+from ss13_tools.log_buddy.expressions import COMBAT_MODE_REGEX, DAMTYPE_REGEX, LOC_REGEX, \
+    ADMIN_BUILD_MODE_REGEX, ADMIN_STAT_CHANGE_REGEX, HORRIBLE_HREF_REGEX, GAME_I_LOVE_BOMBS_REGEX, \
+    ADMINPRIVATE_NOTE_REGEX, ADMINPRIVATE_BAN_REGEX, LOG_PRETTY_LOC, LOG_PRETTY_STR, LOG_PRETTY_PATH, \
+    NEW_HP_REGEX, VIRUS_CULTURE_PRINT_REGEX, VIRUS_INFECTED_OR_CURED_REGEX
 from ss13_tools.log_buddy.constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD, \
     LOG_COLOUR_PERIWINKLE, LOG_COLOUR_PINK, LOG_COLOUR_GRAY, LOG_COLOUR_PASTEL_CYAN, LOG_COLOUR_SUNSET, \
     LOG_COLOUR_PASTEL_ORANGE, LOG_COLOUR_AMETHYST, LOG_COLOUR_OCEAN, \
@@ -307,7 +308,7 @@ class Log:
                 self.location_name = other[:loc_start].strip()
             self.text = log[:20].strip()
             return
-        if match := re.match(GAME_I_LOVE_BOMBS, other):
+        if match := GAME_I_LOVE_BOMBS_REGEX.match(other):
             self.agent = Player.parse_player(match[1])
             self.text = other.strip()
             return
@@ -378,7 +379,7 @@ class Log:
                 self.agent = Player(fingerprints, None)
         if log.startswith("Bomb valve opened"):
             agent = log.split("- Last touched by: ")[1]
-            match = re.match(HORRIBLE_HREF, agent)
+            match = HORRIBLE_HREF_REGEX.match(agent)
             self.agent = Player(match[1], match[2])
         elif log.startswith("Lesser Gold Slime chemical mob spawn") or \
                 log.startswith("Friendly Gold Slime chemical mob spawn") or \
@@ -480,7 +481,7 @@ class Log:
             self.patient = Player.parse_player(patient)
             self.text = other.strip()
             return
-        match = re.search(ADMIN_STAT_CHANGE, other)
+        match = ADMIN_STAT_CHANGE_REGEX.search(other)
         if match:
             self.admin_log_type = AdminLogType.STATUS_CHANGE
             agent, other = other.split(match[0])
@@ -518,7 +519,7 @@ class Log:
         if ") " in other:
             agent, other = other.split(") ", 1)
             self.agent = Player.parse_player(agent)
-        if re.search(ADMIN_BUILD_MODE, other):
+        if ADMIN_BUILD_MODE_REGEX.search(other):
             self.admin_log_type = AdminLogType.BUILD_MODE
         elif other.startswith("made the ") and ' say "' in other:
             self.admin_log_type = AdminLogType.OBJECT_SAY
@@ -648,7 +649,7 @@ class Log:
             end_of_ticket_id = other.index("</A> ")
             self.ticket_number = int(other[other.index("'>#")+3:end_of_ticket_id])
             start_of_agent = other.index(" by <")
-            match = re.match(HORRIBLE_HREF, other[start_of_agent+4:])
+            match = HORRIBLE_HREF_REGEX.match(other[start_of_agent+4:])
             self.agent = Player(match[1], match[2])
             self.text = other[end_of_ticket_id + 5:start_of_agent]
             return
@@ -659,13 +660,13 @@ class Log:
         if "has passed the" in other and "filter" in other:
             self.adminprivate_log_type = AdminprivateLogType.FILTER
             self.agent = Player.parse_player(other[:other.index(" has passed")])
-        elif match := re.match(ADMINPRIVATE_NOTE, other):
+        elif match := ADMINPRIVATE_NOTE_REGEX.match(other):
             self.adminprivate_log_type = AdminprivateLogType.NOTE
             self.agent = Player.parse_player(match[1].strip())
             self.patient = Player(match[4], None)
             self.text = f"{match[2]} a {match[3]}: {match[5]}"
             return
-        elif match := re.match(ADMINPRIVATE_BAN, other):
+        elif match := ADMINPRIVATE_BAN_REGEX.match(other):
             self.adminprivate_log_type = AdminprivateLogType.BAN
             self.agent = Player.parse_player(match[1].strip())
             self.patient = Player(match[3], None)
@@ -731,17 +732,17 @@ class Log:
             self.location_name = other[:loc_start].split("(")[-1].strip()
             other = other[:loc_start].replace(self.location_name, "").strip(" (")
         # Combat mode regex
-        match = re.search(r"\(COMBAT MODE: (\d)\)", other)
+        match = COMBAT_MODE_REGEX.search(other)
         if match:
             self.combat_mode = bool(int(match.group(1)))
             other = other.replace(match.group(0), "")
         # Damage type regex
-        match = re.search(r"\(DAMTYPE: (\w+)\)", other)
+        match = DAMTYPE_REGEX.search(other)
         if match:
             self.damage_type = DamageType.parse_damage_type(match.group(1))
             other = other.replace(match.group(0), "")
         # New HP regex
-        match = re.search(r"\(NEWHP: (-?\d+\.?\d?)\)", other)
+        match = NEW_HP_REGEX.search(other)
         if match:
             self.new_hp = float(match.group(1))
             other = other.replace(match.group(0), "")
@@ -924,14 +925,14 @@ class Log:
 
     def parse_virus(self, log: str) -> None:
         """Parses a game log entry from `VIRUS:` onwards (VIRUS: should not be included)"""
-        m = re.match(VIRUS_CULTURE_PRINT, log)
+        m = VIRUS_CULTURE_PRINT_REGEX.match(log)
         if m:
             agent = log.split(") by ", 1)[1]
             self.agent = Player.parse_player(agent)
             self.virus_name, other = m[1].split(" sym:", 1)
             self.text = "printed, sym:" + other.strip()
         else:
-            agent, other = re.split(VIRUS_INFECTED_OR_CURED, log)
+            agent, other = VIRUS_INFECTED_OR_CURED_REGEX.split(log)
             self.agent = Player.parse_player(agent)
             if " sym:" not in other:
                 # Heart attacks my beloved...
@@ -975,7 +976,7 @@ class Log:
 
     def parse_shuttle(self, log: str) -> None:
         """Parses a game log entry from `SHUTTLE:` onwards (SHUTTLE: should not be included)"""
-        if log.startswith(("Shuttle call reason:", "There is no means of calling the emergency shuttle anymore."))\
+        if log.startswith(("Shuttle call reason:", "There is no means of calling the emergency shuttle anymore"))\
            or " set a new shuttle, " in log:
             self.text = html_unescape(log.strip())
             return
@@ -1021,7 +1022,7 @@ class Log:
         Returns the position of the location in the string as in integer"""
         # NOTE: this does not set location name, as it is not always present
         # Find all possible location strings
-        match = re.findall(LOC_REGEX, log)
+        match = LOC_REGEX.findall(log)
         # Check if there are any results
         if not match:
             return -1
@@ -1080,9 +1081,9 @@ class Log:
         if self.raw_line[0] == "{":
             return self.__pretty_json()
         to_be_printed = self.raw_line
-        to_be_printed = re.sub(LOG_PRETTY_LOC, self.__re_pretty(LOG_COLOUR_PASTEL_CYAN), to_be_printed)
-        to_be_printed = re.sub(LOG_PRETTY_PATH, self.__re_pretty(LOG_COLOUR_PASTEL_ORANGE), to_be_printed)
-        to_be_printed = re.sub(LOG_PRETTY_STR, self.__re_pretty_htmlescaped(LOG_COLOUR_SUNSET), to_be_printed, 1)
+        to_be_printed = LOG_PRETTY_LOC.sub(self.__re_pretty(LOG_COLOUR_PASTEL_CYAN), to_be_printed)
+        to_be_printed = LOG_PRETTY_PATH.sub(self.__re_pretty(LOG_COLOUR_PASTEL_ORANGE), to_be_printed)
+        to_be_printed = LOG_PRETTY_STR.sub(self.__re_pretty_htmlescaped(LOG_COLOUR_SUNSET), to_be_printed, 1)
         return to_be_printed.replace("[", "\033[38;5;240m[", 1).replace("]", "]\033[0m", 1)\
                             .replace("ACCESS:", f"\033[38;5;{LOG_COLOUR_GRAY}mACCESS:\033[0m", 1)\
                             .replace("ASSET:", f"\033[38;5;{LOG_COLOUR_GRAY}mASSET:\033[0m", 1)\
