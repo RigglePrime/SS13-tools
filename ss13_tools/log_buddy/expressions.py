@@ -5,6 +5,8 @@ HORRIBLE_HREF = r"<a href='\?priv_msg=\w+'>([\w ]+)<\/a>\/\((.+)\)"
 GAME_I_LOVE_BOMBS = r"The (?:self-destruct device|syndicate bomb) that (.+) had primed detonated!"
 ADMINPRIVATE_NOTE = r"(.+) has (created|deleted) a (note|message|watchlist entry) for (.+): (.*)"
 ADMINPRIVATE_BAN = r"(.+) has ((?:un)?banned) (.+) from (.+)"
+VIRUS_CULTURE_PRINT = r"^A culture (?:bottle|tube) was printed for the virus (.+)"
+VIRUS_INFECTED_OR_CURED = r" was (?:infected by|cured of) virus: "
 
 LOG_PRETTY_STR = r'"(?:.*)"'
 LOG_PRETTY_LOC = LOC_REGEX

@@ -12,8 +12,8 @@ from dateutil.parser import isoparse
 
 from ss13_tools.byond import canonicalize
 from ss13_tools.log_buddy.expressions import LOC_REGEX, ADMIN_BUILD_MODE, ADMIN_STAT_CHANGE, \
-    HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN, \
-    LOG_PRETTY_LOC, LOG_PRETTY_STR, LOG_PRETTY_PATH
+    HORRIBLE_HREF, GAME_I_LOVE_BOMBS, ADMINPRIVATE_NOTE, ADMINPRIVATE_BAN, LOG_PRETTY_LOC, \
+    LOG_PRETTY_STR, LOG_PRETTY_PATH, VIRUS_CULTURE_PRINT, VIRUS_INFECTED_OR_CURED
 from ss13_tools.log_buddy.constants import LOG_COLOUR_SCARLET, LOG_COLOUR_RED, LOG_COLOUR_EMERALD, \
     LOG_COLOUR_PERIWINKLE, LOG_COLOUR_PINK, LOG_COLOUR_GRAY, LOG_COLOUR_PASTEL_CYAN, LOG_COLOUR_SUNSET, \
     LOG_COLOUR_PASTEL_ORANGE, LOG_COLOUR_AMETHYST, LOG_COLOUR_OCEAN, \
@@ -924,14 +924,14 @@ class Log:
 
     def parse_virus(self, log: str) -> None:
         """Parses a game log entry from `VIRUS:` onwards (VIRUS: should not be included)"""
-        if log.startswith("A culture bottle was printed for the virus"):
+        m = re.match(VIRUS_CULTURE_PRINT, log)
+        if m:
             agent = log.split(") by ", 1)[1]
             self.agent = Player.parse_player(agent)
-            self.virus_name, other = log.split("A culture bottle was printed for the virus ")[1]\
-                                        .split(" sym:", 1)
+            self.virus_name, other = m[1].split(" sym:", 1)
             self.text = "printed, sym:" + other.strip()
         else:
-            agent, other = log.split(" was infected by virus: ")
+            agent, other = re.split(VIRUS_INFECTED_OR_CURED, log)
             self.agent = Player.parse_player(agent)
             if " sym:" not in other:
                 # Heart attacks my beloved...
@@ -1087,6 +1087,7 @@ class Log:
                             .replace("ACCESS:", f"\033[38;5;{LOG_COLOUR_GRAY}mACCESS:\033[0m", 1)\
                             .replace("ASSET:", f"\033[38;5;{LOG_COLOUR_GRAY}mASSET:\033[0m", 1)\
                             .replace("TOPIC:", f"\033[38;5;{LOG_COLOUR_GRAY}mTOPIC:\033[0m", 1)\
+                            .replace("GAME-", f"\033[38;5;{LOG_COLOUR_EMERALD}mGAME\033[0m-", 1)\
                             \
                             .replace("ADMIN:", f"\033[38;5;{LOG_COLOUR_PINK}mADMIN:\033[0m", 1)\
                             .replace("ADMINPRIVATE:", f"\033[38;5;{LOG_COLOUR_PINK}mADMINPRIVATE:\033[0m", 1)\
@@ -1101,6 +1102,7 @@ class Log:
                             .replace("CHANGELING:", f"\033[38;5;{LOG_COLOUR_SCARLET}mCHANGELING:\033[0m", 1)\
                             .replace("HERETIC RESEARCH:", f"\033[38;5;{LOG_COLOUR_SCARLET}mHERETIC RESEARCH:\033[0m", 1)\
                             .replace("SPELLBOOK:", f"\033[38;5;{LOG_COLOUR_SCARLET}mSPELLBOOK:\033[0m", 1)\
+                            .replace("VIRUS:", f"\033[38;5;{LOG_COLOUR_SCARLET}mVIRUS:\033[0m", 1)\
                             \
                             .replace("SAY:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mSAY:\033[0m", 1)\
                             .replace("EMOTE:", f"\033[38;5;{LOG_COLOUR_PERIWINKLE}mEMOTE:\033[0m", 1)\
