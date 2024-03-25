@@ -7,7 +7,7 @@ on:
 
 jobs:
   windows_build:
-    if: !contains(github.event.head_commit.message, '[ci skip]')
+    if: ${{ !contains(github.event.head_commit.message, '[ci skip]') }}
     name: Windows Build
     runs-on: windows-latest
     steps:
@@ -84,6 +84,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          echo -n ""
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
