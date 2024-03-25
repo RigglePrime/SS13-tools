@@ -7,7 +7,7 @@ on:
 
 jobs:
   windows_build:
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    if: !contains(github.event.head_commit.message, '[ci skip]')
     name: Windows Build
     runs-on: windows-latest
     steps:
@@ -16,7 +16,7 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'poetry'
       - name: Build
         run: pwsh build.ps1
@@ -36,7 +36,7 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'poetry'
       - name: Publish
         env:
