@@ -62,7 +62,7 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
           files: SS13Tools.exe
 
   docker_publish:
@@ -84,8 +84,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          echo -n ""
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
