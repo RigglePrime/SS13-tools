@@ -280,12 +280,23 @@ class LogMagics(Magics):
 
     @line_magic
     def print_logs(self, parameter_s=''):
-        """Prints our filtered logs"""
-        if len(self.logs_var.logs) > 200:
+        """Prints our filtered logs
+
+        Options:
+            - a: also print lines after (default 0)
+            - b: also print lines before (default 0)
+            - c: also print lines before and after (default 0)
+            - f: skip max logs check, do not use pager
+        """
+        opts, _ = self.parse_options(parameter_s, 'a:b:c:f')  # No d and e for now
+        after = int(opts['a'].lstrip('=')) if 'a' in opts else 0
+        before = int(opts['b'].lstrip('=')) if 'b' in opts else 0
+        context = int(opts['c'].lstrip('=')) if 'c' in opts else 0
+        if 'f' not in opts and len(self.logs_var.logs) > 200:
             page("Too many logs, opening pager. Press q to quit, enter to advance one line, space to advance a screen\n" +
                  '\n'.join(log.pretty() for log in self.logs_var.logs) + '\n')
         else:
-            self.logs_var.print_working()
+            self.logs_var.print_working(after=after, before=before, context=context)
 
     @line_magic
     def head(self, parameter_s=''):
