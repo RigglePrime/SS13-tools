@@ -1,6 +1,6 @@
 if (-not (Get-Command py -errorAction SilentlyContinue)) {
     Write-Host "Installing python with winget"
-    winget install -e --disable-interactivity --id Python.Python.3.11
+    winget install -e --disable-interactivity --id Python.Python.3.12
 }
 if (-not (Get-Command poetry -errorAction SilentlyContinue)) {
     Write-Host "Installing poetry"
