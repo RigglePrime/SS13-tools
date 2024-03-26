@@ -152,6 +152,9 @@ class LogFile:
             # Remove the incomplete entry (so we can parse location too!)
             self.unfiltered_logs.pop()
         log = Log(line)
+        # TODO: do it properly on next breaking change
+        log.logfile_pos = len(self.unfiltered_logs)  # Hack, but it ensures backward compatibility
+        # len has O(1) complexity so this should be fine
         self.unfiltered_logs.append(log)
         if log.agent and log.agent.ckey and log.agent.ckey not in self.who:
             self.who.append(log.agent.ckey)
@@ -470,8 +473,11 @@ class LogFile:
             return
         self.logs = filtered
 
-    def print_working(self) -> None:
+    def print_working(self, after: int = 0, before: int = 0, context: int = 0) -> None:
         """Prints working set to the console
+
+        Parameters:
+        `context` (int): print n logs that come before and after (default is 0)
 
         Example call: `my_logs.print_working()`
 
@@ -479,6 +485,17 @@ class LogFile:
         if not self.logs:
             print("Working set empty")
             return
+        if after or before or context:  # abc
+            term_width = os.get_terminal_size().columns
+            for log in self.logs:
+                print("=" * term_width)
+                for i in range(max(before, context), 0, -1):
+                    print(self.unfiltered_logs[log.logfile_pos - i].pretty())
+                print(log.pretty())
+                for i in range(1, max(after, context) + 1):
+                    print(self.unfiltered_logs[log.logfile_pos + i].pretty())
+            return
+        # Separate loop for performance reasons (probably, didn't test it, doesn't matter much)
         for log in self.logs:
             print(log.pretty())
 
