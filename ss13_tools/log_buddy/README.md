@@ -177,8 +177,16 @@ in the bar.
   - `%type SAY ATTACK` (inclusion)
   - `%type !SILICON` (exclusion, just append `!`)
 - `%print_logs` (alias `%p`): prints the logs. If there are more than 200 lines, opens a pager. To move in the pager press enter or space to advance a screen, or q to quit.
+  - Options:
+    - a: show logs that appear after this log
+    - b: show logs that appear before this log
+    - c: show context. Same as before and after combined
+    - f: do not use the pager, forcefully print everything
   - `%print_logs`
   - `%p`
+  - `%p -f`
+  - `%p -a3 -b2` (3 after and 2 before)
+  - `%p -c2` (same as `-a2 -b2`)
 - `%clip`: copy current logs to clipboard
 - `%head`: prints the first few logs
   - `%head`
