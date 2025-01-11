@@ -171,7 +171,7 @@ in the bar.
   - `%list_locations`
 - `%who`: lists all connected ckeys, recognised by the logs
   - `%who`
-- `%radius`: sorts the logs by time. You don't need to call this as they're automatically sorted
+- `%radius`: filters logs by radius from coordinates at which they occured
   - `%radius 50 65 2 10` (x=50, y=65, z=2, radius=10)
 - `%type`: filters by log type. To get all types, type `LogType.list()`. `%` mandatory
   - `%type SAY ATTACK` (inclusion)
