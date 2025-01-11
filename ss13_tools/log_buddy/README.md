@@ -172,7 +172,7 @@ in the bar.
 - `%who`: lists all connected ckeys, recognised by the logs
   - `%who`
 - `%radius`: sorts the logs by time. You don't need to call this as they're automatically sorted
-  - `%radius 50 62 2 10` (x=50, y=60, z=2, radius=10)
+  - `%radius 50 65 2 10` (x=50, y=65, z=2, radius=10)
 - `%type`: filters by log type. To get all types, type `LogType.list()`. `%` mandatory
   - `%type SAY ATTACK` (inclusion)
   - `%type !SILICON` (exclusion, just append `!`)
