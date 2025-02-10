@@ -1,37 +1,8 @@
-[tool.poetry]
-name = "SS13-tools"
-version = "2.4.1"
-description = "Python toolchain for SS13"
-authors = ["RigglePrime <27156122+RigglePrime@users.noreply.github.com>", "tattle <66640614+dragomagol@users.noreply.github.com>"]
-readme = "README.md"
-repository = "https://github.com/RigglePrime/SS13-tools"
-keywords = ["ss13", "tgstation"]
-
-[tool.poetry.dependencies]
-python = "^3.8.10,<3.13"
-requests = "^2.28.1"
-colorama = "^0.4.6"
-tqdm = "^4.64.1"
-python-dateutil = "^2.8.2"
-aiohttp = "^3.8.3"
-pycryptodome = "^3.17"
-ipython = "^8.12.0"
-pyperclip = "^1.8.2"
-
-[tool.poetry.group.dev.dependencies]
-flake8 = "^6.0.0"
-pylint = "^3.1.0"
-pyinstaller = "^6.5.0"
-autopep8 = "^2.0.2"
-
-[tool.poetry.scripts]
-ss13tools = "ss13_tools.cli:run"
-logbuddy = "ss13_tools.cli:log_buddy"
-centcom = "ss13_tools.cli:centcom"
-
+[tool.pdm.build]
+includes = []
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [tool.pylint.'MASTER']
 disable = [
@@ -40,3 +11,44 @@ disable = [
 
 [tool.pylint.'FORMAT']
 max-line-length=127
+
+[project]
+authors = [
+    {name = "RigglePrime", email = "27156122+RigglePrime@users.noreply.github.com"},
+    {name = "tattle", email = "66640614+dragomagol@users.noreply.github.com"},
+]
+requires-python = "<3.13,<4.0.0,>=3.8.10"
+dependencies = [
+    "requests",
+    "colorama",
+    "tqdm",
+    "python-dateutil",
+    "aiohttp",
+    "pycryptodome",
+    "ipython",
+    "pyperclip",
+]
+name = "SS13-tools"
+version = "2.4.1"
+description = "Python toolchain for SS13"
+readme = "README.md"
+keywords = [
+    "ss13",
+    "tgstation",
+]
+
+[project.urls]
+repository = "https://github.com/RigglePrime/SS13-tools"
+
+[project.scripts]
+ss13tools = "ss13_tools.cli:run"
+logbuddy = "ss13_tools.cli:log_buddy"
+centcom = "ss13_tools.cli:centcom"
+
+[dependency-groups]
+dev = [
+    "flake8",
+    "pylint",
+    "pyinstaller",
+    "autopep8",
+]
